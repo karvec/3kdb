@@ -51,6 +51,14 @@
   #var power_override %0;
 };
 
+/*
+Powers I use...  (Ignore this from Ser)
+
+adapt gvalor ibfback precog displacement ibarr ebarr ablat sprud vigor gverve anima cgras cpres bolt bb fs acon6 gbio sjaw rtorm dm gc
+Which is...
+GV IB PR Di Ib Eb Ab SP Vg Gv AA CP Bo Ac6 BC
+*/
+
 #alias {showp} {
   #showme ----------------;
   #showme --- Defense ----;
@@ -58,19 +66,22 @@
 
   @show_power{AA;animal affinity bull};
   @show_power{ab;adapt body};
+  @show_power{Ab;ablating};
   @show_power{Bf;biofeedback};
   @show_power{Cp;combat precognition};
   @show_power{D;dodge};
   @show_power{Di;displacement};
   @show_power{Eb;energy barrier};
+  @show_power{Gv;greater verve};
+  @show_power{GV;greater vigor};
   @show_power{Ib;inertial barrier};
   @show_power{IB;improved biofeedback};
   @show_power{IV;improved valor};
+  @show_power{Iv;improved verve};
   @show_power{Vg;vigor};
   @show_power{Vr;valor};
   @show_power{Vv;verve};
-  @show_power{Iv;Improved verve};
-  @show_power{BFuel;Body Fuel};
+  @show_power{SP;shield of prudence};
 
   #showme ----------------;
   #showme --- Offense ----;
@@ -93,6 +104,7 @@
   @show_power{Ac3;astral construct 3};
   @show_power{Ac4;astral construct 4};
   @show_power{Ac5;astral construct 5};
+  @show_power{Ac6;astral construct 6};
   @show_power{bc;biocurrent};
   @show_power{BC;greater biocurrent};
   @show_power{Cg;conductive grasp};
@@ -106,6 +118,45 @@
   @show_power{ML;greater mindlink $greater_mind_link_target};
 
   #showme ----------------;
+  #showme ---   Misc  ----;
+  #showme ----------------;
+
+  @show_power{BFuel;Body Fuel};
+
+
+  #showme ----------------;
 };
+
+#alias {solo_psi}
+  {
+  addp GV;
+  addp IB;
+  addp PR;
+  addp Di;
+  addp Ib;
+  addp Eb;
+  addp Ab;
+  addp SP;
+  addp Vg;
+  addp Gv;
+  addp CP;
+  addp Bo;
+  addp Ac6;
+  addp BC;
+  }
+
+#alias {boostup} {
+        psychofeedback wis for str;
+        #delay {2} {improved vigor};
+        #delay {4} {displacement};
+        #delay {6} {improved biofeedback};
+        #delay {8} {energy barrier};
+        #delay {10} {psychofeedback off};
+        #delay {12} {psychofeedback wis for con};
+        #delay {14} {greater valor}; 
+        #delay {16} {inertial barrier}; 
+        #delay {18} {ablating}; 
+        #delay {20} {psychofeedback off}
+        };
 
 #class {guild_aliases} {close}
