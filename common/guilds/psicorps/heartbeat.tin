@@ -69,24 +69,29 @@
 
 	#NOP -- Defense;
 	@check_adapt_body{};
+	@check_power{Ab;ablating};
 	@check_power{Bf;biofeedback};
 	@check_power{Cp;combat precognition};
 	@check_power{D;dodge};
+	@check_power{Di;displacement};
 	@check_power{Eb;energy barrier};
+	@check_power{Gv;greater verve};
+	@check_power{GV;greater vigor};
 	@check_power{Ib;inertial barrier};
 	@check_power{IB;improved biofeedback};
-	@check_power{Iv;improved verve};
 	@check_power{IV;improved valor};
+	@check_power{Iv;improved verve};
+	@check_power{SP;shield of prudence};
 	@check_power{Vg;vigor};
 	@check_power{Vr;valor};
 	@check_power{Vv;verve};
-	@check_power{Di;displacement};
 
 	#NOP -- Offense;
   
 	@check_power{Bo;bolt};
-	@check_power{Tl;talons};
+	@check_power{Cg;conductive grasp};
 	@check_power{CP;combat prescience};
+	@check_power{Tl;talons};
 	@check_power{E;expertise};
 	@check_power{Ij;iron jaw};
 	@check_power{Sj;steel jaw};
@@ -97,6 +102,7 @@
 	@check_power{Ac3;astral construct 3};
 	@check_power{Ac4;astral construct 4};
 	@check_power{Ac5;astral construct 5};
+	@check_power{Ac6;astral construct 6};
 	@check_power{bc;biocurrent};
 	@check_power{BC;greater biocurrent};
 	@check_power{Cg;conductive grasp};

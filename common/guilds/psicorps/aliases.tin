@@ -78,23 +78,24 @@ GV IB PR Di Ib Eb Ab SP Vg Gv AA CP Bo Ac6 BC
   @show_power{IB;improved biofeedback};
   @show_power{IV;improved valor};
   @show_power{Iv;improved verve};
+  @show_power{SP;shield of prudence};
   @show_power{Vg;vigor};
   @show_power{Vr;valor};
   @show_power{Vv;verve};
-  @show_power{SP;shield of prudence};
+  @show_power{BFuel;Body Fuel};
+  @show_power{pf;psychofeedback};
 
   #showme ----------------;
   #showme --- Offense ----;
   #showme ----------------;
   
   @show_power{Bo;bolt};
-  @show_power{Tl;talons};
-  @show_power{CP;combat prescience};
   @show_power{Cg;conductive grasp};
+  @show_power{CP;combat prescience};
   @show_power{E;expertise};
   @show_power{Ij;iron jaw};
   @show_power{Sj;steel jaw};
-  @show_power{pf;psychofeedback};
+  @show_power{Tl;talons};
   
   #showme ----------------;
   #showme --- Targeted ---;
@@ -107,7 +108,6 @@ GV IB PR Di Ib Eb Ab SP Vg Gv AA CP Bo Ac6 BC
   @show_power{Ac6;astral construct 6};
   @show_power{bc;biocurrent};
   @show_power{BC;greater biocurrent};
-  @show_power{Cg;conductive grasp};
   @show_power{rpain;recall pain};
   @show_power{ragony;recall agony};
 
@@ -116,12 +116,6 @@ GV IB PR Di Ib Eb Ab SP Vg Gv AA CP Bo Ac6 BC
   #showme ----------------;
 
   @show_power{ML;greater mindlink $greater_mind_link_target};
-
-  #showme ----------------;
-  #showme ---   Misc  ----;
-  #showme ----------------;
-
-  @show_power{BFuel;Body Fuel};
 
 
   #showme ----------------;
