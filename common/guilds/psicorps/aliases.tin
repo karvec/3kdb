@@ -79,7 +79,7 @@ GV IB PR Di Ib Eb Ab SP Vg Gv AA CP Bo Ac6 BC
   @show_power{IV;improved valor};
   @show_power{Iv;improved verve};
   @show_power{SP;shield of prudence};
-  @show_power{Vg;vigor};
+  @show_power{Vg;improved vigor};
   @show_power{Vr;valor};
   @show_power{Vv;verve};
   @show_power{BFuel;Body Fuel};

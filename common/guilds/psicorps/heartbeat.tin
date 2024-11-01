@@ -26,7 +26,7 @@
 
 #NOP -- Power helpers;
 #alias {_guild_heartbeat} {
-	#var hbp 0;
+	#if {!$hbp} {#delay {hbp} {#var hbp 0} {3}};
 
 	#if {"$power_override" != "none"} {
 		@use_power{$power_override};
@@ -52,10 +52,10 @@
 	#math {should_use_body_adjustment} {$my[hp][percent] <= $hp_heal_threshold_body_adjustment};
 
 	#if {$should_use_chain_body_adjustment} {
-		checkStrategy {body_adj} {@use_power{chain $ba_use, $ba_use}};
+		checkStrategy {body_adj} {@@use_power{chain $ba_use, $ba_use}};
 	};
 	#elseif {$should_use_body_adjustment} {
-		checkStrategy {body_adj} {@use_power{$ba_use}};
+		checkStrategy {body_adj} {@@use_power{$ba_use}};
 	};
 	
 	#NOP -- Check which Animal Affinity to be running;
@@ -82,7 +82,7 @@
 	@check_power{IV;improved valor};
 	@check_power{Iv;improved verve};
 	@check_power{SP;shield of prudence};
-	@check_power{Vg;vigor};
+	@check_power{Vg;improved vigor};
 	@check_power{Vr;valor};
 	@check_power{Vv;verve};
 
@@ -112,14 +112,14 @@
 	#if {!$hbp} {
 		#list gs_powers FIND {Demoralize} {found_dm};
 		#if {$found_dm && !$mob[demoralize] && $incombat} {
-			checkStrategy {demoralize} {@use_power{demoralize}};
+			checkStrategy {demoralize} {@@use_power{demoralize}};
 		};
 	};
 
 	#if {!$hbp} {
 		#if {$my[gp1][percent] > 80.0} {
 			#if {$rpain_cnt == 0} {
-				checkStrategy {rpain} {@use_power{recall pain}};
+				checkStrategy {rpain} {@@use_power{recall pain}};
 				#math {rpain_cnt} {$rpain_cnt + 1};
 			};
 			#else {#math {rpain_cnt} {$rpain_cnt - 1};};
@@ -129,7 +129,7 @@
 	#if {!$hbp} {
 		#if {$my[gp1][percent] > 80.0} {
 		#if {$ragony_cnt == 0} {
-			checkStrategy {ragony} {@use_power{recall agony}};
+			checkStrategy {ragony} {@@use_power{recall agony}};
 			#math {ragony_cnt} {$ragony_cnt + 5};
 		};
 		#else {
@@ -147,7 +147,7 @@
 		
 		#NOP -- Convert calcs;
 		#if {$my[sp][percent] > 0.99 && $psi_missing >= $my[sp][max] * $sp_to_psi_ratio} {
-			checkStrategy {convert} {@use_power{convert}};
+			checkStrategy {convert} {@@use_power{convert}};
 		};
 
 		#if {$psi_missing > $bfuel_min_psi_missing} {
@@ -163,7 +163,7 @@
 
 			#if {$can_safely_use_body_fuel} {
 				#format hp_to_spend {%d} $hp_to_spend;
-				checkStrategy {bfuel} {@use_power{body fuel $hp_to_spend}};
+#nop				checkStrategy {bfuel} {@@use_power{body fuel $hp_to_spend}};
 			};
 		};
 	};
