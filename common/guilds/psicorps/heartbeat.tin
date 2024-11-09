@@ -26,7 +26,7 @@
 
 #NOP -- Power helpers;
 #alias {_guild_heartbeat} {
-	#if {!$hbp} {#delay {hbp} {#var hbp 0} {3}};
+	#if {!$hbp} {#delay {hbp} {#var hbp 0} {5}};
 
 	#if {"$power_override" != "none"} {
 		@use_power{$power_override};
@@ -76,11 +76,12 @@
 	@check_power{Di;displacement};
 	@check_power{Eb;energy barrier};
 	@check_power{Gv;greater verve};
-	@check_power{GV;greater vigor};
+	@check_power{GV;greater valor};
 	@check_power{Ib;inertial barrier};
 	@check_power{IB;improved biofeedback};
 	@check_power{IV;improved valor};
 	@check_power{Iv;improved verve};
+	@check_power{PR;precognition};
 	@check_power{SP;shield of prudence};
 	@check_power{Vg;improved vigor};
 	@check_power{Vr;valor};
@@ -176,8 +177,8 @@
 #NOP -- %2 - full power name;
 #function {check_power} {
   #if {!$hbp} {
-    #regex {$my[powers]} {%1} {
-      #if {!$combat[%1] && $my[powers][%1]} {
+    #regex {$mip[FFF][I][data]} {%1} {
+      #if {!$combat[%1] && $mip[FFF][I][data][%1]} {
         #if {$_DEBUG_HB} {#show [debug_heartbeat] turning off %1};
         %2 off;
         #return #nop;
@@ -209,8 +210,8 @@
 
 #function {check_adapt_body} {
   #if {!$hbp} {
-    #regex {$my[powers]} {ab} {
-      #if {!$combat[ab] && $my[powers][ab]} {
+    #regex {$mip[FFF][I][data]} {ab} {
+      #if {!$combat[ab] && $mip[FFF][I][data][ab]} {
         #if {$_DEBUG_HB} {#show [debug_heartbeat] turning off ab};
         adapt body off;
         #var {current_adapt_body} {none};
