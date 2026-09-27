@@ -14,7 +14,8 @@
 #list gearrun_steps clear;
 
 #NOP -- 7M-16M, no scaler. Random drops, 3 hour reset. Covers most slots;
-#NOP -- Gloves +10 STR, breastplate +10 CON, boots +10 DEX;
+#NOP -- Gloves +10 STR, breastplate +10 CON, boots +10 DEX. Metatron drops the;
+#NOP -- Sword of the Spirit, 75 WC, needs 50 WIS: first psiwield weapon;
 #list gearrun_steps add {{
     {key} {spirit}
     {name} {Tree of Life 2.0: Spirit set}
@@ -24,11 +25,38 @@
     {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
 }};
 
+#NOP -- Weapons for psiwield before Care Bears. psiwield power comes from the;
+#NOP -- weapons' own WC, so anything gets it going and the 100 WC Care Bears;
+#NOP -- Big Stick and Ray Gun replace them later;
+
+#NOP -- Scaler 100: 2.8M-18M. Short targeted path that picks up Terra's wooden;
+#NOP -- hammer (79 WC, 100 as {radiant}) and kills Terra;
+#list gearrun_steps add {{
+    {key} {hammer}
+    {name} {Treehouse @100: Terra's hammer}
+    {bot} {treehouse-hammer}
+    {dkey} {terras}
+    {scaler} {100}
+    {reset} {120}
+    {note} {If the hammer is not {radiant} (100 WC), try a higher scaler next time.}
+}};
+
+#NOP -- 1.2M-3.5M, no scaler. Random drops: a 75 WC edged trident, and a;
+#NOP -- Channel 4 signet ring with special defense vs melee;
+#list gearrun_steps add {{
+    {key} {anchorman}
+    {name} {Anchorman: trident, signet ring}
+    {bot} {anchorman}
+    {reset} {120}
+    {note} {The trident and ring are random drops. gearrun undo and rerun if they did not show.}
+}};
+
 #NOP -- Scaler 150: legendary +15 stats, unbreakable, 19M-90M mobs. Slow going;
 #NOP -- this early, but it skips a second Care Bears run. Cupcake is;
 #NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
 #NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
-#NOP -- is main armor;
+#NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
+#NOP -- two 100 WC psiwield weapons;
 #list gearrun_steps add {{
     {key} {carebears150}
     {name} {Care Bears @150: galoshes, headband, hide, cupcake}
@@ -41,7 +69,8 @@
     {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
 }};
 
-#NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable;
+#NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable.;
+#NOP -- Also has two 100 WC weapons: Rock Hammer and Ethereal Staff (2h, lvl 25);
 #list gearrun_steps add {{
     {key} {murus}
     {name} {Murus Faralain 2.0: Myril shield and aura}
