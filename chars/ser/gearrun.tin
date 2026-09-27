@@ -1,0 +1,79 @@
+#class {gearrun_steps} {kill}
+#class {gearrun_steps} {open}
+
+#NOP -- Ser's gear run, easiest mobs first. See common/bot/gearrun.tin for the;
+#NOP -- fields. Priority is STR/CON (healing, defense) then WIS/DEX/CHA (damage);
+#NOP --;
+#NOP -- The wear lines use best-guess item keywords. Check them with look on the;
+#NOP -- first run and fix any that do not match. Upgrading a piece you already;
+#NOP -- wear (same keyword, better version) is left to a note, since wear would;
+#NOP -- just pick whichever copy is first in the inventory;
+
+#list gearrun_steps clear;
+
+#NOP -- 7M-16M, no scaler. Random drops, 3 hour reset. Covers most slots;
+#NOP -- Gloves +10 STR, breastplate +10 CON, boots +10 DEX;
+#list gearrun_steps add {{
+    {key} {spirit}
+    {name} {Tree of Life 2.0: Spirit set}
+    {bot} {angels2}
+    {wear} {wear gloves;wear breastplate;wear boots;wear cloak;wear amulet;wear bracers;wear greaves;wear helmet;wear shield}
+    {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
+}};
+
+#NOP -- Scaler 125: unbreakable from here, +12 stats. Cupcake is bind-on-pickup;
+#NOP -- Galoshes +12 STR replace the Spirit boots. Headband +12 WIS replaces the;
+#NOP -- Spirit helmet, which has no bonus. Luck Bear hide is main armor;
+#list gearrun_steps add {{
+    {key} {carebears125}
+    {name} {Care Bears @125: galoshes, headband, hide, cupcake}
+    {bot} {carebears-all}
+    {dkey} {carebears}
+    {scaler} {125}
+    {get} {get cupcake}
+    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide}
+    {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
+}};
+
+#NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable;
+#list gearrun_steps add {{
+    {key} {murus}
+    {name} {Murus Faralain 2.0: Myril shield and aura}
+    {bot} {murus2}
+    {wear} {remove shield;wear myril shield;wear aura}
+    {note} {Check that the murus2 bot kills whatever drops the Myril gear. Skip the light purple cloak, it cannot be removed without quitting.}
+}};
+
+#NOP -- Scaler 150: legendary +15 versions of the Care Bears set;
+#list gearrun_steps add {{
+    {key} {carebears150}
+    {name} {Care Bears @150: +15 legendary set, cupcake}
+    {bot} {carebears-all}
+    {dkey} {carebears}
+    {scaler} {150}
+    {get} {get cupcake}
+    {wear} {eat cupcake}
+    {note} {Swap the +15 galoshes and headband in by hand: the old ones share the same keyword.}
+}};
+
+#NOP -- Scaler 150: Balangool armor, 220 resist total per piece. Orange capsules;
+#NOP -- give the massive hp/sp regen version;
+#list gearrun_steps add {{
+    {key} {sectionz150}
+    {name} {Section Z @150: figurine and capsules for Balangool}
+    {bot} {sectionz}
+    {dkey} {sectionz}
+    {scaler} {150}
+    {note} {Make the Balangool helmet/boots/gloves from the Brain's figurine by hand afterward.}
+}};
+
+#NOP -- Lucanus set, level 100: breastplate 225, cloak 200, sash 150, gloves;
+#NOP -- 150, greaves 125, ring 100. Syrena and Satarus drop pieces;
+#list gearrun_steps add {{
+    {key} {lucanus}
+    {name} {Serinth castle: Lucanus set}
+    {bot} {serinth-castle}
+    {note} {Wear the Lucanus pieces by hand: they replace the Spirit breastplate, cloak and greaves.}
+}};
+
+#class {gearrun_steps} {close}

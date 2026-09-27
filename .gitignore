@@ -44,6 +44,7 @@ chars/void
 chars/zorbaine
 chars/*/private
 chars/*/vars.tin
+chars/*/gearrun_state.tin
 
 notes/
 common/bot/bots/knight-tour-solver-6.py

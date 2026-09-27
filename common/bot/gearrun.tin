@@ -1,0 +1,280 @@
+#class {gearrun} {kill}
+#class {gearrun} {open}
+
+#NOP ---------------------------------------------------------------------------;
+#NOP -- Gear run: work through an ordered list of dungeon bots, easiest first,;
+#NOP -- so a character can re-gear from nothing after a reboot. Each step runs;
+#NOP -- one pass of an existing bot, grabs any bind-on-pickup items after every;
+#NOP -- kill, wears what it got, marks itself done and moves on to the next;
+#NOP --;
+#NOP -- States: idle -> running (bot walking) -> wearing -> idle, then the next;
+#NOP -- step starts after 16s, the same wait the bot cycle uses in nextarea;
+#NOP --;
+#NOP -- Step list. Each character keeps its own in chars/<user>/gearrun.tin as a;
+#NOP -- gearrun_steps list, one row per step, run top to bottom;
+#NOP --   key     short unique handle, used to remember the step is done;
+#NOP --   name    description shown in the table;
+#NOP --   bot     bot alias from botlist, started with +<bot>;
+#NOP --   dkey    optional dungeon key from .scalers, set together with scaler;
+#NOP --   scaler  optional scaler preference, applied on arrival by dungeons.tin;
+#NOP --   get     optional commands sent after each kill, for bind-on-pickup;
+#NOP --           items that get all skips, e.g. {get cupcake;get flamethrower};
+#NOP --   wear    optional commands sent once the bot finishes;
+#NOP --   note    optional reminder printed when the step starts;
+#NOP --;
+#NOP -- Progress (which keys are done) lives in chars/<user>/gearrun_state.tin;
+#NOP -- so a death, disconnect or reboot does not lose it;
+#NOP --;
+#NOP -- Hook. generic.tin calls .post_bot_check when a bot finishes. If your;
+#NOP -- character config defines its own .post_bot_check, call .gr_post_bot from;
+#NOP -- it or the gear run will not advance;
+#NOP ---------------------------------------------------------------------------;
+
+#var gearrun[state] idle;
+#var gearrun[step] 0;
+
+#alias {gearrun} {
+    #switch {"%1"} {
+        #case {""}       {.gr_list};
+        #case {"list"}   {.gr_list};
+        #case {"start"}  {.gr_start};
+        #case {"run"}    {.gr_run_cmd %2};
+        #case {"stop"}   {.gr_stop};
+        #case {"done"}   {.gr_mark %2 1};
+        #case {"undo"}   {.gr_mark %2 0};
+        #case {"reset"}  {.gr_reset};
+        #case {"reload"} {.gr_load;.gr_list};
+        #default         {.gr_help};
+    };
+};
+
+#alias .gr_help {
+    #echo {<fda>  Gear run<088>};
+    #echo {<eda>  gearrun<088>            show the steps and what is done};
+    #echo {<eda>  gearrun start<088>      run every step that is not done, in order};
+    #echo {<eda>  gearrun run <#><088>    run just that step now};
+    #echo {<eda>  gearrun stop<088>       stop the bot and the gear run};
+    #echo {<eda>  gearrun done <#><088>   mark a step done without running it};
+    #echo {<eda>  gearrun undo <#><088>   mark a step not done, e.g. a random drop missed};
+    #echo {<eda>  gearrun reset<088>      mark every step not done, e.g. after a reboot};
+    #echo {<eda>  gearrun reload<088>     re-read chars/$user/gearrun.tin after editing it};
+};
+
+#NOP -- Read the step list and saved progress for this character;
+#alias .gr_load {
+    #script {grTmp} {test -f chars/$user/gearrun.tin && echo 1 || echo 0};
+    #if {"$grTmp[1]" == "1"} {
+        #read chars/$user/gearrun.tin;
+    } {
+        #list gearrun_steps clear;
+    };
+
+    #class {gearrun_state} {kill};
+    #script {grTmp} {test -f chars/$user/gearrun_state.tin && echo 1 || echo 0};
+    #if {"$grTmp[1]" == "1"} {
+        #read chars/$user/gearrun_state.tin;
+    } {
+        .gr_new_state;
+    };
+    #unvar grTmp;
+};
+
+#alias .gr_save {
+    #class {gearrun_state} {write} {chars/$user/gearrun_state.tin};
+};
+
+#alias .gr_list {
+    #if {&gearrun_steps[] == 0} {
+        #echo {<fab>  No gear run steps. Create chars/$user/gearrun.tin, then gearrun reload.<088>};
+    } {
+        #var grNext 0;
+        #echo {<fda>  #   Status   Key            Bot                 Step<088>};
+        #loop 1 &gearrun_steps[] grIx {
+            #if {"$gearrun_done[$gearrun_steps[$grIx][key]]" == "1"} {
+                #var grStatus {<afa>done   <088>};
+            } {
+                #if {$grNext == 0} {
+                    #var grNext $grIx;
+                    #var grStatus {<ffa>next   <088>};
+                } {
+                    #var grStatus {<ccc>todo   <088>};
+                };
+            };
+            #if {"$gearrun[state]" != "idle" && $gearrun[step] == $grIx} {#var grStatus {<cff>$gearrun[state]<088>}};
+            #format grLine {%-14s %-19s %s} {$gearrun_steps[$grIx][key]} {$gearrun_steps[$grIx][bot]} {$gearrun_steps[$grIx][name]};
+            #format grNum {%+3s} {$grIx};
+            #echo {  $grNum  $grStatus  $grLine};
+        };
+        #if {$grNext == 0} {#echo {<afa>  Every step is done.<088>}};
+    };
+};
+
+#alias .gr_start {
+    #if {"$gearrun[state]" != "idle"} {
+        #echo {<fab>  Gear run is already $gearrun[state] on step $gearrun[step]. gearrun stop first.<088>};
+    } {
+        #if {&botcycle[] > 0} {
+            #echo {<fab>  The bot cycle has areas queued, which would run after each step. Clear it with botclear first.<088>};
+        } {
+            #var gearrun[auto] 1;
+            .gr_next 0;
+        };
+    };
+};
+
+#NOP -- Sets grValid to 1 when %1 is a step number in the list;
+#alias .gr_valid_step {
+    #var grValid 0;
+    #regex {%1} {^%d$} {
+        #if {&1 >= 1 && &1 <= &gearrun_steps[]} {#var grValid 1};
+    };
+};
+
+#alias .gr_run_cmd {
+    .gr_valid_step %1;
+    #if {!$grValid} {
+        #echo {<fab>  Pick a step number from gearrun.<088>};
+    } {
+        #if {"$gearrun[state]" != "idle"} {
+            #echo {<fab>  Gear run is already $gearrun[state] on step $gearrun[step]. gearrun stop first.<088>};
+        } {
+            #var gearrun[auto] 0;
+            .gr_run %1;
+        };
+    };
+};
+
+#NOP -- Start the first step that is not done, after %1 seconds;
+#alias .gr_next {
+    #var grNext 0;
+    #loop 1 &gearrun_steps[] grIx {
+        #if {$grNext == 0 && "$gearrun_done[$gearrun_steps[$grIx][key]]" != "1"} {#var grNext $grIx};
+    };
+    #if {$grNext == 0} {
+        #var gearrun[state] idle;
+        #echo {<afa>  ----  Gear run complete, every step is done  ----<088>};
+    } {
+        #if {%1 > 0} {
+            #echo {<dfc>  Next gear run step $grNext ($gearrun_steps[$grNext][key]) in %1 seconds. gearrun stop to cancel.<088>};
+            #delay {gr_next} {.gr_run $grNext} {%1};
+        } {
+            .gr_run $grNext;
+        };
+    };
+};
+
+#alias .gr_run {
+    #var gearrun[step] %1;
+    #var gearrun[cur] $gearrun_steps[%1];
+    #echo {<fda>  ----  Gear run step %1: $gearrun[cur][name]  ----<088>};
+    #if {"$gearrun[cur][note]" != ""} {#echo {<ffa>  Note: $gearrun[cur][note]<088>}};
+
+    #if {"$gearrun[cur][dkey]" != "" && "$gearrun[cur][scaler]" != ""} {
+        #if {&dungeon[scalers][] == 0} {.dg_init_vars};
+        .set_scaler $gearrun[cur][dkey] $gearrun[cur][scaler];
+    };
+
+    #if {"$gearrun[cur][get]" != ""} {.gr_loot_on};
+
+    #NOP -- The bot only picks up floor loot with the item collector on;
+    #var gearrun[collector] $collector[items];
+    #var collector[items] 1;
+
+    #var gearrun[state] running;
+    +$gearrun[cur][bot];
+
+    #NOP -- One pass per step. Looping bots would otherwise walk the path again;
+    #var bot[loop] 0;
+};
+
+#NOP -- Bind-on-pickup items: add gr_loot to the corpse trigger for this step;
+#alias .gr_loot_on {
+    #var grIx 0;
+    #if {&corpseActions[] > 0} {
+        #list corpseActions indexate name;
+        #list corpseActions find {gr_loot} {grIx};
+    };
+    #if {$grIx == 0} {#list corpseActions add {{{name} {gr_loot} {action} {gr_loot} {active} {1}}}};
+    #if {!$corpsetrigStatus} {#echo {<fab>  corpsetrig is off, so bind-on-pickup gets will not fire. corpsetrig-on to enable.<088>}};
+};
+
+#alias .gr_loot_off {
+    #if {&corpseActions[] > 0} {
+        #list corpseActions indexate name;
+        #list corpseActions find {gr_loot} {grIx};
+        #if {$grIx > 0} {#list corpseActions delete $grIx};
+    };
+};
+
+#alias gr_loot {
+    #if {"$gearrun[state]" == "running" && "$gearrun[cur][get]" != ""} {$gearrun[cur][get]};
+};
+
+#NOP -- Called from generic.tin once a bot finishes its path;
+#alias .post_bot_check {.gr_post_bot};
+
+#alias .gr_post_bot {
+    #NOP -- Only react to the bot this step started, not some other bot run by hand;
+    #if {"$gearrun[state]" == "running" && "$lastBot[alias]" == "$gearrun[cur][bot]"} {
+        .gr_finish;
+    };
+};
+
+#alias .gr_finish {
+    #var gearrun[state] wearing;
+    .gr_loot_off;
+    #var collector[items] $gearrun[collector];
+    #echo {<afa>  ----  Gear run step $gearrun[step] finished, wearing gear  ----<088>};
+    #delay {gr_wear} {
+        #if {"$gearrun[cur][wear]" != ""} {$gearrun[cur][wear]};
+        #var gearrun_done[$gearrun[cur][key]] 1;
+        .gr_save;
+        #var gearrun[state] idle;
+        #if {$gearrun[auto]} {.gr_next 16};
+    } {3};
+};
+
+#alias .gr_stop {
+    #undelay {gr_next};
+    #undelay {gr_wear};
+    #if {"$gearrun[state]" == "running" && "$bot[active]" == "1"} {.stop};
+    .gr_loot_off;
+    #if {"$gearrun[state]" != "idle"} {#var collector[items] $gearrun[collector]};
+    #var gearrun[state] idle;
+    #var gearrun[auto] 0;
+    #echo {<fab>  ----  Gear run stopped  ----<088>};
+};
+
+#alias .gr_mark {
+    .gr_valid_step %1;
+    #if {!$grValid} {
+        #echo {<fab>  Pick a step number from gearrun.<088>};
+    } {
+        #if {%2} {
+            #var gearrun_done[$gearrun_steps[%1][key]] 1;
+        } {
+            #unvar gearrun_done[$gearrun_steps[%1][key]];
+        };
+        .gr_save;
+        .gr_list;
+    };
+};
+
+#NOP -- An empty variable is never created, so the class would vanish and;
+#NOP -- nothing would save. The _ entry keeps both around;
+#alias .gr_new_state {
+    #class {gearrun_state} {kill};
+    #class {gearrun_state} {open};
+    #var gearrun_done {{_}{0}};
+    #class {gearrun_state} {close};
+};
+
+#alias .gr_reset {
+    .gr_new_state;
+    .gr_save;
+    #echo {<ffa>  Every gear run step is marked not done.<088>};
+};
+
+#class {gearrun} {close}
+
+.gr_load;

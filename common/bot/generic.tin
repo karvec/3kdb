@@ -355,6 +355,7 @@
             } {
                 .stop;
             };
+            .post_bot_check;
         } {
             #if $bot[stats][loop][mobs] {
                 #var bot[stats][loop][mobs] 0;
@@ -385,6 +386,7 @@
                 } {
                     .stop;
                 };
+                .post_bot_check;
             }
         };
     };
