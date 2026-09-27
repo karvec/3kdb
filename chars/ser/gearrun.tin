@@ -21,13 +21,15 @@
     {name} {Tree of Life 2.0: Spirit set}
     {bot} {angels2}
     {reset} {180}
-    {wear} {wear gloves;wear breastplate;wear boots;wear cloak;wear amulet;wear bracers;wear greaves;wear helmet;wear shield}
+    {wear} {wear gloves;wear breastplate;wear boots;wear cloak;wear amulet;wear bracers;wear greaves;wear helmet;wear shield;psiwield sword}
     {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
 }};
 
-#NOP -- Weapons for psiwield before Care Bears. psiwield power comes from the;
-#NOP -- weapons' own WC, so anything gets it going and the 100 WC Care Bears;
-#NOP -- Big Stick and Ray Gun replace them later;
+#NOP -- Weapons: four psiwields and one wielded. psiwield power comes from the;
+#NOP -- weapons' own WC, so anything gets it going. Sword, hammer and trident are;
+#NOP -- psiwielded as they come in, then Care Bears adds the Big Stick as the;
+#NOP -- 4th and the Ray Gun to wield. A psiwield that failed because the random;
+#NOP -- drop did not show is harmless;
 
 #NOP -- Scaler 100: 2.8M-18M. Short targeted path that picks up Terra's wooden;
 #NOP -- hammer (79 WC, 100 as {radiant}) and kills Terra;
@@ -38,6 +40,7 @@
     {dkey} {terras}
     {scaler} {100}
     {reset} {120}
+    {wear} {psiwield hammer}
     {note} {If the hammer is not {radiant} (100 WC), try a higher scaler next time.}
 }};
 
@@ -48,6 +51,7 @@
     {name} {Anchorman: trident, signet ring}
     {bot} {anchorman}
     {reset} {120}
+    {wear} {psiwield trident}
     {note} {The trident and ring are random drops. gearrun undo and rerun if they did not show.}
 }};
 
@@ -56,18 +60,19 @@
 #NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
 #NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
 #NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
-#NOP -- two 100 WC psiwield weapons. carebears-most skips the demonheart room;
-#NOP -- (three mobs, autoattack, no leaving) and its shadow sword, since the;
-#NOP -- Spirit sword, hammer and trident already cover the other weapon slots;
+#NOP -- two 100 WC weapons: the stick is the 4th psiwield and the gun is wielded.;
+#NOP -- carebears-gear walks the carebears-most route (no demonheart room: three;
+#NOP -- mobs, autoattack, no leaving, and its shadow sword) and only fights the;
+#NOP -- gear bears and the room event ambushes;
 #list gearrun_steps add {{
     {key} {carebears150}
     {name} {Care Bears @150: galoshes, headband, hide, cupcake}
-    {bot} {carebears-most}
+    {bot} {carebears-gear}
     {dkey} {carebears}
     {scaler} {150}
     {reset} {120}
     {get} {get cupcake}
-    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide}
+    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;psiwield stick;wield gun}
     {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
 }};
 
