@@ -22,6 +22,11 @@
 #NOP --   get     optional commands sent after each kill, for bind-on-pickup;
 #NOP --           items that get all skips, e.g. {get cupcake;get flamethrower};
 #NOP --   wear    optional commands sent once the bot finishes;
+#NOP --   mobs    optional extra targets the bot should fight, as long name to;
+#NOP --           target, e.g. {{Master Gunnery Sergeant Roosevelt Brown}{roosevelt}};
+#NOP --   fight   optional commands sent as the bot starts fighting a target, as;
+#NOP --           target to commands, e.g. {{roosevelt}{nod}}. Needs mob kill;
+#NOP --           actions on (mob_kill_action 1), since it rides on mka;
 #NOP --   note    optional reminder printed when the step starts;
 #NOP --   reset   optional dungeon reset time in minutes. A step will not start;
 #NOP --           until that long after its dungeon was last entered. Steps with;
@@ -254,7 +259,14 @@
         .set_scaler $gearrun[cur][dkey] $gearrun[cur][scaler];
     };
 
-    #if {"$gearrun[cur][get]" != ""} {.gr_loot_on};
+    #if {"$gearrun[cur][get]" != ""} {
+        .gr_hook_on {corpseActions} {gr_loot};
+        #if {!$corpsetrigStatus} {#echo {<fab>  corpsetrig is off, so bind-on-pickup gets will not fire. corpsetrig-on to enable.<088>}};
+    };
+    #if {&gearrun[cur][fight][] > 0} {
+        .gr_hook_on {mkaActions} {gr_fight};
+        #if {!$mob_kill_action} {#echo {<fab>  mob_kill_action is off, so this step's fight commands will not fire.<088>}};
+    };
 
     #NOP -- The bot only picks up floor loot with the item collector on;
     #var gearrun[collector] $collector[items];
@@ -271,29 +283,55 @@
 
     #NOP -- One pass per step. Looping bots would otherwise walk the path again;
     #var bot[loop] 0;
+
+    #NOP -- +<bot> reads the bot file after 4s and it clears botmobs, so extra;
+    #NOP -- targets go in once that has happened;
+    #if {&gearrun[cur][mobs][] > 0} {#delay {gr_mobs} {.gr_add_mobs} {5}};
 };
 
-#NOP -- Bind-on-pickup items: add gr_loot to the corpse trigger for this step;
-#alias .gr_loot_on {
+#alias .gr_add_mobs {
+    #foreach {*gearrun[cur][mobs][]} {grMob} {
+        #list botmobs add {{{long} {$grMob} {target} {$gearrun[cur][mobs][$grMob]}}};
+    };
+};
+
+#NOP -- Add action %2 to action list %1 (corpseActions runs after each kill,;
+#NOP -- mkaActions as each fight starts) for the length of a step;
+#alias .gr_hook_on {
     #var grIx 0;
-    #if {&corpseActions[] > 0} {
-        #list corpseActions indexate name;
-        #list corpseActions find {gr_loot} {grIx};
+    #if {&%1[] > 0} {
+        #list %1 indexate name;
+        #list %1 find {%2} {grIx};
     };
-    #if {$grIx == 0} {#list corpseActions add {{{name} {gr_loot} {action} {gr_loot} {active} {1}}}};
-    #if {!$corpsetrigStatus} {#echo {<fab>  corpsetrig is off, so bind-on-pickup gets will not fire. corpsetrig-on to enable.<088>}};
+    #if {$grIx == 0} {#list %1 add {{{name} {%2} {action} {%2} {active} {1}}}};
 };
 
-#alias .gr_loot_off {
-    #if {&corpseActions[] > 0} {
-        #list corpseActions indexate name;
-        #list corpseActions find {gr_loot} {grIx};
-        #if {$grIx > 0} {#list corpseActions delete $grIx};
+#alias .gr_hook_off {
+    #if {&%1[] > 0} {
+        #list %1 indexate name;
+        #list %1 find {%2} {grIx};
+        #if {$grIx > 0} {#list %1 delete $grIx};
     };
 };
 
+#alias .gr_hooks_off {
+    #undelay {gr_mobs};
+    .gr_hook_off {corpseActions} {gr_loot};
+    .gr_hook_off {mkaActions} {gr_fight};
+};
+
+#NOP -- Bind-on-pickup items that get all skips;
 #alias gr_loot {
     #if {"$gearrun[state]" == "running" && "$gearrun[cur][get]" != ""} {$gearrun[cur][get]};
+};
+
+#NOP -- mka sets mkaTargetName to the target it is about to attack;
+#alias gr_fight {
+    #if {"$gearrun[state]" == "running"} {
+        #foreach {*gearrun[cur][fight][]} {grFightMob} {
+            #if {"$grFightMob" == "$mkaTargetName"} {$gearrun[cur][fight][$grFightMob]};
+        };
+    };
 };
 
 #NOP -- Called from generic.tin once a bot finishes its path;
@@ -308,7 +346,7 @@
 
 #alias .gr_finish {
     #var gearrun[state] wearing;
-    .gr_loot_off;
+    .gr_hooks_off;
     #var collector[items] $gearrun[collector];
     #echo {<afa>  ----  Gear run step $gearrun[step] finished, wearing gear  ----<088>};
     #delay {gr_wear} {
@@ -324,7 +362,7 @@
     #undelay {gr_next};
     #undelay {gr_wear};
     #if {"$gearrun[state]" == "running" && "$bot[active]" == "1"} {.stop};
-    .gr_loot_off;
+    .gr_hooks_off;
     #if {"$gearrun[state]" == "running" || "$gearrun[state]" == "wearing"} {#var collector[items] $gearrun[collector]};
     #var gearrun[state] idle;
     #var gearrun[auto] 0;

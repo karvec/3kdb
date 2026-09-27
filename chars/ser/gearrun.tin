@@ -65,16 +65,21 @@
 #NOP -- Scaler 150, up to ~129M. Bodyarmor (65 edged/blunt, 50 energy, 30 the;
 #NOP -- rest) and Forceshield resists are the same at every scaler, but the;
 #NOP -- Forceshield block chance (10% at 149+) and flamethrower WC grow with it.;
-#NOP -- All three are bind-on-pickup. aegis-7 nods to Roosevelt for the passcard;
-#NOP -- and clears the level 7 vault. Bodyarmor replaces the Luck Bear hide;
+#NOP -- All three are bind-on-pickup. aegis-7 clears the level 7 vault but does;
+#NOP -- not fight Roosevelt, so he is added here. It attacks him on arrival,;
+#NOP -- before its own nod step, so the nod is sent as the fight starts (nod;
+#NOP -- works mid fight) to get the passcard. His flamethrower is picked up by;
+#NOP -- the get after the kill. Bodyarmor replaces the Luck Bear hide;
 #list gearrun_steps add {{
     {key} {aegis150}
-    {name} {Aegis Global @150: bodyarmor, forceshield}
+    {name} {Aegis Global @150: bodyarmor, forceshield, flamethrower}
     {bot} {aegis-7}
     {dkey} {aegis}
     {scaler} {150}
     {reset} {240}
     {get} {get bodyarmor;get forceshield;get flamethrower}
+    {mobs} {{Master Gunnery Sergeant Roosevelt Brown}{roosevelt}}
+    {fight} {{roosevelt}{nod}}
     {wear} {remove hide;wear bodyarmor}
     {note} {Forceshield is kept in inventory: the Myril shield has more resists, the Forceshield more block.}
 }};
