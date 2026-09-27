@@ -78,12 +78,15 @@
 }};
 
 #NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable.;
-#NOP -- Also has two 100 WC weapons: Rock Hammer and Ethereal Staff (2h, lvl 25);
+#NOP -- Also has two 100 WC weapons: Rock Hammer and Ethereal Staff (2h, lvl 25).;
+#NOP -- The staff replaces the 75 WC Sword of the Spirit. psiwield sword after;
+#NOP -- it is a fallback: with the staff in, all four slots are full and it;
+#NOP -- fails; if the staff did not drop, the sword goes straight back;
 #list gearrun_steps add {{
     {key} {murus}
     {name} {Murus Faralain 2.0: Myril shield and aura}
     {bot} {murus2}
-    {wear} {remove shield;wear myril shield;wear aura}
+    {wear} {remove shield;wear myril shield;wear aura;unpsiwield sword;psiwield staff;psiwield sword}
     {note} {Check that the murus2 bot kills whatever drops the Myril gear. Skip the light purple cloak, it cannot be removed without quitting.}
 }};
 
@@ -94,7 +97,9 @@
 #NOP -- not fight Roosevelt, so he is added here. It attacks him on arrival,;
 #NOP -- before its own nod step, so the nod is sent as the fight starts (nod;
 #NOP -- works mid fight) to get the passcard. His flamethrower is picked up by;
-#NOP -- the get after the kill. Bodyarmor replaces the Luck Bear hide;
+#NOP -- the get after the kill. Bodyarmor replaces the Luck Bear hide, and the;
+#NOP -- flamethrower replaces Terra's hammer as a psiwield, with the same;
+#NOP -- re-psiwield fallback as Murus (it may pick the Rock Hammer, also 100 WC);
 #list gearrun_steps add {{
     {key} {aegis150}
     {name} {Aegis Global @150: bodyarmor, forceshield, flamethrower}
@@ -105,7 +110,7 @@
     {get} {get bodyarmor;get forceshield;get flamethrower}
     {mobs} {{Master Gunnery Sergeant Roosevelt Brown}{roosevelt}}
     {fight} {{roosevelt}{nod}}
-    {wear} {remove hide;wear bodyarmor}
+    {wear} {remove hide;wear bodyarmor;unpsiwield hammer;psiwield flamethrower;psiwield hammer}
     {note} {Forceshield is kept in inventory: the Myril shield has more resists, the Forceshield more block.}
 }};
 
