@@ -2,6 +2,7 @@
 #class {botlist} {open}
 
 #read common/bot/bot_cycle.tin;
+#read common/bot/gearrun.tin;
 
 #alias {.resume} {
     #if {"$lastBot[area]" == "Section Z"} {
