@@ -9,8 +9,7 @@
 #NOP -- wear (same keyword, better version) is left to a note, since wear would;
 #NOP -- just pick whichever copy is first in the inventory;
 
-#NOP -- reset is the dungeon timer in minutes from wemudtogether. Care Bears;
-#NOP -- @125 and @150 share one timer, so the gear run does Murus in between;
+#NOP -- reset is the dungeon timer in minutes from wemudtogether;
 
 #list gearrun_steps clear;
 
@@ -25,15 +24,17 @@
     {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
 }};
 
-#NOP -- Scaler 125: unbreakable from here, +12 stats. Cupcake is bind-on-pickup;
-#NOP -- Galoshes +12 STR replace the Spirit boots. Headband +12 WIS replaces the;
-#NOP -- Spirit helmet, which has no bonus. Luck Bear hide is main armor;
+#NOP -- Scaler 150: legendary +15 stats, unbreakable, 19M-90M mobs. Slow going;
+#NOP -- this early, but it skips a second Care Bears run. Cupcake is;
+#NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
+#NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
+#NOP -- is main armor;
 #list gearrun_steps add {{
-    {key} {carebears125}
-    {name} {Care Bears @125: galoshes, headband, hide, cupcake}
+    {key} {carebears150}
+    {name} {Care Bears @150: galoshes, headband, hide, cupcake}
     {bot} {carebears-all}
     {dkey} {carebears}
-    {scaler} {125}
+    {scaler} {150}
     {reset} {120}
     {get} {get cupcake}
     {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide}
@@ -47,19 +48,6 @@
     {bot} {murus2}
     {wear} {remove shield;wear myril shield;wear aura}
     {note} {Check that the murus2 bot kills whatever drops the Myril gear. Skip the light purple cloak, it cannot be removed without quitting.}
-}};
-
-#NOP -- Scaler 150: legendary +15 versions of the Care Bears set;
-#list gearrun_steps add {{
-    {key} {carebears150}
-    {name} {Care Bears @150: +15 legendary set, cupcake}
-    {bot} {carebears-all}
-    {dkey} {carebears}
-    {scaler} {150}
-    {reset} {120}
-    {get} {get cupcake}
-    {wear} {eat cupcake}
-    {note} {Swap the +15 galoshes and headband in by hand: the old ones share the same keyword.}
 }};
 
 #NOP -- Scaler 150, up to ~129M. Bodyarmor (65 edged/blunt, 50 energy, 30 the;
