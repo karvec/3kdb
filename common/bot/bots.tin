@@ -276,6 +276,7 @@
 .add_bot {carebears} {carebears} {Carebears - good align mobs only} {36038} {1} {0} {chaos, dungeon};
 .add_bot {carebears_most} {carebears-most} {Carebears - no demonheart room} {36038} {1} {0} {chaos, dungeon};
 .add_bot {carebears_all} {carebears-all} {Carebears - all mobs} {36038} {1} {0} {chaos, dungeon};
+.add_bot {carebears_gear} {carebears-gear} {Carebears - gear bears only} {36038} {1} {0} {chaos, dungeon};
 .add_bot {alphabet} {alphabet} {Alphabet} {2005} {0} {0} {chaos, dungeon};
 .add_bot {hippies} {hippies} {Hippie Commune: Hippies} {1167} {1} {1} {chaos};
 .add_bot {smurfs} {smurfs} {Smurfland: Smurfs} {7673} {1} {0} {chaos};

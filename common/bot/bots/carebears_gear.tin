@@ -1,0 +1,30 @@
+#class {bot} {kill}
+#class {bot} {open}
+
+#var check_room 0;
+
+#NOP -- mobs are good, set rolm to demon;
+touch demon rune;
+
+#var bot_message_1 '----  CARE BEARS - GEAR BEARS ONLY  ----';
+#showme $bot_message_1;
+
+#NOP -- carebears_most's route (no demonheart room) with the four room event;
+#NOP -- side trips cut: Bedtime Bear's lump, the Playhouse under Grumpy's closet;
+#NOP -- (Hugs and Tugs), the bathroom door and the burning bear's embers. Each;
+#NOP -- of those returned to the room it started in, so the rest of the route;
+#NOP -- is unchanged. It only fights the six bears that drop gear;
+#var {bot[path]} {path;n;e;e;w;s;n;n;e;w;s;w;enter;out;w;enter;out;climb;n;s;s;n;climb;n;e;n;n;s;s;e;rollout;{search forest;path};w;w;n;s;s;s;enter;w;n;s;e;e;e;n;n;n;n;w;e;s;s;s;s;w;w;out;n;n;e;e;e;rollout;castle;enter;w;e;e;w;n;n;out;{#send !fly bike}};
+
+#list botmobs clear;
+#NOP -- Gear bears;
+#list botmobs add {{{long} {Grumpy Bear} {target} {grumpy bear}}};
+#list botmobs add {{{long} {Champ Bear} {target} {champ bear}}};
+#list botmobs add {{{long} {Luck Bear} {target} {luck bear}}};
+#list botmobs add {{{long} {Share Bear} {target} {share bear}}};
+#list botmobs add {{{long} {Bitterheart Bear} {target} {bitterheart bear}}};
+#list botmobs add {{{long} {Professor Cold-Heart} {target} {professor}}};
+
+
+#class {bot} {close}
+#read common/bot/generic.tin;
