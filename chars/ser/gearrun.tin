@@ -26,10 +26,11 @@
 }};
 
 #NOP -- Weapons: four psiwields and one wielded. psiwield power comes from the;
-#NOP -- weapons' own WC, so anything gets it going. Sword, hammer and trident are;
-#NOP -- psiwielded as they come in, then Care Bears adds the Big Stick as the;
-#NOP -- 4th and the Ray Gun to wield. A psiwield that failed because the random;
-#NOP -- drop did not show is harmless;
+#NOP -- weapons' own WC, so anything gets it going. Sword and hammer are;
+#NOP -- psiwielded as they come in, Care Bears adds the Big Stick and Ray Gun as;
+#NOP -- the 3rd and 4th. The trident is only wielded as a stand-in main hand;
+#NOP -- until a duplicated Rod of Ages takes over. A wield that fails because;
+#NOP -- the random drop did not show is harmless;
 
 #NOP -- Scaler 100: 2.8M-18M. Short targeted path that picks up Terra's wooden;
 #NOP -- hammer (79 WC, 100 as {radiant}) and kills Terra;
@@ -51,7 +52,7 @@
     {name} {Anchorman: trident, signet ring}
     {bot} {anchorman}
     {reset} {120}
-    {wear} {psiwield trident}
+    {wear} {wield trident}
     {note} {The trident and ring are random drops. gearrun undo and rerun if they did not show.}
 }};
 
@@ -60,7 +61,7 @@
 #NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
 #NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
 #NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
-#NOP -- two 100 WC weapons: the stick is the 4th psiwield and the gun is wielded.;
+#NOP -- two 100 WC weapons, psiwielded as the 3rd and 4th.;
 #NOP -- carebears-gear walks the carebears-most route (no demonheart room: three;
 #NOP -- mobs, autoattack, no leaving, and its shadow sword) and only fights the;
 #NOP -- gear bears and the room event ambushes;
@@ -72,7 +73,7 @@
     {scaler} {150}
     {reset} {120}
     {get} {get cupcake}
-    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;psiwield stick;wield gun}
+    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;psiwield stick;psiwield gun}
     {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
 }};
 
