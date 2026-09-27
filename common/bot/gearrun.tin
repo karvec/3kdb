@@ -18,7 +18,9 @@
 #NOP --   name    description shown in the table;
 #NOP --   bot     bot alias from botlist, started with +<bot>;
 #NOP --   dkey    optional dungeon key from .scalers, set together with scaler;
-#NOP --   scaler  optional scaler preference, applied on arrival by dungeons.tin;
+#NOP --   scaler  optional scaler. Sent as !scaler when the step starts, and kept;
+#NOP --           as the dungeon's preference so dungeons.tin re-applies it on;
+#NOP --           arrival. The preference stays set after the gear run;
 #NOP --   get     optional commands sent after each kill, for bind-on-pickup;
 #NOP --           items that get all skips, e.g. {get cupcake;get flamethrower};
 #NOP --   wear    optional commands sent once the bot finishes;
@@ -257,6 +259,9 @@
     #if {"$gearrun[cur][dkey]" != "" && "$gearrun[cur][scaler]" != ""} {
         #if {&dungeon[scalers][] == 0} {.dg_init_vars};
         .set_scaler $gearrun[cur][dkey] $gearrun[cur][scaler];
+        #NOP -- dungeons.tin applies the preference when you reach the entrance,;
+        #NOP -- if the area name matches. Set it up front too so it cannot be missed;
+        #send {!scaler $gearrun[cur][scaler]};
     };
 
     #if {"$gearrun[cur][get]" != ""} {

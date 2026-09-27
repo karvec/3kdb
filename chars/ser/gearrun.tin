@@ -56,11 +56,13 @@
 #NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
 #NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
 #NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
-#NOP -- two 100 WC psiwield weapons;
+#NOP -- two 100 WC psiwield weapons. carebears-most skips the demonheart room;
+#NOP -- (three mobs, autoattack, no leaving) and its shadow sword, since the;
+#NOP -- Spirit sword, hammer and trident already cover the other weapon slots;
 #list gearrun_steps add {{
     {key} {carebears150}
     {name} {Care Bears @150: galoshes, headband, hide, cupcake}
-    {bot} {carebears-all}
+    {bot} {carebears-most}
     {dkey} {carebears}
     {scaler} {150}
     {reset} {120}
