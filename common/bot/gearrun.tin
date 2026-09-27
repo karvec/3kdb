@@ -8,7 +8,9 @@
 #NOP -- kill, wears what it got, marks itself done and moves on to the next;
 #NOP --;
 #NOP -- States: idle -> running (bot walking) -> wearing -> idle, then the next;
-#NOP -- step starts after 16s, the same wait the bot cycle uses in nextarea;
+#NOP -- step starts after 16s, the same wait the bot cycle uses in nextarea. If;
+#NOP -- no step that is left has a dungeon that has reset yet, the state is;
+#NOP -- waiting until the soonest one does;
 #NOP --;
 #NOP -- Step list. Each character keeps its own in chars/<user>/gearrun.tin as a;
 #NOP -- gearrun_steps list, one row per step, run top to bottom;
@@ -21,9 +23,14 @@
 #NOP --           items that get all skips, e.g. {get cupcake;get flamethrower};
 #NOP --   wear    optional commands sent once the bot finishes;
 #NOP --   note    optional reminder printed when the step starts;
+#NOP --   reset   optional dungeon reset time in minutes. A step will not start;
+#NOP --           until that long after its dungeon was last entered. Steps with;
+#NOP --           the same dkey (or bot, when there is no dkey) share one timer;
 #NOP --;
-#NOP -- Progress (which keys are done) lives in chars/<user>/gearrun_state.tin;
-#NOP -- so a death, disconnect or reboot does not lose it;
+#NOP -- Progress (which keys are done, and when each dungeon was last entered);
+#NOP -- lives in chars/<user>/gearrun_state.tin so a death, disconnect or reboot;
+#NOP -- does not lose it. After a mud reboot every dungeon resets, so run;
+#NOP -- gearrun reset to clear both;
 #NOP --;
 #NOP -- Hook. generic.tin calls .post_bot_check when a bot finishes. If your;
 #NOP -- character config defines its own .post_bot_check, call .gr_post_bot from;
@@ -38,7 +45,7 @@
         #case {""}       {.gr_list};
         #case {"list"}   {.gr_list};
         #case {"start"}  {.gr_start};
-        #case {"run"}    {.gr_run_cmd %2};
+        #case {"run"}    {.gr_run_cmd %2 %3};
         #case {"stop"}   {.gr_stop};
         #case {"done"}   {.gr_mark %2 1};
         #case {"undo"}   {.gr_mark %2 0};
@@ -52,11 +59,12 @@
     #echo {<fda>  Gear run<088>};
     #echo {<eda>  gearrun<088>            show the steps and what is done};
     #echo {<eda>  gearrun start<088>      run every step that is not done, in order};
-    #echo {<eda>  gearrun run <#><088>    run just that step now};
+    #echo {<eda>  gearrun run <#><088>    run just that step now, if its dungeon has reset};
+    #echo {<eda>  gearrun run <#> force<088>  run it even if the dungeon has not reset};
     #echo {<eda>  gearrun stop<088>       stop the bot and the gear run};
     #echo {<eda>  gearrun done <#><088>   mark a step done without running it};
     #echo {<eda>  gearrun undo <#><088>   mark a step not done, e.g. a random drop missed};
-    #echo {<eda>  gearrun reset<088>      mark every step not done, e.g. after a reboot};
+    #echo {<eda>  gearrun reset<088>      mark every step not done and clear reset timers, e.g. after a reboot};
     #echo {<eda>  gearrun reload<088>     re-read chars/$user/gearrun.tin after editing it};
 };
 
@@ -93,11 +101,18 @@
             #if {"$gearrun_done[$gearrun_steps[$grIx][key]]" == "1"} {
                 #var grStatus {<afa>done   <088>};
             } {
-                #if {$grNext == 0} {
-                    #var grNext $grIx;
-                    #var grStatus {<ffa>next   <088>};
+                .gr_wait_of $grIx;
+                #if {$grWait > 0} {
+                    .gr_fmt_wait $grWait;
+                    #format grStatus {%-7s} {$grWaitStr};
+                    #var grStatus {<dcc>$grStatus<088>};
                 } {
-                    #var grStatus {<ccc>todo   <088>};
+                    #if {$grNext == 0} {
+                        #var grNext $grIx;
+                        #var grStatus {<ffa>next   <088>};
+                    } {
+                        #var grStatus {<ccc>todo   <088>};
+                    };
                 };
             };
             #if {"$gearrun[state]" != "idle" && $gearrun[step] == $grIx} {#var grStatus {<cff>$gearrun[state]<088>}};
@@ -105,7 +120,7 @@
             #format grNum {%+3s} {$grIx};
             #echo {  $grNum  $grStatus  $grLine};
         };
-        #if {$grNext == 0} {#echo {<afa>  Every step is done.<088>}};
+        #if {$grNext == 0} {#echo {<afa>  Nothing is ready to run. Times show how long until a dungeon resets.<088>}};
     };
 };
 
@@ -130,6 +145,42 @@
     };
 };
 
+#NOP -- Sets grTimerKey to the name step %1's reset timer is kept under;
+#alias .gr_timer_key {
+    #var grTimerKey $gearrun_steps[%1][dkey];
+    #if {"$grTimerKey" == ""} {#var grTimerKey $gearrun_steps[%1][bot]};
+};
+
+#NOP -- Sets grWait to the seconds until step %1's dungeon resets, 0 if ready;
+#alias .gr_wait_of {
+    #var grWait 0;
+    .gr_timer_key %1;
+    #var grReset $gearrun_steps[%1][reset];
+    #regex {$grReset} {^%d$} {
+        #regex {$gearrun_last[$grTimerKey]} {^%d$} {
+            #format grNow {%T} {};
+            #math grWait {$gearrun_last[$grTimerKey] + $grReset * 60 - $grNow};
+            #if {$grWait < 0} {#var grWait 0};
+        };
+    };
+};
+
+#NOP -- Sets grWaitStr to %1 seconds as 2h05m or 12m;
+#alias .gr_fmt_wait {
+    #math grH {%1 / 3600};
+    #math grM {(%1 - $grH * 3600) / 60};
+    #format grH {%d} {$grH};
+    #format grM {%d} {$grM};
+    #if {$grH == 0 && $grM < 1} {#var grM 1};
+    #if {$grH > 0} {
+        #NOP -- tintin's #format has no zero padding;
+        #if {$grM < 10} {#var grM 0$grM};
+        #var grWaitStr ${grH}h${grM}m;
+    } {
+        #format grWaitStr {%dm} {$grM};
+    };
+};
+
 #alias .gr_run_cmd {
     .gr_valid_step %1;
     #if {!$grValid} {
@@ -138,21 +189,50 @@
         #if {"$gearrun[state]" != "idle"} {
             #echo {<fab>  Gear run is already $gearrun[state] on step $gearrun[step]. gearrun stop first.<088>};
         } {
-            #var gearrun[auto] 0;
-            .gr_run %1;
+            .gr_wait_of %1;
+            #if {$grWait > 0 && "%2" != "force"} {
+                .gr_fmt_wait $grWait;
+                #echo {<fab>  That dungeon resets in $grWaitStr. gearrun run %1 force to run it anyway.<088>};
+            } {
+                #var gearrun[auto] 0;
+                .gr_run %1;
+            };
         };
     };
 };
 
-#NOP -- Start the first step that is not done, after %1 seconds;
+#NOP -- Start the first step that is not done and whose dungeon has reset,;
+#NOP -- after %1 seconds. If every step left is on a timer, wait for the soonest;
 #alias .gr_next {
     #var grNext 0;
+    #var grSoon 0;
+    #var grSoonWait 0;
     #loop 1 &gearrun_steps[] grIx {
-        #if {$grNext == 0 && "$gearrun_done[$gearrun_steps[$grIx][key]]" != "1"} {#var grNext $grIx};
+        #if {$grNext == 0 && "$gearrun_done[$gearrun_steps[$grIx][key]]" != "1"} {
+            .gr_wait_of $grIx;
+            #if {$grWait == 0} {
+                #var grNext $grIx;
+            } {
+                #if {$grSoon == 0 || $grWait < $grSoonWait} {
+                    #var grSoon $grIx;
+                    #var grSoonWait $grWait;
+                };
+            };
+        };
     };
     #if {$grNext == 0} {
-        #var gearrun[state] idle;
-        #echo {<afa>  ----  Gear run complete, every step is done  ----<088>};
+        #if {$grSoon == 0} {
+            #var gearrun[state] idle;
+            #echo {<afa>  ----  Gear run complete, every step is done  ----<088>};
+        } {
+            #var gearrun[state] waiting;
+            #var gearrun[step] $grSoon;
+            .gr_fmt_wait $grSoonWait;
+            #echo {<dfc>  No dungeon left has reset yet. Step $grSoon ($gearrun_steps[$grSoon][key]) is ready in $grWaitStr. gearrun stop to cancel.<088>};
+            #NOP -- A little extra so the dungeon has definitely reset;
+            #math grSoonWait {$grSoonWait + 30};
+            #delay {gr_next} {.gr_next 0} {$grSoonWait};
+        };
     } {
         #if {%1 > 0} {
             #echo {<dfc>  Next gear run step $grNext ($gearrun_steps[$grNext][key]) in %1 seconds. gearrun stop to cancel.<088>};
@@ -179,6 +259,12 @@
     #NOP -- The bot only picks up floor loot with the item collector on;
     #var gearrun[collector] $collector[items];
     #var collector[items] 1;
+
+    #NOP -- The dungeon's reset timer starts when it is entered;
+    .gr_timer_key %1;
+    #format grNow {%T} {};
+    #var gearrun_last[$grTimerKey] $grNow;
+    .gr_save;
 
     #var gearrun[state] running;
     +$gearrun[cur][bot];
@@ -239,7 +325,7 @@
     #undelay {gr_wear};
     #if {"$gearrun[state]" == "running" && "$bot[active]" == "1"} {.stop};
     .gr_loot_off;
-    #if {"$gearrun[state]" != "idle"} {#var collector[items] $gearrun[collector]};
+    #if {"$gearrun[state]" == "running" || "$gearrun[state]" == "wearing"} {#var collector[items] $gearrun[collector]};
     #var gearrun[state] idle;
     #var gearrun[auto] 0;
     #echo {<fab>  ----  Gear run stopped  ----<088>};
@@ -266,6 +352,7 @@
     #class {gearrun_state} {kill};
     #class {gearrun_state} {open};
     #var gearrun_done {{_}{0}};
+    #var gearrun_last {{_}{0}};
     #class {gearrun_state} {close};
 };
 

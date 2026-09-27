@@ -9,6 +9,9 @@
 #NOP -- wear (same keyword, better version) is left to a note, since wear would;
 #NOP -- just pick whichever copy is first in the inventory;
 
+#NOP -- reset is the dungeon timer in minutes from wemudtogether. Care Bears;
+#NOP -- @125 and @150 share one timer, so the gear run does Murus in between;
+
 #list gearrun_steps clear;
 
 #NOP -- 7M-16M, no scaler. Random drops, 3 hour reset. Covers most slots;
@@ -17,6 +20,7 @@
     {key} {spirit}
     {name} {Tree of Life 2.0: Spirit set}
     {bot} {angels2}
+    {reset} {180}
     {wear} {wear gloves;wear breastplate;wear boots;wear cloak;wear amulet;wear bracers;wear greaves;wear helmet;wear shield}
     {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
 }};
@@ -30,6 +34,7 @@
     {bot} {carebears-all}
     {dkey} {carebears}
     {scaler} {125}
+    {reset} {120}
     {get} {get cupcake}
     {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide}
     {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
@@ -51,9 +56,27 @@
     {bot} {carebears-all}
     {dkey} {carebears}
     {scaler} {150}
+    {reset} {120}
     {get} {get cupcake}
     {wear} {eat cupcake}
     {note} {Swap the +15 galoshes and headband in by hand: the old ones share the same keyword.}
+}};
+
+#NOP -- Scaler 150, up to ~129M. Bodyarmor (65 edged/blunt, 50 energy, 30 the;
+#NOP -- rest) and Forceshield resists are the same at every scaler, but the;
+#NOP -- Forceshield block chance (10% at 149+) and flamethrower WC grow with it.;
+#NOP -- All three are bind-on-pickup. aegis-7 nods to Roosevelt for the passcard;
+#NOP -- and clears the level 7 vault. Bodyarmor replaces the Luck Bear hide;
+#list gearrun_steps add {{
+    {key} {aegis150}
+    {name} {Aegis Global @150: bodyarmor, forceshield}
+    {bot} {aegis-7}
+    {dkey} {aegis}
+    {scaler} {150}
+    {reset} {240}
+    {get} {get bodyarmor;get forceshield;get flamethrower}
+    {wear} {remove hide;wear bodyarmor}
+    {note} {Forceshield is kept in inventory: the Myril shield has more resists, the Forceshield more block.}
 }};
 
 #NOP -- Scaler 150: Balangool armor, 220 resist total per piece. Orange capsules;
@@ -64,6 +87,7 @@
     {bot} {sectionz}
     {dkey} {sectionz}
     {scaler} {150}
+    {reset} {480}
     {note} {Make the Balangool helmet/boots/gloves from the Brain's figurine by hand afterward.}
 }};
 
