@@ -143,7 +143,7 @@ touch demon rune;
 
 #list botmobs add {{{long} {Treasure Chest of Amalgamation} {target} {amalgamation}}};
 #list botmobs add {{{long} {Mimic} {target} {mimic}}};
-#list botmobs add {{{long} {Lost Soul of the Zodiac} {target} {soul}}};
+#list botmobs add {{{long} {Lost Soul of the Zodiac} {target} {lost soul}}};
 #list botmobs add {{{long} {%*, the Colossus} {target} {colossus}}};
 
 #action {Aeonos, the Celestial Nexus} {
@@ -320,7 +320,7 @@ touch demon rune;
         #return;
     };
     #if {$bot[foundmob]} {
-        #if {"$mob[target]" == "colossus" || "$mob[target]" == "mimic" || ("$mob[target]" == "soul" && "$bot[zodiac_aeonos_seen]" != "1")} {
+        #if {"$mob[target]" == "colossus" || "$mob[target]" == "mimic" || ("$mob[target]" == "lost soul" && "$bot[zodiac_aeonos_seen]" != "1")} {
             .pause;
             .zodiac_physical_backstep;
             #delay .3 {glance};
