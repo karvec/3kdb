@@ -20,7 +20,7 @@ touch angel rune;
 #action {Soul is not a living thing.} {kill soul 2} {2};
 
 #list botmobs clear;
-#list botmobs add {{{long} {Lost Soul of the Zodiac} {target} {soul}}};
+#list botmobs add {{{long} {Lost Soul of the Zodiac} {target} {lost soul}}};
 
 #list botmobs add {{{long} {Desecrator of Anubis} {target} {desecrator}}};
 #list botmobs add {{{long} {Desecrator of Thoth} {target} {desecrator}}};
@@ -300,7 +300,7 @@ touch angel rune;
         #return;
     };
     #if {$bot[foundmob]} {
-        #if {"$mob[target]" == "soul" || "$mob[target]" == "colossus" || "$mob[target]" == "mimic"} {
+        #if {"$mob[target]" == "lost soul" || "$mob[target]" == "colossus" || "$mob[target]" == "mimic"} {
             #var bot[zodiac_purge_kill] 1;
             .unpause;
             .determineBotAction;
