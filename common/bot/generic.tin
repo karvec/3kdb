@@ -151,7 +151,7 @@
     #if !$bot[paused] {
         #if {"$bot[alias]" == "zodiacs-easy"} {
             #if {"$bot[zodiac_bt]" != "1" && "$bot[zodiac_aeonos_seen]" != "1"} {
-                #if {"$mob[target]" == "soul" || "$mob[target]" == "colossus"} {
+                #if {"$mob[target]" == "lost soul" || "$mob[target]" == "colossus"} {
                     #var bot[foundmob] 0;
                 };
             };
