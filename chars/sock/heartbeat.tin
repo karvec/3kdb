@@ -15,7 +15,10 @@
 
         #NOP -- Actions to only attempt once/round go in this section;
         #if {$action_round < $mip[round]} {
-            #NOP
+            #NOP -- Keep contact up in combat (Ct missing from gline 2);
+            #if {$mip[round] > 0} {
+                #regex {$mip[gline][2]} {Ct} {#NOP} {contact};
+            };
         };
 
     
