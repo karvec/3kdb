@@ -26,8 +26,8 @@
 #NOP -- Minimum GP1 for recall pain;
 #var my[psicorps][recall_pain_min_gp1] .5;
 
-#NOP -- Which power the Vg implant maintains. Characters with improved vigor;
-#NOP -- can override this in their chars/<name>/config.tin;
+#NOP -- Which power the Vg implant maintains. gs_powers switches this to;
+#NOP -- improved vigor when gs lists it;
 #var vigor_power vigor;
 
 #NOP -- Greater concussion (gc implant) is used every x rounds;

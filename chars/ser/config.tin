@@ -17,8 +17,9 @@
 
 #alias {.pre_bot_check} {#NOP};
 
-#NOP -- Psicorps: Vg implant maintains improved vigor instead of vigor;
-#var vigor_power {improved vigor};
+#NOP -- Psicorps: rebuild implants from gs at login so the Vg slot picks up improved vigor;
+#NOP -- Delayed past the login profs check so the two outputs don't overlap;
+#delay {ser_gs_powers} {gs_powers} {5};
 
 
 #class {player_config} {close}
