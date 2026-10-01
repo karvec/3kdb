@@ -641,6 +641,16 @@
 	};
 };
 
+#ALIAS {.mipProcessGlinePsicorps} {
+	#IF {%1 == 1} {
+		#REGEX {$mip[gline][1]} {\[\[ %* \]\]} {_hpbar_handle_powers {&1}};
+	}; #ELSEIF {%1 == 2} {
+		#NOP;
+	}; #ELSE {
+		#ECHO {<171> Invalid Gline Number <088>};
+	};
+};
+
 #ALIAS {.mipProcessGlineSii} {
 	#IF {%1 == 1} {
 		#REGEX {$mip[gline][1]} {GXP:%d}			{#VAR {my[gxp][round]}		{&1}};
