@@ -81,7 +81,7 @@
 #NOP -- Also has two 100 WC weapons: Rock Hammer and Ethereal Staff (2h, lvl 25).;
 #NOP -- The staff replaces the 75 WC Sword of the Spirit. psiwield sword after;
 #NOP -- it is a fallback: with the staff in, all four slots are full and it;
-#NOP -- fails; if the staff did not drop, the sword goes straight back;
+#NOP -- fails. If the staff did not drop, the sword goes straight back;
 #list gearrun_steps add {{
     {key} {murus}
     {name} {Murus Faralain 2.0: Myril shield and aura}
