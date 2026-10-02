@@ -62,14 +62,18 @@
   _show_power {D} {dodge};
   _show_power {Di} {displacement};
   _show_power {Eb} {energy barrier};
+  _show_power {GV} {greater valor};
   _show_power {Ib} {inertial barrier};
   _show_power {IB} {improved biofeedback};
   _show_power {IV} {improved valor};
   _show_power {Ab} {ablating};
+  _show_power {PR} {precognition};
+  _show_power {SP} {shield of prudence};
   _show_power {Vg} {$vigor_power};
   _show_power {Vr} {valor};
   _show_power {Vv} {verve};
   _show_power {Iv} {Improved verve};
+  _show_power {Gv} {greater verve};
   _show_power {BFuel} {Body Fuel};
 
   #echo {----------------};
