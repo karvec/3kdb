@@ -9,12 +9,14 @@ touch demon rune;
 #var bot_message_1 '----  CARE BEARS - GEAR BEARS ONLY  ----';
 #showme $bot_message_1;
 
-#NOP -- carebears_most's route (no demonheart room) with the four room event;
-#NOP -- side trips cut: Bedtime Bear's lump, the Playhouse under Grumpy's closet;
-#NOP -- (Hugs and Tugs), the bathroom door and the burning bear's embers. Each;
-#NOP -- of those returned to the room it started in, so the rest of the route;
-#NOP -- is unchanged. It only fights the six bears that drop gear;
-#var {bot[path]} {path;n;e;e;w;s;n;n;e;w;s;w;enter;out;w;enter;out;climb;n;s;s;n;climb;n;e;n;n;s;s;e;rollout;{search forest;path};w;w;n;s;s;s;enter;w;n;s;e;e;e;n;n;n;n;w;e;s;s;s;s;w;w;out;n;n;e;e;e;rollout;castle;enter;w;e;e;w;n;n;out;{#send !fly bike}};
+#NOP -- carebears_all's route with three room event side trips cut: Bedtime;
+#NOP -- Bear's lump, the Playhouse under Grumpy's closet (Hugs and Tugs) and the;
+#NOP -- burning bear's embers. Each of those returned to the room it started in,;
+#NOP -- so the rest of the route is unchanged. It keeps the bathroom door;
+#NOP -- (Bathroom Bear's gloves) and the demonheart room (DemonHeart Bear's shadow;
+#NOP -- sword; its three bears attack on sight and block leaving, so all three;
+#NOP -- are targets). It only fights the bears that drop gear;
+#var {bot[path]} {path;n;e;e;w;s;n;n;e;w;s;w;enter;out;w;enter;out;climb;n;s;s;n;climb;n;e;n;n;s;s;e;rollout;{search forest;path};w;w;n;s;s;s;enter;w;n;{open door;.pause};s;e;e;e;n;n;n;n;w;e;s;{examine junk;examine equipment;get hyblomiter;w;search bones;.pause};e;s;s;s;w;w;out;n;n;e;e;e;rollout;castle;enter;w;e;e;w;n;n;out;{#send !fly bike}};
 
 #list botmobs clear;
 #NOP -- Gear bears;
@@ -24,6 +26,23 @@ touch demon rune;
 #list botmobs add {{{long} {Share Bear} {target} {share bear}}};
 #list botmobs add {{{long} {Bitterheart Bear} {target} {bitterheart bear}}};
 #list botmobs add {{{long} {Professor Cold-Heart} {target} {professor}}};
+#list botmobs add {{{long} {Bathroom Bear} {target} {bathroom bear}}};
+#NOP -- Demonheart room;
+#list botmobs add {{{long} {DemonHeart Bear} {target} {demonheart bear}}};
+#list botmobs add {{{long} {BlackHeart Bear} {target} {blackheart}}};
+#list botmobs add {{{long} {Toxic Waste Bear} {target} {toxic waste bear}}};
+
+#NOP -- bathroom bear room;
+#action {^A large figure jumps off the toilet and attacks you.} {
+    #ticker bathroomBearWait {#if {!$incombat} {.unpause;#unticker bathroomBearWait}} {2};
+} {1};
+#action {^You burst open the door and find nothing but a leaky toilet badly rust} {.unpause;..} {1};
+
+#NOP -- demonheart/blackheart/toxic waste bear room;
+#action {^The three figures stop suddenly and turn to you with death in their eyes.} {
+    #ticker demonheartRoomWait {#if {!$incombat} {.unpause;#unticker demonheartRoomWait}} {2};
+} {1};
+#action {^by the figures and found nothing to boot. You should leave now.} {.unpause;..} {1};
 
 
 #class {bot} {close}

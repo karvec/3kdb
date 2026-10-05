@@ -29,7 +29,8 @@
 #NOP -- weapons' own WC, so anything gets it going. Sword and hammer are;
 #NOP -- psiwielded as they come in, Care Bears adds the Big Stick and Ray Gun as;
 #NOP -- the 3rd and 4th. The trident is only wielded as a stand-in main hand;
-#NOP -- until a duplicated Rod of Ages takes over. A wield that fails because;
+#NOP -- until Care Bears' shadow sword (and later a duplicated Rod of Ages);
+#NOP -- takes over. A wield that fails because;
 #NOP -- the random drop did not show is harmless;
 
 #NOP -- Scaler 100: 2.8M-18M. Short targeted path that picks up Terra's wooden;
@@ -61,20 +62,22 @@
 #NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
 #NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
 #NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
-#NOP -- two 100 WC weapons, psiwielded as the 3rd and 4th.;
-#NOP -- carebears-gear walks the carebears-most route (no demonheart room: three;
-#NOP -- mobs, autoattack, no leaving, and its shadow sword) and only fights the;
-#NOP -- gear bears and the room event ambushes;
+#NOP -- two 100 WC weapons, psiwielded as the 3rd and 4th. Bathroom Bear's;
+#NOP -- gloves (96 resist total, +15 DEX) replace the Spirit gloves (+10 STR).;
+#NOP -- DemonHeart Bear's shadow sword (100 WC edged) replaces the 75 WC trident;
+#NOP -- as the wielded weapon. carebears-gear only fights the gear bears, and;
+#NOP -- goes through the bathroom door and the demonheart room (three bears,;
+#NOP -- autoattack, no leaving) for the gloves and sword;
 #list gearrun_steps add {{
     {key} {carebears150}
-    {name} {Care Bears @150: galoshes, headband, hide, cupcake}
+    {name} {Care Bears @150: galoshes, headband, hide, gloves, shadow sword, cupcake}
     {bot} {carebears-gear}
     {dkey} {carebears}
     {scaler} {150}
     {reset} {120}
     {get} {get cupcake}
-    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;psiwield stick;psiwield gun}
-    {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist.}
+    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;remove gloves;wear bathroom gloves;psiwield stick;psiwield gun;unwield trident;wield shadow sword}
+    {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist. If the shadow sword did not drop, wield trident again by hand. Check the bathroom gloves and shadow sword keywords on the first run.}
 }};
 
 #NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable.;
