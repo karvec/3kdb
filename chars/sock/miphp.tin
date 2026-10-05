@@ -1,11 +1,22 @@
 #class {player_miphp} {kill}
 #class {player_miphp} {open}
 
-#NOP -- This is a custom player hpbar if you do not like the default or want to customize your own; 
-#alias {_player_miphp} {
-	#NOP
-};
-    
+#NOP -- Custom hpbar: stats line plus both guild lines, without the percentage graph line;
+#var guild_miphp 0;
 
+#NOP -- The enhance count in hp's "SA/E: 0/4(7)" isn't in mip: read it from hp, count it down on each enhance;
+#NOP -- It also refills over time with no message, so type hp to resync;
+#action {^SA/E: %d/%d(%d)} {#var sock_enhances %3};
+#action {becomes more resilient} {#if {$sock_enhances > 0} {#math sock_enhances {$sock_enhances - 1}}};
+
+#alias {_player_miphp} {
+	#var sock_gline1 $mip[gline][1];
+	#if {&sock_enhances} {#replace sock_gline1 {<gSA> : %d/%d} {<gSA/E> : &1/&2($sock_enhances)}};
+	#list temp clear;
+	#list temp add {HP:$hp/$hp_max SP:$sp/$sp_max GP1: $gp1/$gp1_max GP2: $gp2/$gp2_max  E:$ehealth};
+	#list temp add {@fMipColourConv{$sock_gline1}};
+	#list temp add {@fMipColourConv{$mip[gline][2]}};
+	#var hpbar[prompt] $temp;
+};
 
 #class {player_miphp} {close}
