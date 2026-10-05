@@ -389,6 +389,7 @@
 .add_bot {findhat} {findhat} {Witch's Hat Finder} {196} {0} {0};
 .add_bot {findevent} {findevent} {Event Portal Finder} {148} {0} {0};
 .add_bot {turkeys_full} {turkeys} {Turkey Farm: bok bok} {27717} {1} {1};
+.add_bot {deathtaco} {deathtaco} {Death Taco: grab and kill ingredients} {6508} {0} {0};
 
 
 #class {botlist} {close}

@@ -1,0 +1,112 @@
+#class {bot} {kill}
+#class {bot} {open}
+
+#var check_room 0;
+
+#var bot_message_1 '----  DEATH TACO - INGREDIENTS  ----';
+#showme $bot_message_1;
+
+#NOP -- Ported from karvec's old ~/.tt/3k/bots/taco.tin. From the entrance (6508);
+#NOP -- it walks the ingredient rooms and grabs each one turned on below until the;
+#NOP -- room runs out, fighting whatever each grab spawns. It stops in the assembly;
+#NOP -- area. Set an ingredient to 0 to walk past its room;
+#NOP -- Start it with +deathtaco (it walks to the entrance first); .stop ends it;
+#NOP -- Everything lives in the bot class and the deathtaco variable, so it is;
+#NOP -- removed with the bot. It leaves taco.tin/tacos.tin (upstream's taco bot);
+#NOP -- and common/areas/tacos.tin alone;
+#var deathtaco[on][shell] 1;
+#var deathtaco[on][lettuce] 1;
+#var deathtaco[on][tomatoes] 1;
+#var deathtaco[on][cheese] 1;
+#var deathtaco[on][meat] 0;
+#var deathtaco[on][cream] 0;
+#var deathtaco[on][guac] 0;
+#var deathtaco[on][sauce] 0;
+
+#NOP -- Build the path: the move into each room, then a grab step if it is on;
+#alias {.deathtacoRoom} {
+    #cat bot[path] {%1;};
+    #if {$deathtaco[on][%2]} {#cat bot[path] {.deathtacoGrab %2;}};
+};
+#var bot[path] {};
+.deathtacoRoom e shell;
+.deathtacoRoom e lettuce;
+.deathtacoRoom e tomatoes;
+.deathtacoRoom e cheese;
+.deathtacoRoom s meat;
+.deathtacoRoom w cream;
+.deathtacoRoom w guac;
+.deathtacoRoom w sauce;
+#cat bot[path] {w};
+
+#list botmobs clear;
+
+#NOP -- Pause the bot in the room and grab. The room's spawn message starts a;
+#NOP -- fight, and its "they wriggle away" message means the room is empty;
+#alias {.deathtacoGrab} {
+    #var deathtaco[grab] %1;
+    #map get roomvnum deathtaco[room];
+    .pause;
+    grab %1;
+};
+
+#NOP -- Tickers are made inside the bot class so stopping the bot removes them.;
+#NOP -- Grab again once the fight is over. If combat never shows (a one-round;
+#NOP -- kill), grab again after 5 seconds anyway;
+#alias {.deathtacoFight} {
+    #var deathtaco[fought] 0;
+    #var deathtaco[ticks] 0;
+    #class {bot} {open};
+    #ticker deathtacoWait {
+        #math deathtaco[ticks] {$deathtaco[ticks] + 1};
+        #if {$incombat} {#var deathtaco[fought] 1} {
+            #if {$deathtaco[fought] || $deathtaco[ticks] >= 5} {
+                #unticker deathtacoWait;
+                get all;
+                grab $deathtaco[grab];
+            };
+        };
+    } {1};
+    #class {bot} {close};
+};
+
+#action {^As you reach to grab a taco shell, it leaps out of your grasp, and ROARS} {.deathtacoFight} {1};
+#action {^You try to grab a taco shell, but they all wriggle away from your grasp!} {.unpause;..} {1};
+
+#action {^As you reach to grab some of the shredded lettuce, it pulls away from} {.deathtacoFight} {1};
+#action {^You try to grab some lettuce, but it shrinks away from your hand!} {.unpause;..} {1};
+
+#action {^You grab an unappetizing pile of soggy diced tomatoes.  Just as you are} {.deathtacoFight} {1};
+#action {^You try to grab some tomatoes but they quiver like jello and slime away} {.unpause;..} {1};
+
+#action {^As you reach for some cheese it melts out of your grasp, rears up, and} {.deathtacoFight} {1};
+#action {^You try to grab a handful of cheese, but it slips away from you.} {.unpause;..} {1};
+
+#action {^As you reach to grab some mystery meat, a huge glop of it encases your} {.deathtacoFight} {1};
+#action {^You try to grab some meat, but it creeps away from your grasp!} {.unpause;..} {1};
+
+#action {^As you try to grab some of the sour cream it quivers.  You take a step} {.deathtacoFight} {1};
+#action {^You try to grab a scoop of the sour cream, but it quivers away from you.} {.unpause;..} {1};
+
+#action {^You reach in and grab a big splooge of guac!  It trembles delicately in} {.deathtacoFight} {1};
+#action {^You try to grab a scoop of the guacamole, but it quivers away from you.} {.unpause;..} {1};
+
+#action {^You reach in and grab a big packet of hot sauce.  All seems safe for a} {.deathtacoFight} {1};
+#action {^You try to grab a packet of hot sauce, but it crinkles away from you.} {.unpause;..} {1};
+
+#NOP -- Every ingredient room has a trapdoor to the floor below. If you fall,;
+#NOP -- walk back to the room once out of combat and grab again;
+#action {^You plummet, and SLAM into the ground!} {
+    #class {bot} {open};
+    #ticker deathtacoFloor {
+        #if {!$incombat} {
+            #unticker deathtacoFloor;
+            #map run $deathtaco[room];
+            grab $deathtaco[grab];
+        };
+    } {2};
+    #class {bot} {close};
+} {1};
+
+#class {bot} {close}
+#read common/bot/generic.tin;
