@@ -23,14 +23,14 @@
 #alias {bag_all %1} {get all from disc;#loop 1 %1 i {put all in bag $i}};
 
 
-#alias corpse_trig {
-    get coins from corpse;wrap corpse;
+#NOP -- After-kill extras for the corpsetrig manager (common/corpsetrig.tin). Add it;
+#NOP -- once with corpsetrig+ ser_corpse (enter it twice, it's a custom action).;
+#NOP -- Coins and wrapping are left to the in-game ktrig;
+#alias ser_corpse {
     #if {$darkness} {remove ring of darkness};
-    #if {$combat[pf]} {actuate psychofeedback int for con};
 
     #if {"$area" == "Section Z"} {
         get all from corpse;
-        eat green;eat blue;eat orange;
     };
     #if {"$area" == "Westersea Thugs" || "$area" == "Westersea Sewer"} {
       get lockbox from corpse;
