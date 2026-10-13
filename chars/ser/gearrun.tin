@@ -1,0 +1,141 @@
+#class {gearrun_steps} {kill}
+#class {gearrun_steps} {open}
+
+#NOP -- Ser's gear run, easiest mobs first. See common/bot/gearrun.tin for the;
+#NOP -- fields. Priority is STR/CON (healing, defense) then WIS/DEX/CHA (damage);
+#NOP --;
+#NOP -- The wear lines use best-guess item keywords. Check them with look on the;
+#NOP -- first run and fix any that do not match. Upgrading a piece you already;
+#NOP -- wear (same keyword, better version) is left to a note, since wear would;
+#NOP -- just pick whichever copy is first in the inventory;
+
+#NOP -- reset is the dungeon timer in minutes from wemudtogether;
+
+#list gearrun_steps clear;
+
+#NOP -- 7M-16M, no scaler. Random drops, 3 hour reset. Covers most slots;
+#NOP -- Gloves +10 STR, breastplate +10 CON, boots +10 DEX. Metatron drops the;
+#NOP -- Sword of the Spirit, 75 WC, needs 50 WIS: first psiwield weapon;
+#list gearrun_steps add {{
+    {key} {spirit}
+    {name} {Tree of Life 2.0: Spirit set}
+    {bot} {angels2}
+    {reset} {180}
+    {wear} {wear gloves;wear breastplate;wear boots;wear cloak;wear amulet;wear bracers;wear greaves;wear helmet;wear shield;psiwield sword}
+    {note} {Drops are random. gearrun undo 1 and rerun after the 3 hour reset for missing pieces.}
+}};
+
+#NOP -- Weapons: four psiwields and one wielded. psiwield power comes from the;
+#NOP -- weapons' own WC, so anything gets it going. Sword and hammer are;
+#NOP -- psiwielded as they come in, Care Bears adds the Big Stick and Ray Gun as;
+#NOP -- the 3rd and 4th. The trident is only wielded as a stand-in main hand;
+#NOP -- until Care Bears' shadow sword (and later a duplicated Rod of Ages);
+#NOP -- takes over. A wield that fails because;
+#NOP -- the random drop did not show is harmless;
+
+#NOP -- Scaler 100: 2.8M-18M. Short targeted path that picks up Terra's wooden;
+#NOP -- hammer (79 WC, 100 as {radiant}) and kills Terra;
+#list gearrun_steps add {{
+    {key} {hammer}
+    {name} {Treehouse @100: Terra's hammer}
+    {bot} {treehouse-hammer}
+    {dkey} {terras}
+    {scaler} {100}
+    {reset} {120}
+    {wear} {psiwield hammer}
+    {note} {If the hammer is not {radiant} (100 WC), try a higher scaler next time.}
+}};
+
+#NOP -- 1.2M-3.5M, no scaler. Random drops: a 75 WC edged trident, and a;
+#NOP -- Channel 4 signet ring with special defense vs melee;
+#list gearrun_steps add {{
+    {key} {anchorman}
+    {name} {Anchorman: trident, signet ring}
+    {bot} {anchorman}
+    {reset} {120}
+    {wear} {wield trident}
+    {note} {The trident and ring are random drops. gearrun undo and rerun if they did not show.}
+}};
+
+#NOP -- Scaler 150: legendary +15 stats, unbreakable, 19M-90M mobs. Slow going;
+#NOP -- this early, but it skips a second Care Bears run. Cupcake is;
+#NOP -- bind-on-pickup. Galoshes +15 STR replace the Spirit boots. Headband;
+#NOP -- +15 WIS replaces the Spirit helmet, which has no bonus. Luck Bear hide;
+#NOP -- is main armor. Big Stick (100 blunt) and Ray Gun (100 radiation) are;
+#NOP -- two 100 WC weapons, psiwielded as the 3rd and 4th. Bathroom Bear's;
+#NOP -- gloves (96 resist total, +15 DEX) replace the Spirit gloves (+10 STR).;
+#NOP -- DemonHeart Bear's shadow sword (100 WC edged) replaces the 75 WC trident;
+#NOP -- as the wielded weapon. carebears-gear only fights the gear bears, and;
+#NOP -- goes through the bathroom door and the demonheart room (three bears,;
+#NOP -- autoattack, no leaving) for the gloves and sword;
+#list gearrun_steps add {{
+    {key} {carebears150}
+    {name} {Care Bears @150: galoshes, headband, hide, gloves, shadow sword, cupcake}
+    {bot} {carebears-gear}
+    {dkey} {carebears}
+    {scaler} {150}
+    {reset} {120}
+    {get} {get cupcake}
+    {wear} {eat cupcake;remove boots;wear galoshes;remove helmet;wear headband;wear hide;remove gloves;wear bathroom gloves;psiwield stick;psiwield gun;unwield trident;wield shadow sword}
+    {note} {Skip NoHeart's Amulet: 15/15 regen but -20 to every resist. If the shadow sword did not drop, wield trident again by hand. Check the bathroom gloves and shadow sword keywords on the first run.}
+}};
+
+#NOP -- 12M-58M. Myril shield 199, Myril Aura 150 (other slot). Unbreakable.;
+#NOP -- Also has two 100 WC weapons: Rock Hammer and Ethereal Staff (2h, lvl 25).;
+#NOP -- The staff replaces the 75 WC Sword of the Spirit. psiwield sword after;
+#NOP -- it is a fallback: with the staff in, all four slots are full and it;
+#NOP -- fails. If the staff did not drop, the sword goes straight back;
+#list gearrun_steps add {{
+    {key} {murus}
+    {name} {Murus Faralain 2.0: Myril shield and aura}
+    {bot} {murus2}
+    {wear} {remove shield;wear myril shield;wear aura;unpsiwield sword;psiwield staff;psiwield sword}
+    {note} {Check that the murus2 bot kills whatever drops the Myril gear. Skip the light purple cloak, it cannot be removed without quitting.}
+}};
+
+#NOP -- Scaler 150, up to ~129M. Bodyarmor (65 edged/blunt, 50 energy, 30 the;
+#NOP -- rest) and Forceshield resists are the same at every scaler, but the;
+#NOP -- Forceshield block chance (10% at 149+) and flamethrower WC grow with it.;
+#NOP -- All three are bind-on-pickup. aegis-7 clears the level 7 vault but does;
+#NOP -- not fight Roosevelt, so he is added here. It attacks him on arrival,;
+#NOP -- before its own nod step, so the nod is sent as the fight starts (nod;
+#NOP -- works mid fight) to get the passcard. His flamethrower is picked up by;
+#NOP -- the get after the kill. Bodyarmor replaces the Luck Bear hide, and the;
+#NOP -- flamethrower replaces Terra's hammer as a psiwield, with the same;
+#NOP -- re-psiwield fallback as Murus (it may pick the Rock Hammer, also 100 WC);
+#list gearrun_steps add {{
+    {key} {aegis150}
+    {name} {Aegis Global @150: bodyarmor, forceshield, flamethrower}
+    {bot} {aegis-7}
+    {dkey} {aegis}
+    {scaler} {150}
+    {reset} {240}
+    {get} {get bodyarmor;get forceshield;get flamethrower}
+    {mobs} {{Master Gunnery Sergeant Roosevelt Brown}{roosevelt}}
+    {fight} {{roosevelt}{nod}}
+    {wear} {remove hide;wear bodyarmor;unpsiwield hammer;psiwield flamethrower;psiwield hammer}
+    {note} {Forceshield is kept in inventory: the Myril shield has more resists, the Forceshield more block.}
+}};
+
+#NOP -- Scaler 150: Balangool armor, 220 resist total per piece. Orange capsules;
+#NOP -- give the massive hp/sp regen version;
+#list gearrun_steps add {{
+    {key} {sectionz150}
+    {name} {Section Z @150: figurine and capsules for Balangool}
+    {bot} {sectionz}
+    {dkey} {sectionz}
+    {scaler} {150}
+    {reset} {480}
+    {note} {Make the Balangool helmet/boots/gloves from the Brain's figurine by hand afterward.}
+}};
+
+#NOP -- Lucanus set, level 100: breastplate 225, cloak 200, sash 150, gloves;
+#NOP -- 150, greaves 125, ring 100. Syrena and Satarus drop pieces;
+#list gearrun_steps add {{
+    {key} {lucanus}
+    {name} {Serinth castle: Lucanus set}
+    {bot} {serinth-castle}
+    {note} {Wear the Lucanus pieces by hand: they replace the Spirit breastplate, cloak and greaves.}
+}};
+
+#class {gearrun_steps} {close}

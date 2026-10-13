@@ -31,3 +31,7 @@
 };
 
 #alias {um} {#unmacro {%d}};
+
+#NOP -- Arrow-key character menu with add/edit/remove and per-character guilds, see startmenu.tin.;
+#NOP -- It takes over the number keys and the menu above. Delete this line to keep the old menu;
+#read startmenu.tin;

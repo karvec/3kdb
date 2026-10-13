@@ -7,3 +7,8 @@
 #alias {.check_death} {#NOP};
 
 #class {player_config} {close}
+
+#NOP -- Guild-specific extras (one block per guild) are in guilds.tin.;
+#NOP -- This runs after the guild scripts at login and on gswap, so it can override guild defaults;
+#class {player_guild} {kill};
+#read chars/$user/guilds.tin;

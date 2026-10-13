@@ -1,0 +1,72 @@
+#class {player_guild} {kill}
+#class {player_guild} {open}
+
+#NOP -- Meatloaf's guild-specific extras. config.tin reads this after the guild scripts at login and on gswap,;
+#NOP -- so only the block for the current guild is loaded;
+
+#if {"$guild" == "mage"} {
+    #read modules/dmgtracker/dmgtracker_mage.tin;
+
+    #NOP -- Settings: k casts slow (and darkness 3s later), cperf performs ospell, golem_haste keeps the golem hasted.;
+    #NOP -- Self haste is kept up by the mage heartbeat (common/guilds/mage/heartbeat.tin);
+    #var cast[darkness] 0;
+    #var cast[slow] 1;
+    #var cast[golem_haste] 1;
+    #var cast[ospell] incinerate;
+
+    #NOP -- Defensive contingencies;
+    #alias {c1} {cast greater contingency as armor#cast armor;cast armor};
+    #alias {c2} {cast greater contingency as shield#cast magnificent shield;cast magnificent shield};
+    #alias {c3} {cast greater contingency as stoneskin#cast stoneskin;cast stoneskin};
+    #alias {c4} {cast greater contingency as major globe#cast major globe;cast major globe};
+    #alias {c5} {cast greater contingency as prismatic sphere#400#cast prismatic sphere;cast prismatic sphere};
+    #alias {c6} {cast greater contingency as mantle#400#cast mantle;cast mantle};
+
+    #NOP -- Offensive perform;
+    #alias {cperf} {cast perform as cast $cast[ospell];cast activate combat};
+
+    #NOP -- Shortcuts;
+    #alias {cost} {cast rcost};
+
+    #NOP -- Deeppockets: recast when it fades, once the fight is past round 1;
+    #act {^  -> Your deeppocket begins to fade... <-$} {recast_dp};
+    #alias {recast_dp} {#if {$mip[round] > 1} {cast deeppockets} {#delay {3} {recast_dp}}};
+    #delay {cast_dp} {recast_dp};
+
+    #NOP -- k <mob>: attack, cast slow, and darkness 3 seconds later;
+    #alias {k %1} {kill %1;#if {$cast[slow]} {cast slow};#if {$cast[darkness]} {#delay {3} {cast darkness}}};
+
+    #NOP -- Golem haste;
+    #act {seems to slow down...$} {#if {$cast[golem_haste]} {cast haste on golem}};
+};
+
+#if {"$guild" == "priest"} {
+    #NOP -- From the old .tt priest file;
+
+    #NOP -- k <mob>: attack, ffire after 3 seconds, then rift and beckon once the fight is past round 2;
+    #alias {k %1} {
+        kill %1;
+        #delay {ffire} {ffire} {3};
+        #delay {psummon} {#if {$mip[round] > 2} {rift;beckon}} {6};
+    };
+
+    #NOP -- Corpses: wrap after offering, and unwrap one to offer if mana is low in a fight;
+    #act {You offer the corpse up to Solaris.} {wrap all};
+    #act {^There is no corpse here to offer up to Solaris.} {#if {$my[gp1][current] < 40 && $mip[round]} {unwrap}};
+
+    #NOP -- After-kill routine for the corpsetrig manager. Add it with corpsetrig+ priest_corpse (enter it twice, it's a custom action);
+    #alias {priest_corpse} {=give all;unwrap;lifeforce;soulforce;offer};
+
+    #NOP -- Shortcuts;
+    #alias {cost} {rcost};
+    #alias {gs} {gscore};
+    #alias {gs2} {gscore2};
+    #alias {info} {priest};
+
+    #NOP -- Follower;
+    #act {You command your servant to remotely get all.} {=follow};
+    #alias {=g} {=get all};
+    #alias {=ga} {=give all};
+};
+
+#class {player_guild} {close}
