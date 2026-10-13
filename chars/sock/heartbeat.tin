@@ -11,11 +11,18 @@
 #alias {_player_heartbeat} {
     #if !$idle_flag {
         #NOP -- Actions that timing does not matter;
+        #NOP -- Keep quicken up (Qk missing from gline 2), except while reposing or meditating;
+        #regex {$mip[gline][2]} {{Reposing|Meditating}} {#NOP} {
+            #regex {$mip[gline][2]} {Qk} {#NOP} {quicken};
+        };
 
 
         #NOP -- Actions to only attempt once/round go in this section;
         #if {$action_round < $mip[round]} {
-            #NOP
+            #NOP -- Keep contact up in combat (Ct missing from gline 2);
+            #if {$mip[round] > 0} {
+                #regex {$mip[gline][2]} {Ct} {#NOP} {contact};
+            };
         };
 
     

@@ -2,6 +2,7 @@
 #class {botlist} {open}
 
 #read common/bot/bot_cycle.tin;
+#read common/bot/gearrun.tin;
 
 #alias {.resume} {
     #if {"$lastBot[area]" == "Section Z"} {
@@ -275,6 +276,7 @@
 .add_bot {carebears} {carebears} {Carebears - good align mobs only} {36038} {1} {0} {chaos, dungeon};
 .add_bot {carebears_most} {carebears-most} {Carebears - no demonheart room} {36038} {1} {0} {chaos, dungeon};
 .add_bot {carebears_all} {carebears-all} {Carebears - all mobs} {36038} {1} {0} {chaos, dungeon};
+.add_bot {carebears_gear} {carebears-gear} {Carebears - gear bears only} {36038} {1} {0} {chaos, dungeon};
 .add_bot {alphabet} {alphabet} {Alphabet} {2005} {0} {0} {chaos, dungeon};
 .add_bot {hippies} {hippies} {Hippie Commune: Hippies} {1167} {1} {1} {chaos};
 .add_bot {smurfs} {smurfs} {Smurfland: Smurfs} {7673} {1} {0} {chaos};
@@ -387,6 +389,7 @@
 .add_bot {findhat} {findhat} {Witch's Hat Finder} {196} {0} {0};
 .add_bot {findevent} {findevent} {Event Portal Finder} {148} {0} {0};
 .add_bot {turkeys_full} {turkeys} {Turkey Farm: bok bok} {27717} {1} {1};
+.add_bot {deathtaco} {deathtaco} {Death Taco: grab and kill ingredients} {6508} {0} {0};
 
 
 #class {botlist} {close}

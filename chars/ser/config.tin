@@ -17,8 +17,15 @@
 
 #alias {.pre_bot_check} {#NOP};
 
-#NOP -- Psicorps: Vg implant maintains improved vigor instead of vigor;
-#var vigor_power {improved vigor};
+#NOP -- Psicorps: rebuild implants from gs at login so the Vg slot picks up improved vigor;
+#NOP -- Delayed past the login profs check so the two outputs don't overlap;
+#delay {ser_gs_powers} {gs_powers} {5};
 
 
 #class {player_config} {close}
+
+#NOP -- Guild-specific extras for this character go in chars/<name>/<guild>.tin (e.g. chars/meatloaf/priest.tin).;
+#NOP -- This runs after the guild scripts at login and on gswap, so it can override guild defaults;
+#class {player_guild} {kill};
+#script {player_guild_file} {test -f chars/$user/$guild.tin && echo yes};
+#if {"$player_guild_file[1]" == "yes"} {#read chars/$user/$guild.tin};
