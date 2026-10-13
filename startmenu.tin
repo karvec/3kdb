@@ -31,7 +31,8 @@
         menu_save;
     };
     #var menu[count] &menu_chars[];
-    #loop 1 $menu[count] i {menu_read_guild $menu_chars[$i]};
+    #NOP -- #loop 1 0 would count down, so skip the loops when the list is empty;
+    #if {$menu[count] > 0} {#loop 1 $menu[count] i {menu_read_guild $menu_chars[$i]}};
     #if {$menu_sel < 1 || $menu_sel > $menu[count]} {#var menu_sel 1};
     #var menu[row] $menu_sel;
     #if {$menu[count] == 0} {#var menu[row] 1};
@@ -64,7 +65,7 @@
     #showme {};
     #showme {<ffa>  Choose a character<088>};
     #showme {};
-    #loop 1 $menu[count] i {
+    #if {$menu[count] > 0} {#loop 1 $menu[count] i {
         #var menu_c $menu_chars[$i];
         #var menu_g $menu[guild][$menu_c];
         #if {&menu_guilds[$menu_c][] > 1} {#var menu_g {< $menu_g >}};
@@ -74,7 +75,7 @@
         } {
             #showme {<ddd>$menu_line<088>};
         };
-    };
+    }};
     #if {$menu[count] == 0} {#showme {<ddd>  No characters yet<088>}};
     #showme {};
     #var menu_line {  };
