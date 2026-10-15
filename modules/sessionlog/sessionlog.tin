@@ -3,14 +3,14 @@
 
 #NOP -- Logs everything in the game session to logs/<system user>/sessions/<character>_YYYY-MM-DD.log,;
 #NOP -- a new file each day, with colors (raw, like the chat logs). Finished days, these and the daily;
-#NOP -- chat logs, are compressed with zstd (about 20x smaller) and the oldest are deleted once;
-#NOP -- logs/<system user> is over sessionlog[cap_mb] MB, by scripts/compress_logs.sh.;
+#NOP -- chat logs, are compressed with zstd (about 15x smaller) by scripts/compress_logs.sh. Nothing is;
+#NOP -- deleted unless sessionlog[cap_mb] is set: then the oldest go once logs/<system user> is over that many MB.;
 #NOP -- Read them with zstdless or zstdgrep. sessionlog off / sessionlog on stops or restarts it here.;
-#NOP -- To change the cap, set #var sessionlog[cap_mb] in common/private.tin;
+#NOP -- To set a cap, put #var sessionlog[cap_mb] <MB> in common/private.tin;
 
 #script {sessionlog_tmp} {whoami};
 #var sessionlog[dir] {logs/$sessionlog_tmp[1]};
-#if {&sessionlog[cap_mb] == 0} {#var sessionlog[cap_mb] 1024};
+#if {&sessionlog[cap_mb] == 0} {#var sessionlog[cap_mb] 0};
 #var sessionlog[on] 0;
 
 #alias {.sessionlog_open} {
@@ -38,7 +38,7 @@
 	};
 	#else {
 		#if $sessionlog[on] {#showme <ffa>Session log on: $sessionlog[file]<088>} {#showme <ffa>Session log off<088>};
-		#showme <ffa>sessionlog on|off. Cap for logs/: $sessionlog[cap_mb] MB<088>;
+		#if {$sessionlog[cap_mb] > 0} {#showme <ffa>sessionlog on|off. Cap for logs/: $sessionlog[cap_mb] MB<088>} {#showme <ffa>sessionlog on|off. Old logs are kept forever<088>};
 	};
 };
 
