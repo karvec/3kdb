@@ -6,14 +6,14 @@
 #class {player_guild} {close}
 
 #NOP -- Put up defenses at login. This file is also read on .reload and gswap, so a flag in its own class;
-#NOP -- (which those don't kill) keeps it to once per session. prots_songs is a toggle and the song flags;
-#NOP -- are saved between logins, so only run it when the songs are off;
+#NOP -- (which those don't kill) keeps it to once per session. prots_songs is a toggle, so only run it when;
+#NOP -- the songs are off. The flags aren't saved, so at login they don't exist yet, which counts as off;
 #if {"$karvec_login[prots]" != "1"} {
     #class {karvec_login} {open};
     #var karvec_login[prots] 1;
     #class {karvec_login} {close};
     #delay {karvec_prots} {
         prots_spells;
-        #if {!$defs[ag] && !$defs[om]} {prots_songs};
+        #if {"$defs[ag]" != "1" && "$defs[om]" != "1"} {prots_songs};
     } {3};
 };
