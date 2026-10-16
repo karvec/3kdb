@@ -26,12 +26,23 @@
 	#var bard_cast_sent 1;
 	#var bard_cast_last {%0};
 	#math {bard_cast_wait[%0]} {$bard_cast_now + 6000000};
+	_bard_cast_log {send %0};
 	cast %0;
 };
 #alias {_bard_cast_refused} {
+	_bard_cast_log {refused (last sent: $bard_cast_last)};
 	#if {"$bard_cast_last" != ""} {#unvar {bard_cast_wait[$bard_cast_last]}};
 	#var bard_cast_last {};
 };
+
+#NOP -- #var bard_cast_debug 1 logs auto-casts, refusals and prompts with times to logs/<user>/bardcast.log;
+#if {"${bard_cast_debug}" === ""} {#var bard_cast_debug 0};
+#alias {_bard_cast_log} {
+	#if {"$bard_cast_debug" != "1"} {#return};
+	#format bard_cast_log_t {%U};
+	#line log {logs/$user/bardcast.log} {$bard_cast_log_t round=$mip[round] %1};
+};
+#action {^HP: %d/%d SP: %d/%d K: %d/%d V: %d} {_bard_cast_log {prompt}} {9};
 
 #NOP -- Bards can't cast while singing. bard_sing_until (microseconds) is set when a song starts or the game;
 #NOP -- refuses a spell for singing, and cleared when the song ends (actions.tin). It runs out after 20 seconds;
@@ -73,6 +84,7 @@
 #alias {_bard_strategy_off} {#if {@bard_strategy{%1}} {strategy %1}};
 
 #alias {_guild_heartbeat} {
+	_bard_cast_log {tick};
 	#NOP -- So round 1 of the next fight isn't mistaken for the last fight's round 1;
 	#if {$mip[round] == 0} {#var bard_cast_round 0};
 	#if !$idle_flag {
