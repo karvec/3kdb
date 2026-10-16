@@ -102,6 +102,9 @@
 #action {^The acid clings to %*} {
     #var mob[critic] 1;
 } {2};
+#action {^You drench %* in more acid} {
+    #var mob[critic] 1;
+} {2};
 #action {Your acid wash on %* has run dry.} {
     #var mob[critic] 0;
 } {2};
