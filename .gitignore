@@ -68,4 +68,5 @@ vars/boot.tin
 # Startup menu state (startmenu.tin)
 chars/startmenu_data.tin
 chars/*/guild.tin
+chars/*/linkdead.tin
 3k-notes.txt
