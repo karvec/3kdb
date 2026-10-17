@@ -7,11 +7,25 @@
 #NOP -- deleted unless sessionlog[cap_mb] is set: then the oldest go once logs/<system user> is over that many MB.;
 #NOP -- Read them with zstdless or zstdgrep. sessionlog off / sessionlog on stops or restarts it here.;
 #NOP -- To set a cap, put #var sessionlog[cap_mb] <MB> in common/private.tin;
+#NOP -- Off by default. toggle sessionlog turns it on or off for this character and is saved with the;
+#NOP -- other toggles. #var sessionlog[enabled] 1 in common/private.tin turns it on for every character;
+#NOP -- that hasn't saved its own choice;
 
 #script {sessionlog_tmp} {whoami};
 #var sessionlog[dir] {logs/$sessionlog_tmp[1]};
 #if {&sessionlog[cap_mb] == 0} {#var sessionlog[cap_mb] 0};
 #var sessionlog[on] 0;
+#var sessionlog[enabled] 0;
+
+#NOP -- Shown by toggle-list and switched with toggle sessionlog (common/toggles.tin);
+#var toggleMap[sessionlog] {{var}{sessionlog[enabled]}{on}{.sessionlog_start}{off}{sessionlog off}{login}{.sessionlog_start}};
+
+#alias {.sessionlog_start} {
+	#if {$sessionlog[enabled] && !$sessionlog[on]} {
+		.sessionlog_open;
+		#showme <ffa>Session log on: $sessionlog[file]<088>;
+	};
+};
 
 #alias {.sessionlog_open} {
 	#format sessionlog[date] {%t} {%Y-%m-%d};
@@ -39,6 +53,7 @@
 	#else {
 		#if $sessionlog[on] {#showme <ffa>Session log on: $sessionlog[file]<088>} {#showme <ffa>Session log off<088>};
 		#if {$sessionlog[cap_mb] > 0} {#showme <ffa>sessionlog on|off. Cap for logs/: $sessionlog[cap_mb] MB<088>} {#showme <ffa>sessionlog on|off. Old logs are kept forever<088>};
+		#showme <ffa>sessionlog on|off is for this session. toggle sessionlog sets it for this character.<088>;
 	};
 };
 
@@ -54,10 +69,15 @@
 } {60};
 
 #NOP -- common/index.tin is read in the game session (config.tin opens it), never the startup one.;
+#NOP -- Starting waits until index.tin has also read common/private.tin. This character's saved toggle;
+#NOP -- (xtoggleMap, read from its vars.tin before index.tin) wins over that.;
 #NOP -- The first compress waits so common/private.tin can change the cap first;
 #info session save;
 #if {"$info[SESSION][NAME]" != "gts"} {
-	.sessionlog_open;
+	#delay {sessionlog_start} {
+		#if {&xtoggleMap[sessionlog]} {#var sessionlog[enabled] $xtoggleMap[sessionlog]};
+		.sessionlog_start;
+	} {0};
 	#delay {sessionlog_compress} {.sessionlog_compress} {30};
 };
 
