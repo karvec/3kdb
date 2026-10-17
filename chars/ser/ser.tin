@@ -7,6 +7,7 @@
 #NOP -- The startup menu and gswap save the current guild here;
 #read chars/$user/guild.tin;
 #var vaf[numbers] 1;
+#var vaf[linkd] 1;
 
 
 #NOP -- Load Common files;

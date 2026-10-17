@@ -67,4 +67,6 @@ startup.tin
 # Startup menu state (startmenu.tin)
 chars/startmenu_data.tin
 chars/*/guild.tin
+chars/*/linkdead.tin
+chars/reboot.tin
 3k-notes.txt

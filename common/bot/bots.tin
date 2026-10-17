@@ -310,6 +310,7 @@
 .add_bot {pol} {pol2} {Portal of Life v2.0} {6747} {1} {1};
 .add_bot {pol} {pol3} {Portal of Life v3.0} {6748} {1} {1};
 .add_bot {rimalkins} {rimalkins} {Rimalkins} {1601} {0} {0};
+.add_bot {cae} {cae} {Rabbit Fields: Cae (rabbits, King, Ganderei Cae)} {6251} {1} {1};
 .add_bot {kayos} {kayos} {Kayos Wars} {10279} {1} {0};
 .add_bot {zelligars} {zelligars} {Zelligars Castle} {6558} {0} {0};
 .add_bot {crystals1} {crystals1} {Crystals Level 1} {10812} {1} {1};
@@ -323,6 +324,7 @@
 .add_bot {banshees3} {banshees3} {Banshee's Lair: Level 3} {51379} {1} {0};
 .add_bot {wsea-slum} {wsea-slum} {Westersea: Slum Cleanup} {4757} {1} {1};
 .add_bot {wsea-sewer} {wsea-sewer} {Westersea: Sewer Cleanup} {4757} {1} {1};
+.add_bot {wsea-reports} {wsea-reports} {Westersea: Grab Guard Reports (walls)} {6016} {0} {0};
 .add_bot {encampment} {encampment} {Encampment: Battlefield} {4811} {1} {1};
 .add_bot {longshadow} {longshadow} {Longshadow: Orcs + Elves} {9019} {1} {1};
 .add_bot {longshadow-elf} {longshadow-elf} {Longshadow: Elves} {9019} {1} {1};
