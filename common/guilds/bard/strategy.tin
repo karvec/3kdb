@@ -94,7 +94,7 @@
     #var bard_fi_checked 1;
     #var bard_fi 0;
     stats;
-    #delay {bard_fi_check} {#if {!$bard_fi} {first impression}} {5};
+    #delay {bard_fi_check} {#if {!$bard_fi && !$idle_flag} {first impression}} {5};
 };
 
 #NOP -- Critic counts as on once it's cast, until the acid runs dry or criticDuration passes. Waiting for the;
@@ -111,6 +111,9 @@
 
 #NOP -- Actions to perform at any time in the fight;
 #alias {_strategy_guild} {
+    #NOP -- Nothing goes out while deadman has you marked idle;
+    #if {$idle_flag} {#return};
+
     checkStrategy {assault} {
         #if {$corpses[total] > 20 && $my[gp1][current] > $karma_heal} {
             martial assault;
