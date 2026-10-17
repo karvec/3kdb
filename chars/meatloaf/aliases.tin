@@ -7,15 +7,6 @@
      #list temp set %1 {%2};
 };
 
-#alias {useHeal} {
-     #if {!$my[eternal][heal] && $my[hmheal][self] && !$my[immersion][active]} {
-          hmheal;
-     };
-     #if {$my[eternal][heal] && !$my[immersion][active]} {
-          (heal meatloaf;
-     };
-};
-
 #NOP -- Default corpse_trig;
 #alias corpsetrig1 {
      corpsetrig-clear;
