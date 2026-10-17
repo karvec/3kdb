@@ -640,18 +640,21 @@ menu_close_classes;
 #NOP -- With it (#var vaf[linkd] 1 in the character file) only a reboot does;
 #var menu_ld_hours 24;
 
-#NOP -- 3kdb sends uptime at login. Save when this boot started and when the next is due for the menu;
-#action {^ |  Current Uptime : %* (} {
-    menu_secs {%1};
-    #format menu_ld_now {%T};
-    #math menu_boot[start] {$menu_ld_now - $menu_secs};
-};
-#action {^ |  Next Reboot in : %*|} {
-    menu_secs {%1};
-    #format menu_ld_now {%T};
-    #math menu_boot[next] {$menu_ld_now + $menu_secs};
-    #if {"$menu_boot[start]" != ""} {
-        #script {menu_tmp} {printf '#var menu_boot {{start}{%s}{next}{%s}};\n' '$menu_boot[start]' '$menu_boot[next]' > chars/reboot.tin};
+#NOP -- 3kdb sends uptime at login (_get_boot). Catch that one reply to save when this boot started and when;
+#NOP -- the next is due for the menu;
+#alias {menu_boot_watch} {
+    #line oneshot #action {^ |  Current Uptime : %* (} {
+        menu_secs {%%1};
+        #format menu_ld_now {%T};
+        #math menu_boot[start] {$menu_ld_now - $menu_secs};
+    };
+    #line oneshot #action {^ |  Next Reboot in : %*|} {
+        menu_secs {%%1};
+        #format menu_ld_now {%T};
+        #math menu_boot[next] {$menu_ld_now + $menu_secs};
+        #if {"$menu_boot[start]" != ""} {
+            #script {menu_tmp} {printf '#var menu_boot {{start}{%s}{next}{%s}};\n' '$menu_boot[start]' '$menu_boot[next]' > chars/reboot.tin};
+        };
     };
 };
 
@@ -666,21 +669,19 @@ menu_close_classes;
 };
 
 #NOP -- 3kdb's welcome actions set sessionActive when the game has logged you in, linkdead or not, so the old;
-#NOP -- timer no longer applies. Only the first time per session, so a repeated welcome line can't undo a quit;
+#NOP -- timer no longer applies. Only the first time per session, so a repeated welcome line can't undo a takeover;
 #event {VARIABLE UPDATED sessionActive} {
     #if {"$sessionActive" == "1" && "$user" != "" && "$menu_ld_in" != "1"} {
         #var menu_ld_in 1;
         #var menu_ld_skip 0;
         #script {menu_tmp} {rm -f chars/$user/linkdead.tin};
+        menu_boot_watch;
     };
 };
 
-#NOP -- Quitting, or someone logging in to the character from elsewhere (which takes it over), doesn't leave;
-#NOP -- it linkdead. The takeover flag wears off in case that login failed;
-#event {SENT OUTPUT} {
-    #NOP -- The text sent ends in a line break;
-    #regex {%0} {{^quit\s*$}} {#var menu_ld_skip 1};
-};
+#NOP -- Someone logging in to the character from elsewhere takes it over, so it isn't left linkdead.;
+#NOP -- The takeover flag wears off in case that login failed. A quit isn't detected, so the menu shows;
+#NOP -- a character that quit as linkdead until it next logs in;
 #action {^Game Driver tells you: Someone is attempting to login to your character.} {
     #var menu_ld_skip 1;
     #delay {menu_ld_skip} {#var menu_ld_skip 0} {60};
