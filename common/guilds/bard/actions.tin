@@ -36,12 +36,11 @@
 #ACTION {^%w grovels shamelessly before you.} {#if !$idle_flag {#format {lower} {%l} {%1};soothe $lower};} {6};
 #action {^%w acks at you.} {#if !$idle_flag {heartening laugh};} {6};
 
-#NOP -- Track heartening laugh, defensive harmony and first impression for their strategies;
-#action {^As the energies swirl around you, you feel heartier and more robust.$} {#var bard_hl 1};
-#action {^Heartening Laugh fades from you.$} {#var bard_hl 0};
-#action {^Weaving Magic and Song together, you reinforce the strength of your armor,$} {#var bard_dharm 1};
-#action {^The mystic harmony woven around you shimmers and fades.$} {#var bard_dharm 0};
-#action {^Charisma +%d%sIndefinite%sFirst Impression$} {#var bard_fi 1};
+#NOP -- Defensive harmony and first impression aren't on the guild line, so track them for their strategies.;
+#NOP -- Heartening laugh is tracked in my[status][laugh] by common/status.tin;
+#action {^Weaving Magic and Song together, you reinforce the strength of your armor,$} {#var my[bard][dharm] 1} {2};
+#action {^The mystic harmony woven around you shimmers and fades.$} {#var my[bard][dharm] 0} {2};
+#action {^Charisma +%d%sIndefinite%sFirst Impression$} {#var my[bard][fi] 1} {2};
 #action {^%w brandishes %w weapon before you.} {#if !$idle_flag {identify ROOM};} {6};
 #action {^%w whispers to you: lore %*} {
     #if !$idle_flag {
