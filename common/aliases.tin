@@ -292,6 +292,9 @@
     #unvar split;
     #unvar screen;
     
+    #NOP -- Save this guild's strategies and put back the new guild's;
+    _strategy_guild_swap %0;
+
     #NOP -- Set the new guild;
     #var guild %0;
     

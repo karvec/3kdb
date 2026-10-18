@@ -139,9 +139,12 @@
 };
 
 #alias _variable_export {
+    #NOP -- Outside the global class, so strategyGuild itself isn't written as well as xstrategyGuild;
+    #if {"$guild" != ""} {#var strategyGuild[$guild] {$strategyActive}};
     #class global open;
     #map get roomvnum xcurvnum;
     #var xstrategyActive $strategyActive;
+    #var xstrategyGuild $strategyGuild;
     #var xcorpseActions $corpseActions;
     #var xmkaActions $mkaActions;
     #var xspiceBeers $spiceBeers;
@@ -237,6 +240,12 @@
     #var draw_room $xdraw_room;
 
     #if {"$strategyActive" == "$xstrategyActive"} {#var strategyActive {}};
+    #var strategyGuild $xstrategyGuild;
+    #if {"$strategyGuild" == "$xstrategyGuild"} {#var strategyGuild {}};
+    #NOP -- Logging in to another guild than last time (the startup menu) uses that guild's strategies;
+    #if {"$guild" != ""} {
+        #if {&strategyGuild[$guild]} {#var strategyActive {$strategyGuild[$guild]}};
+    };
     #if {"$corpseActions" == "$xcorpseActions"} {#var corpseActions {}};
     #if {"$mkaActions" == "$xmkaActions"} {#var mkaActions {}};
     #if {"$hpbar" == "$xhpbar"} {#var hpbar {}};
