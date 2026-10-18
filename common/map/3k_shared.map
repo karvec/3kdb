@@ -263744,7 +263744,7 @@ R {54603}{0}{}{East side on the top level of the mysterious tower (n,sw)}{ }{You
 E {54602}{sw}{sw}{12}{0}{}{1.000}{}{0.00}
 E {54599}{n}{n}{1}{0}{}{1.000}{}{0.00}
 
-R {54604}{0}{}{Entrance (guild,e,w,n,d,chaos,fantasy,gypsy,pub,science,shop,morgue,leave,bank,smithy,pound)}{ }{An empty room.}{Cable's House}{}{}{}{1.000}{}
+R {54604}{0}{}{Entrance (guild,e,w,n,d,chaos,fantasy,gypsy,pub,science,shop,morgue,leave,bank,smithy,pound)}{ }{An empty room.}{Cable's House}{}{}{}{1000.000}{}
 E {54605}{n}{n}{1}{0}{}{1.000}{}{0.00}
 E {6673}{guild}{guild}{0}{0}{}{1.000}{}{0.00}
 E {54607}{e}{e}{2}{0}{}{1.000}{}{0.00}
@@ -263806,7 +263806,7 @@ R {54620}{0}{<118>}{}{ }{}{}{}{}{}{1.000}{}
 R {54621}{0}{}{Ready2 (u)}{ }{An empty room.}{Cable's House}{}{}{}{1.000}{}
 E {54609}{u}{u}{16}{0}{}{1.000}{}{0.00}
 
-R {54622}{0}{}{A dark room (guild,w,chaos,sci,fan,leave,bank)}{ }{You appear to be in a large, dimly lit room. Off to your right, you notice a huge glowing box. The box appears to be magical. As you walk about the room, the floor beneath you creaks, echoing around you. You feel a draft coming up from below. There is a door to your left.}{Lil Hideaway}{}{}{}{1.000}{}
+R {54622}{0}{}{A dark room (guild,w,chaos,sci,fan,leave,bank)}{ }{You appear to be in a large, dimly lit room. Off to your right, you notice a huge glowing box. The box appears to be magical. As you walk about the room, the floor beneath you creaks, echoing around you. You feel a draft coming up from below. There is a door to your left.}{Lil Hideaway}{}{}{}{1000.000}{}
 E {6673}{guild}{guild}{0}{0}{}{1.000}{}{0.00}
 E {54624}{w}{w}{8}{0}{}{1.000}{}{0.00}
 E {24}{chaos}{chaos}{0}{0}{}{1.000}{}{0.00}
