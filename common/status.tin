@@ -138,13 +138,51 @@
     #class bootVars write vars/boot.tin;
 };
 
+#NOP -- Strategies, corpse actions and mob kill actions are kept per guild in strategyGuild, corpseGuild and;
+#NOP -- mkaGuild (saved in vars.tin), so a gswap puts back the ones last used in the new guild.;
+#NOP -- _guild_list_swap <store> <list> <catalog> <new guild>: save <list> for this guild, then load the new;
+#NOP -- guild's. A guild with nothing saved keeps only the entries the catalog lists for all guilds;
+#alias {_guild_list_swap} {
+    #var guild_list {${%2}};
+    #if {"$guild" != ""} {#var {%1[$guild]} {$guild_list}};
+    #if {&%1[%4]} {
+        #var {%2} {${%1[%4]}};
+    } {
+        #var guild_cat {${%3}};
+        #list guild_cat indexate name;
+        #var guild_keep {};
+        #foreach $guild_list[%*] item {
+            #list guild_cat find {$item[name]} guild_i;
+            #if {$guild_i > 0} {
+                #if {"$guild_cat[+$guild_i][guild]" == "all"} {#list guild_keep add {{$item}}};
+            };
+        };
+        #var {%2} {$guild_keep};
+    };
+    #unvar guild_list;
+    #unvar guild_cat;
+    #unvar guild_keep;
+};
+
+#alias {_guild_lists_swap} {
+    _guild_list_swap strategyGuild strategyActive strategyList %1;
+    _guild_list_swap corpseGuild corpseActions corpseList %1;
+    _guild_list_swap mkaGuild mkaActions mkaList %1;
+};
+
 #alias _variable_export {
-    #NOP -- Outside the global class, so strategyGuild itself isn't written as well as xstrategyGuild;
-    #if {"$guild" != ""} {#var strategyGuild[$guild] {$strategyActive}};
+    #NOP -- Outside the global class, so the stores themselves aren't written as well as their x copies;
+    #if {"$guild" != ""} {
+        #var strategyGuild[$guild] {$strategyActive};
+        #var corpseGuild[$guild] {$corpseActions};
+        #var mkaGuild[$guild] {$mkaActions};
+    };
     #class global open;
     #map get roomvnum xcurvnum;
     #var xstrategyActive $strategyActive;
     #var xstrategyGuild $strategyGuild;
+    #var xcorpseGuild $corpseGuild;
+    #var xmkaGuild $mkaGuild;
     #var xcorpseActions $corpseActions;
     #var xmkaActions $mkaActions;
     #var xspiceBeers $spiceBeers;
@@ -242,9 +280,15 @@
     #if {"$strategyActive" == "$xstrategyActive"} {#var strategyActive {}};
     #var strategyGuild $xstrategyGuild;
     #if {"$strategyGuild" == "$xstrategyGuild"} {#var strategyGuild {}};
-    #NOP -- Logging in to another guild than last time (the startup menu) uses that guild's strategies;
+    #var corpseGuild $xcorpseGuild;
+    #if {"$corpseGuild" == "$xcorpseGuild"} {#var corpseGuild {}};
+    #var mkaGuild $xmkaGuild;
+    #if {"$mkaGuild" == "$xmkaGuild"} {#var mkaGuild {}};
+    #NOP -- Logging in to another guild than last time (the startup menu) uses that guild's lists;
     #if {"$guild" != ""} {
         #if {&strategyGuild[$guild]} {#var strategyActive {$strategyGuild[$guild]}};
+        #if {&corpseGuild[$guild]} {#var corpseActions {$corpseGuild[$guild]}};
+        #if {&mkaGuild[$guild]} {#var mkaActions {$mkaGuild[$guild]}};
     };
     #if {"$corpseActions" == "$xcorpseActions"} {#var corpseActions {}};
     #if {"$mkaActions" == "$xmkaActions"} {#var mkaActions {}};

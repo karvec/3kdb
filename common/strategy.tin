@@ -89,25 +89,6 @@
 #list strategyList add {{{guild} {all} {name} {coffinRun}  {active} {0} {description} {Bot: Donate Coffin When Full (after combat ends)}}};
 #list strategyList indexate name;
 
-#NOP -- Each guild keeps its own strategies in strategyGuild (saved in vars.tin), so .gswap puts back the ones;
-#NOP -- last used in the new guild. A guild without saved ones keeps only the all-guild strategies;
-#alias {_strategy_guild_swap} {
-    #if {"$guild" != ""} {#var strategyGuild[$guild] {$strategyActive}};
-    #if {&strategyGuild[%1]} {
-        #var strategyActive {$strategyGuild[%1]};
-    } {
-        #var strategy_keep {};
-        #foreach $strategyActive[%*] item {
-            #list strategyList find {$item[name]} strategy_i;
-            #if {$strategy_i > 0} {
-                #if {"$strategyList[+$strategy_i][guild]" == "all"} {#list strategy_keep add {{$item}}};
-            };
-        };
-        #var strategyActive {$strategy_keep};
-        #unvar strategy_keep;
-    };
-};
-
 #alias checkStrategy {
     #if {"$debug[strategy]" == "1"} {#echo {<efc>RECEIVED %0<088>}};
     #var strategy_found 0;
