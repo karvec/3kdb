@@ -76,9 +76,32 @@
 
 #action {You have no {corpse|remains}.} {check_corpses;} {1};
 
+#NOP -- 1 unless the map's room has a different name from the room you're in (MIP's room[name]);
+#function {dcoffin_synced} {
+	#map get roomname dcoffin_mapname;
+	#var result 1;
+	#if {"$room[name]" != "" && "@findhere_base{$dcoffin_mapname}" !== "@findhere_base{$room[name]}"} {#var result 0};
+};
+
 #NOP -- Donate your corpses to the morgue and then go back/resuming botting;
+#NOP -- If the map has lost track of you, the walk there and back would go wrong, so findhere first (it doesn't;
+#NOP -- walk) and try once more; if the map still doesn't match, the bot stays paused;
+#var dcoffin_retry 0;
 #alias dcoffin {
 	#if $bot[active] {.pause};
+	#if {!@dcoffin_synced{}} {
+		#if {$dcoffin_retry} {
+			#var dcoffin_retry 0;
+			#echo {<eaa>dcoffin: the map still doesn't match where you are. Find the room (findhere-auto), then dcoffin.<088>};
+			#return;
+		};
+		#var dcoffin_retry 1;
+		#echo {<eaa>dcoffin: the map has you in $dcoffin_mapname, not $room[name]. Running findhere first.<088>};
+		findhere;
+		#delay {dcoffin_retry} {dcoffin} {5};
+		#return;
+	};
+	#var dcoffin_retry 0;
     #map get roomvnum donate_go_back;
 	go morgue;
     donate coffin;donate all;
