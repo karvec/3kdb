@@ -83,10 +83,27 @@
 	#if {"$room[name]" != "" && "@findhere_base{$dcoffin_mapname}" !== "@findhere_base{$room[name]}"} {#var result 0};
 };
 
+#NOP -- 1 if the game's room (MIP's room[name]) is the map room named %0: same name, and the same exits in any;
+#NOP -- order ("(n,s,w,e)" vs "(e,w,s,n)") when both list them;
+#function {dcoffin_here} {
+	#var result 0;
+	#if {"@findhere_base{$room[name]}" === "@findhere_base{%0}"} {
+		#var dcoffin_hx {@findhere_exits{$room[name]}};
+		#var dcoffin_wx {@findhere_exits{%0}};
+		#replace dcoffin_hx {,} {;};
+		#replace dcoffin_wx {,} {;};
+		#if {"$dcoffin_hx" == "" || "$dcoffin_wx" == "" || "@findhere_canon{$dcoffin_hx}" === "@findhere_canon{$dcoffin_wx}"} {#var result 1};
+	};
+};
+
 #NOP -- Donate your corpses to the morgue and then go back/resuming botting;
 #NOP -- If the map has lost track of you, the walk there and back would go wrong, so findhere first (it doesn't;
-#NOP -- walk) and try once more; if the map still doesn't match, the bot stays paused;
+#NOP -- walk) and try once more, and if the map still doesn't match the bot stays paused.;
+#NOP -- Each step waits until the game says you've arrived (the map jumps to the end of a walk as soon as it's;
+#NOP -- sent, but the mud takes a while to walk it): the morgue, then donate, then the room you left, then the;
+#NOP -- bot resumes. If a walk doesn't arrive within $dcoffin_timeout seconds (a mob in the way), it stops there;
 #var dcoffin_retry 0;
+#var dcoffin_timeout 60;
 #alias dcoffin {
 	#if $bot[active] {.pause};
 	#if {!@dcoffin_synced{}} {
@@ -102,16 +119,46 @@
 		#return;
 	};
 	#var dcoffin_retry 0;
-    #map get roomvnum donate_go_back;
+	#var dcoffin_bot $bot[active];
+	#map get roomvnum donate_go_back;
 	go morgue;
-    donate coffin;donate all;
-    #map run $donate_go_back;
-    #if $bot[active] {
-		#delay 10 {
-			i;
-			#var bot[paused] 0;
-			.bot
+	#map get roomvnum dcoffin_at;
+	#if {"$dcoffin_at" == "$donate_go_back"} {
+		#echo {<eaa>dcoffin: no way to the morgue from here on the map, so the bot stays paused.<088>};
+		#return;
+	};
+	.dcoffin_wait {.dcoffin_donate};
+};
+
+#NOP -- Wait until the game's room is the one the map just walked to, then run %1;
+#alias {.dcoffin_wait} {
+	#map get roomname dcoffin_want;
+	#var dcoffin_next {%1};
+	#var dcoffin_left $dcoffin_timeout;
+	#ticker {dcoffin_wait} {
+		#if {@dcoffin_here{$dcoffin_want}} {
+			#unticker {dcoffin_wait};
+			#delay {dcoffin_next} {$dcoffin_next} {1};
+		} {
+			#math dcoffin_left {$dcoffin_left - 1};
+			#if {$dcoffin_left < 1} {
+				#unticker {dcoffin_wait};
+				#echo {<eaa>dcoffin: didn't arrive at @findhere_base{$dcoffin_want} within $dcoffin_timeout seconds, so it stopped here (bot paused).<088>};
+			};
 		};
+	} {1};
+};
+
+#alias {.dcoffin_donate} {
+	donate coffin;donate all;
+	#delay {dcoffin_next} {#map run $donate_go_back;.dcoffin_wait {.dcoffin_resume}} {2};
+};
+
+#alias {.dcoffin_resume} {
+	#if $dcoffin_bot {
+		i;
+		#var bot[paused] 0;
+		.bot;
 	};
 };
 

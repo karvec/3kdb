@@ -164,7 +164,7 @@ menu_close_classes;
 #alias {menu_save_guild} {#script {menu_tmp} {printf '#var guild %s;\n' '$menu[guild][%1]' > chars/%1/guild.tin}};
 
 #NOP -- menu_link <command> <text>: menu_link set to the text, made to run the command when clicked.;
-#NOP -- Secure links (68;2) can't be faked by text from the game;
+#NOP -- Secure links (OSC 68, mode 2) can't be faked by text from the game;
 #alias {menu_link} {#var menu_link {\e]68;2;MENU;%1\a\e[4;24m%2\e[24m}};
 
 #event {PRESSED SECURE LINK MENU MOUSE BUTTON ONE} {
