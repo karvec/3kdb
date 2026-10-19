@@ -266,6 +266,8 @@
     #undelay {wsea_handin_stuck};
     #var wsea[handstep] {};
     #unticker {wsea_eavesdrop};
+    #var wsea[rollstep] {};
+    #undelay {wsea_rolls_stuck};
     #var wsea[grind] {};
     #var wsea[turnin] 0;
     #var wsea[lamps] 0;
@@ -410,13 +412,49 @@
     };
 } {1};
 
-#NOP -- A Hungry Guard: Per trades one roll per steel bowl, Bern sells the bowls (item 5);
+#NOP -- A Hungry Guard: Bern sells the steel bowls (item 5), Per trades one roll per bowl, Tommy takes the rolls.;
+#NOP -- Per takes a bowl only once he has finished explaining the deal, and one at a time: each takes him a few;
+#NOP -- seconds and a bowl given meanwhile is refused ("You decide not to give that to Per Tussletoff right now.").;
+#NOP -- Tommy also takes one roll at a time. So each give waits for the answer to the last (seen 2026-10-17);
 #alias .wsea_rolls {
-    #map run 45753;say honey glazed vanilla rolls;
     #map run 5814;#5 buy 5;
-    #map run 45753;#5 give bowl to per;
-    #map run 6202;#5 give roll to tommy;
+    #map run 45753;
+    #var wsea[rolls] 0;
+    #var wsea[rollstep] per;
+    say honey glazed vanilla rolls;
+    .wsea_rolls_wait;
 };
+#alias .wsea_rolls_wait {
+    #delay {wsea_rolls_stuck} {
+        #var wsea[rollstep] {};
+        #echo {<faa>wsea rolls: no answer from Per or Tommy for a minute, stopped.<088>};
+    } {60};
+};
+#action {^Per continues: For each steel bowl or set of steel bells you give} {
+    #if {"$wsea[rollstep]" == "per"} {give bowl to per};
+} {4};
+#action {^Per hands a sizzling warm vanilla roll to you.$} {
+    #if {"$wsea[rollstep]" == "per"} {
+        #math wsea[rolls] {$wsea[rolls] + 1};
+        .wsea_rolls_wait;
+        #if {$wsea[rolls] < 5} {give bowl to per} {
+            #var wsea[rollstep] tommy;
+            #var wsea[rolls] 0;
+            #map run 6202;
+            give roll to tommy;
+        };
+    };
+} {4};
+#action {^Tommy crams the tasty rolls and mumbles a muffled: Thank you.$} {
+    #if {"$wsea[rollstep]" == "tommy"} {
+        #math wsea[rolls] {$wsea[rolls] + 1};
+        .wsea_rolls_wait;
+        #if {$wsea[rolls] < 5} {give roll to tommy} {
+            #var wsea[rollstep] {};
+            #undelay {wsea_rolls_stuck};
+        };
+    };
+} {4};
 
 
 #NOP -- MAIN LINE;
@@ -510,12 +548,33 @@
 };
 
 
+#NOP -- Scout the Town and Scout the Realm update when you walk into one room per task. Rooms from karvec's;
+#NOP -- logs (2026-10-16 and 17), all on the shared map: Town northern mountain chain 42827 At a frozen glade (the;
+#NOP -- hidden path north of the clearing 4746, the map's pushbranches exit). Faeries 37171 In the shade of an ash;
+#NOP -- tree. Desert: the push right eye exit from the hole 26553 into 26554. Wasteland 16004 Approach to Medlar;
+#NOP -- (e,s,n,w), one step w of 16002. The Town encampment room isn't in the logs;
 #alias .wsea_scout {
-    #echo {<fff>  Scout the Realm - walk each area until the scout message, then wsea turnin<088>};
-    #echo {<cdd>  faeries   : from the EFOREST portal e, 5s, enter gap<088>};
-    #echo {<cdd>  wasteland : go magic, road portal, 3e, 4n, path (Medlar Castle).  Do NOT stepper out with go magic/go anywhere - a mob there makes you drop all.<088>};
-    #echo {<cdd>  desert    : go desertportal, 2n, 2w, trail, d, 2s, w, enter hole, examine drawing 1-4, push left eye, kill snakes,<088>};
-    #echo {<cdd>              walk like an egyptian, push right eye.  Answer no to leave the short way (then e, portal, u, trail).<088>};
+    #switch {"%1"} {
+        #case {"town"} {#map run 42827};
+        #case {"faeries"} {#map run 37171};
+        #case {"wasteland"} {
+            #echo {<faa>Snow Wasteland rooms scramble your moves. If the walk stops, step back to 16002 and go w.<088>};
+            #map run 16004;
+        };
+        #case {"desert"} {
+            #map run 26553;
+            #echo {<cdd>Now: examine drawing 1-4, push left eye, kill the snakes, walk like an egyptian, push right eye.<088>};
+            #echo {<cdd>The push updates the mission. Answer no to leave the short way (then e, portal, u, trail).<088>};
+        };
+        #default {
+            #echo {<fff>  Scout the Town / Scout the Realm - each task updates when you walk into its room, then wsea turnin<088>};
+            #echo {<cdd>  wsea scout town      : walk to 42827 At a frozen glade (northern mountain chain, through the hidden path)<088>};
+            #echo {<cdd>                         The encampment task: walk around the area just south-west of Tinny.<088>};
+            #echo {<cdd>  wsea scout faeries   : walk to 37171 In the shade of an ash tree<088>};
+            #echo {<cdd>  wsea scout wasteland : walk to 16004 Approach to Medlar (Medlar Castle).  Do NOT stepper out with go magic/go anywhere - a mob there makes you drop all.<088>};
+            #echo {<cdd>  wsea scout desert    : walk to the hole 26553, then the puzzle (the push right eye updates it)<088>};
+        };
+    };
 };
 
 #alias .wsea_help {
@@ -536,7 +595,7 @@
     #echo {<cdd>wsea lamps             - examine each street lamp you walk past (City Volunteers)<088>};
     #echo {<cdd>wsea rolls             - A Hungry Guard: bowls from Bern, rolls from Per, rolls to Tommy<088>};
     #echo {<cdd>wsea excursion         - walk to the hole down to the cubes (Sewer Excursion)<088>};
-    #echo {<cdd>wsea scout             - Scout the Realm directions<088>};
+    #echo {<cdd>wsea scout [town|faeries|wasteland|desert] - walk to where a scout task updates<088>};
     #echo {<eaf>  Main line (in order)<088>};
     #echo {<cdd>wsea visitor 1|2|3     - An Unwelcome Visitor (needs ~100k rep for Sir Michael)<088>};
     #echo {<cdd>wsea tapestry          - Find the Church Tomb: tapestry puzzle, rope and candle<088>};
@@ -565,7 +624,7 @@
         #case {"lamps"} {#var wsea[lamps] 1;#echo {<afa>Westersea: examining street lamps as you pass them.<088>}};
         #case {"rolls"} {.wsea_rolls};
         #case {"excursion"} {#map run 6157;#echo {<ffa>Now go to Alister and wsea turnin.<088>}};
-        #case {"scout"} {.wsea_scout};
+        #case {"scout"} {.wsea_scout %2};
         #case {"visitor"} {.wsea_visitor %2};
         #case {"tapestry"} {.wsea_tapestry};
         #case {"belfry"} {.wsea_belfry};
