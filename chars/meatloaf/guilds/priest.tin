@@ -29,3 +29,7 @@
 #alias {=ga} {=give all};
 
 #class {player_guild} {close}
+
+#NOP -- Cancel mage.tin's pending delays after a gswap, or their alias names would go to the game as text;
+#undelay {meatloaf_summoner};
+#undelay {cast_dp};
