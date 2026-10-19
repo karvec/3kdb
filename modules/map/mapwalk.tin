@@ -1,0 +1,146 @@
+#class {mapwalk} {kill};
+#class {mapwalk} {open};
+
+#NOP -- mapwalk <bot file> [step]: walk a bot's path one step at a time and name the rooms the map has;
+#NOP -- without a name (the Celestial Zodiacs shadows side was mapped with 191 of them). Each room is found;
+#NOP -- by its description in the area, not by where the map thinks you are, so a map that drifted can't;
+#NOP -- put a name on the wrong room. Rooms that already have a name are left alone. Brief is off for the;
+#NOP -- walk so the description shows. Start where the bot starts, with the mobs cleared. It stops on a fight;
+#NOP -- or after 3 steps in a row that don't arrive, or with mapwalk stop, and says which step to carry on from;
+#var mapw[on] 0;
+#var mapw[delay] 0.7;
+#alias {mapwalk} {
+	#if {"%1" == "stop"} {
+		#if {$mapw[on]} {.mapw_stop {stopped}} {#showme <eaa>mapwalk isn't running.<088>};
+		#return;
+	};
+	#if {$mapw[on]} {
+		#showme <eaa>mapwalk is already running. mapwalk stop to stop it.<088>;
+		#return;
+	};
+	#if {"%1" == ""} {
+		#showme <eaa>mapwalk <bot file> [step], e.g. mapwalk czodiacs2<088>;
+		#return;
+	};
+	#NOP -- Same reason as mapexplore, and a bot would walk too;
+	#if {$bot[active]} {
+		#showme <eaa>mapwalk: stop the bot first.<088>;
+		#return;
+	};
+	#NOP -- The path comes from the bot file without reading it, which would start the bot. The shell puts one;
+	#NOP -- step on each line: steps split from one #script line don't send as commands;
+	#var mapw_steps {};
+	#script {mapw_steps} {grep -m1 'bot.path' common/bot/bots/%1.tin 2>/dev/null | tr -d '\173\175\r' | cut -d' ' -f3- | tr ';' '\n'};
+	#if {"$mapw_steps[1]" == ""} {
+		#showme <eaa>mapwalk: no bot path in common/bot/bots/%1.tin.<088>;
+		#return;
+	};
+	#map get roomarea mapw[area];
+	#if {"$mapw[area]" == ""} {#var mapw[area] {$area}};
+	#var mapw[file] {%1};
+	#var mapw[step] 1;
+	#if {"%2" != ""} {#var mapw[step] %2};
+	#var mapw[named] 0;
+	#var mapw[fails] 0;
+	#var mapw[on] 1;
+	#send !brief off yes;
+	#showme <dfa>mapwalk: walking %1 from step $mapw[step] of &mapw_steps[], naming rooms in $mapw[area].<088>;
+	#delay {mapw_step} {.mapw_step} {1};
+};
+
+#alias {.mapw_step} {
+	#if {!$mapw[on]} {#return};
+	#if {"$incombat" == "1"} {
+		.mapw_stop {a fight started};
+		#return;
+	};
+	#if {$mapw[step] > &mapw_steps[]} {
+		.mapw_stop {the path is done};
+		#return;
+	};
+	#var mapw[cmd] {$mapw_steps[$mapw[step]]};
+	#if {"$mapw[cmd]" == ""} {
+		#math mapw[step] {$mapw[step] + 1};
+		#delay {mapw_step} {.mapw_step} {0.1};
+		#return;
+	};
+	#var mapw[tries] 0;
+	#var room[updated] 0;
+	#NOP -- Cleared so a room whose description didn't come can't be taken for the last one;
+	#var room[long] {};
+	$mapw[cmd];
+	#NOP -- Counted as taken once it's sent, so a stop before it arrives doesn't send it again on resume;
+	#var mapw[sent] $mapw[step];
+	#math mapw[step] {$mapw[step] + 1};
+	#delay {mapw_wait} {.mapw_wait} {0.25};
+};
+
+#NOP -- room[updated] is set at the prompt after a new room;
+#alias {.mapw_wait} {
+	#if {!$mapw[on]} {#return};
+	#if {$room[updated]} {
+		#var mapw[fails] 0;
+		#NOP -- The MIP room name can come a moment after the prompt;
+		#delay {mapw_step} {.mapw_name;.mapw_step} {$mapw[delay]};
+		#return;
+	};
+	#math mapw[tries] {$mapw[tries] + 1};
+	#if {$mapw[tries] < 20} {
+		#delay {mapw_wait} {.mapw_wait} {0.25};
+		#return;
+	};
+	#showme <eaa>mapwalk: step $mapw[sent] ($mapw[cmd]) didn't arrive anywhere.<088>;
+	#if {$mapw[fails] == 0} {#var mapw[failfrom] $mapw[sent]};
+	#math mapw[fails] {$mapw[fails] + 1};
+	#if {$mapw[fails] >= 3} {
+		#NOP -- Off the path, so the carry-on step offered is the first that failed;
+		#var mapw[step] $mapw[failfrom];
+		.mapw_stop {3 steps in a row didn't arrive};
+		#return;
+	};
+	#delay {mapw_step} {.mapw_step} {0.1};
+};
+
+#NOP -- Name the room the description matches if it has no name, and keep the map on it;
+#alias {.mapw_name} {
+	#local {mv} {};
+	#var mapw_name {$room[name]};
+	#if {"$mapw_name" == ""} {
+		#var mapw_name {$room_short};
+		#replace mapw_name {-R-_} {};
+	};
+	#format mapw_name {%p} {$mapw_name};
+	#if {"$room[long]" == "" || "$mapw_name" == ""} {#return};
+	#var mapw_hits {};
+	#map list {roomarea} {$mapw[area]} {roomdesc} {%*$room[long]%*} {variable} {mapw_hits};
+	#if {&mapw_hits[] != 1} {
+		#if {&mapw_hits[] > 1} {#showme <eaa>mapwalk: $mapw_name matches &mapw_hits[] rooms, skipped.<088>};
+		#return;
+	};
+	#foreach *mapw_hits[] mv {#var mapw_v $mv};
+	#map get roomname mapw_mapname $mapw_v;
+	#if {"$mapw_mapname" == ""} {
+		#map at $mapw_v {#map set roomname {$mapw_name}};
+		#math mapw[named] {$mapw[named] + 1};
+		#showme <dfa>mapwalk: named $mapw_v $mapw_name<088>;
+	};
+	#map get roomvnum mapw_at;
+	#if {"$mapw_at" != "$mapw_v"} {#map goto $mapw_v};
+};
+
+#alias {.mapw_stop} {
+	#undelay {mapw_wait};
+	#undelay {mapw_step};
+	#NOP -- A room that arrived but wasn't named yet still gets its name;
+	#if {$room[updated]} {.mapw_name};
+	#var mapw[on] 0;
+	#send !brief on yes;
+	#showme <dfa>mapwalk: %1. Named $mapw[named] rooms.<088>;
+	#if {$mapw[step] <= &mapw_steps[]} {
+		#showme <dfa>  mapwalk $mapw[file] $mapw[step] carries on from step $mapw[step] ($mapw_steps[$mapw[step]]).<088>;
+	};
+	#if {$mapw[named] > 0} {mapsave};
+};
+
+
+#class {mapwalk} {close};
