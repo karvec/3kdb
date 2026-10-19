@@ -53,6 +53,13 @@
 #ACTION {Your deeppocket begins to fade} {#var deeppocket 0} {1};
 #ACTION {^You reinforce the magic within your deeppocket.$} {#var deeppocket 1} {1};
 #ACTION {^You already have a deeppockets spell functioning.$} {#var deeppocket 1} {1};
+
+#NOP -- The game refusing a prot that is already up marks it as up, so the heartbeat stops recasting it until MIP;
+#NOP -- or the hpbar says it is gone. One message covers both spells of a kind (globe, shield, skin);
+#ACTION {^You already have the armor spell functioning.$} {#var my[prots][A] 1} {1};
+#ACTION {^You already have a globe spell functioning.$} {#var my[prots][MG] 1;#var my[prots][mg] 1} {1};
+#ACTION {^You already have a shield operating.$} {#var my[prots][MS] 1;#var my[prots][S] 1} {1};
+#ACTION {^You already have a skin active.$} {#var my[prots][SS] 1;#var my[prots][RS] 1} {1};
 #ACTION {^You feel slower as the haste wears off.$} {#var self_haste 0} {1};
 #ACTION {^Your immersion has expired.$} {#var my[immersion][active] 0;} {2};
 #action {^There is darkness as a Orb of Light goes dark.$} {#if !$idle_flag {cast light}} {2};

@@ -236,8 +236,7 @@
 
 
 #ALIAS {.mipProcessGlineMage} {
-	#NOP DISABLED PARTIALLY - MIP data in mages is unreliable and may not post for 1-3 rounds. Protection maintenance is managed via hpbar;
-	#NOP Active: Gem, MC, immersion, spelltap. Prots from gline were disabled, mage hpbar parses prots from hpbar line instead;
+	#NOP Gem, MC, immersion, spelltap and prots. The mage hpbar line sets prots too when it comes (combat, or hp);
 
 	#IF {%1 == 1} {
 		#REGEX {$mip[gline][1]}	{Gem:%d\%}  		{#VAR {my[gem]}				   {&1}	}	{#VAR {my[gem]}					{0}	};
@@ -246,24 +245,25 @@
 		#REGEX {$mip[gline][1]} {ST:%d\/%d}			{#VAR {my[spelltap][bonus]}    {&1};
                                                      #VAR {my[spelltap][corpses]}  {&2}};
 
-		#format hpbar_prots_active {%L} {${hpbar_prots}};
-		#NOP Prots from gline disabled below - mage hpbar parses prots from hpbar line instead. Left in case MIP becomes reliable;
-		#NOP #if {$hpbar_prots_active > 0} {#NOP} {;
-		#NOP	#REGEX {$mip[gline][1]}	{SS>}				{#VAR {my[prots][SS]}		   {1}	}	{#VAR {my[prots][SS]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{PA}				{#VAR {my[prots][PA]}		   {1}	}	{#VAR {my[prots][PA]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{{PS|PS!}}			{#VAR {my[prots][PS]}		   {1}	}	{#VAR {my[prots][PS]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{{<gA|<yA}}			{#VAR {my[prots][A]}		   {1}	}	{#VAR {my[prots][A]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{{<gB|<yB}}			{#VAR {my[prots][B]}		   {1}	}	{#VAR {my[prots][B]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{MB}				{#VAR {my[prots][MB]}		   {1}	}	{#VAR {my[prots][MB]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{<yS>}  			{#VAR {my[prots][S]}		   {1}	}	{#VAR {my[prots][S]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{MS}				{#VAR {my[prots][MS]}		   {1}	}	{#VAR {my[prots][MS]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{{M>|M!>}}			{#VAR {my[prots][M]}		   {1}	}	{#VAR {my[prots][M]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{RS}				{#VAR {my[prots][RS]}		   {1}	}	{#VAR {my[prots][RS]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{MG>}				{#VAR {my[prots][MG]}		   {1}	}	{#VAR {my[prots][MG]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{mg}				{#VAR {my[prots][mg]}		   {1}	}	{#VAR {my[prots][mg]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{PG}				{#VAR {my[prots][PG]}		   {1}	}	{#VAR {my[prots][PG]}			{0}	};
-		#NOP	#REGEX {$mip[gline][1]}	{PE}				{#VAR {my[prots][PE]}		   {1}	}	{#VAR {my[prots][PE]}			{0}	};
-		#NOP };
+		#NOP Prots: each is a <colour letter><code> token after Spells>: (<yA> <gMS> <ySS> <gPS> <yMG> <gMB>), the colours alternate;
+		#IF {"$mip[gline][1]" == "%*Spells>:%*"} {
+			#REGEX {$mip[gline][1]}	{{<[a-z]SS!?>}} {#VAR {my[prots][SS]}		   {1}	}	{#VAR {my[prots][SS]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]PA!?>}} {#VAR {my[prots][PA]}		   {1}	}	{#VAR {my[prots][PA]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]PS!?>}} {#VAR {my[prots][PS]}		   {1}	}	{#VAR {my[prots][PS]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]A!?>}}  {#VAR {my[prots][A]}		   {1}	}	{#VAR {my[prots][A]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]B!?>}}  {#VAR {my[prots][B]}		   {1}	}	{#VAR {my[prots][B]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]MB!?>}} {#VAR {my[prots][MB]}		   {1}	}	{#VAR {my[prots][MB]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]S!?>}}  {#VAR {my[prots][S]}		   {1}	}	{#VAR {my[prots][S]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]MS!?>}} {#VAR {my[prots][MS]}		   {1}	}	{#VAR {my[prots][MS]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]M!?>}}  {#VAR {my[prots][M]}		   {1}	}	{#VAR {my[prots][M]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]RS!?>}} {#VAR {my[prots][RS]}		   {1}	}	{#VAR {my[prots][RS]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]MG!?>}} {#VAR {my[prots][MG]}		   {1}	}	{#VAR {my[prots][MG]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]mg!?>}} {#VAR {my[prots][mg]}		   {1}	}	{#VAR {my[prots][mg]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]PG!?>}} {#VAR {my[prots][PG]}		   {1}	}	{#VAR {my[prots][PG]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]PE!?>}} {#VAR {my[prots][PE]}		   {1}	}	{#VAR {my[prots][PE]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]GS!?>}} {#VAR {my[prots][GS]}		   {1}	}	{#VAR {my[prots][GS]}			{0}	};
+			#REGEX {$mip[gline][1]}	{{<[a-z]SB!?>}} {#VAR {my[prots][SB]}		   {1}	}	{#VAR {my[prots][SB]}			{0}	};
+		};
 	}; #ELSEIF {%1 == 2} {
 		#REGEX {$mip[gline][2]}	{G: %d\/%d\%}		{#VAR {my[golem][current]}		{&1};
 													 #VAR {my[golem][reset]}		{&2}};
