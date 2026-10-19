@@ -614,26 +614,160 @@ menu_close_classes;
 };
 
 #NOP -- In game: gswap <guild> swaps guilds. Once the game confirms with "You feel... different.",;
-#NOP -- it reloads 3kdb's scripts for the new guild and saves it for next login;
+#NOP -- it reloads 3kdb's scripts for the new guild and saves it for next login.;
+#NOP -- Reflexes, ktrig, panic and repeat live in the game per character, not per guild, so they would carry the;
+#NOP -- old guild's heals and corpse commands along. gswap reads them first and saves them as the old guild's set;
+#NOP -- in chars/<name>/guilds/<guild>.game.tin. After the swap it clears them and sends the new guild's saved set.;
+#NOP -- A guild with nothing saved yet starts with none of them;
 #alias {gswap %1} {
-    #send {gswap %1};
     #script {menu_tmp} {test -f common/guilds/%1/index.tin && echo ok};
     #if {"$menu_tmp[1]" != "ok"} {
+        #send {gswap %1};
         #echo {<eaa>3kdb has no scripts for guild %1, so only the game guild will swap<088>};
         #return;
     };
     #var gswap_pending %1;
+    _gswap_read;
+};
+
+#NOP -- Read the game's reflex and ktrig listings into gswap_rd. The gswapmark reply ends it. Priority 9 so the;
+#NOP -- catch-all for indented lines never takes a line from another action;
+#alias {_gswap_read} {
+    #NOP -- gswap_rd outside the class, which is killed when the read ends;
+    #class {gswap_read} {kill};
+    #var gswap_rd {{mode}{}{stat}{}{reflex}{}{combat}{0}{stopped}{0}{haskt}{0}{kcmds}{}{kon}{1}{rkind}{}};
+    #var gswap_rd[panic] {{action}{}{when}{}{phase}{0}};
+    #var gswap_rd[repeat] {{always}{{action}{}{phase}{0}}{combat}{{action}{}{phase}{0}}{nocombat}{{action}{}{phase}{0}}};
+    #class {gswap_read} {open};
+    #action {^Reflex Actions - %*$} {#var gswap_rd[mode] reflex} {9};
+    #action {^ {HP|SP|GP1|GP2}%s(%d/%d):$} {#format gswap_rd[stat] {%l} {%%1}} {9};
+    #action {^  %*$} {_gswap_line {%%1}} {9};
+    #action {^Your reflexes will only fire in combat.$} {#var gswap_rd[combat] 1} {9};
+    #action {^%* YOUR REFLEXES ARE CURRENTLY STOPPED %*$} {#var gswap_rd[stopped] 1} {9};
+    #action {^Your kill trigger is set to do the following commands:$} {#var gswap_rd[haskt] 1;#var gswap_rd[mode] ktrig} {9};
+    #action {^But it is currently turned OFF.$} {#var gswap_rd[kon] 0} {9};
+    #action {^It will trigger while %*} {#var gswap_rd[mode] {}} {9};
+    #action {^Panic action : %*$} {#var gswap_rd[panic][action] {%%1}} {9};
+    #action {^Panic when   : HP falls below %*$} {_gswap_pwhen {%%1}} {9};
+    #action {^Panic during : %*$} {_gswap_phase {%%1};#var gswap_rd[panic][phase] $gswap_ph} {9};
+    #action {^Repeating %*: %*$} {_gswap_repeat {%%1} {%%2}} {9};
+    #action {^Repeating occurs %*$} {_gswap_phase {%%1};#if {"$gswap_rd[rkind]" != ""} {#var gswap_rd[repeat][$gswap_rd[rkind]][phase] $gswap_ph}} {9};
+    #action {^There is no reason to 'gswapmark' here.$} {#line gag;_gswap_read_done} {1};
+    #class {gswap_read} {close};
+    #send {reflex};
+    #send {ktrig};
+    #send {panic};
+    #send {repeat};
+    #send {gswapmark};
+    #delay {gswap_rdwait} {
+        #class {gswap_read} {kill};
+        #echo {<eaa>No answer to reflex and ktrig, so they weren't saved for $guild<088>};
+        _gswap_send;
+    } {15};
+};
+
+#NOP -- One indented line: a reflex ("   <30%  : "(heal meatloaf"") or a ktrig command ("  wrap all");
+#alias {_gswap_line} {
+    #var gswap_l {%1};
+    #if {"$gswap_rd[mode]" == "reflex"} {
+        #regex {$gswap_l} {^{ *}{[<>]?[0-9][^ ]*}{ *: "}{.*}{"}$} {
+            #list gswap_rd[reflex] add {{{stat}{$gswap_rd[stat]}{when}{&2}{cmd}{&4}}};
+        };
+    } {
+        #if {"$gswap_rd[mode]" == "ktrig"} {
+            #replace gswap_l {{^ +}} {};
+            #if {"$gswap_rd[kcmds]" == ""} {#var gswap_rd[kcmds] {$gswap_l}} {#var gswap_rd[kcmds] {$gswap_rd[kcmds]/$gswap_l}};
+        };
+    };
+};
+
+#NOP -- "100%  [1191]": keep the 100%;
+#alias {_gswap_pwhen} {
+    #var gswap_l {%1};
+    #regex {$gswap_l} {^{[^ ]+}} {#var gswap_rd[panic][when] {&1}};
+};
+#NOP -- Phase number from the text: 0 beginning of the round, 1 end of the round, 2 before attacking, 3 after;
+#alias {_gswap_phase} {
+    #var gswap_ph 0;
+    #if {"%1" == "%*before%*"} {#var gswap_ph 2} {
+        #if {"%1" == "%*after%*"} {#var gswap_ph 3} {
+            #if {"%1" == "%*end of%*"} {#var gswap_ph 1};
+        };
+    };
+};
+#NOP -- "Repeating always: x", "Repeating in combat: x", anything else is the non-combat one;
+#alias {_gswap_repeat} {
+    #if {"%1" == "always"} {#var gswap_rd[rkind] always} {
+        #if {"%1" == "in combat"} {#var gswap_rd[rkind] combat} {#var gswap_rd[rkind] nocombat};
+    };
+    #var gswap_rd[repeat][$gswap_rd[rkind]][action] {%2};
+};
+
+#alias {_gswap_read_done} {
+    #undelay {gswap_rdwait};
+    #class {gswap_read} {kill};
+    #if {"$guild" != ""} {
+        #script {menu_tmp} {mkdir -p chars/$user/guilds};
+        #class {gswap_save} {kill};
+        #class {gswap_save} {open};
+        #var gswap_game {{reflex}{$gswap_rd[reflex]}{combat}{$gswap_rd[combat]}{stopped}{$gswap_rd[stopped]}{haskt}{$gswap_rd[haskt]}{kcmds}{$gswap_rd[kcmds]}{kon}{$gswap_rd[kon]}};
+        #var gswap_game[panic] {$gswap_rd[panic]};
+        #var gswap_game[repeat] {$gswap_rd[repeat]};
+        #class {gswap_save} {close};
+        #class {gswap_save} {write} {chars/$user/guilds/$guild.game.tin};
+        #class {gswap_save} {kill};
+    };
+    _gswap_send;
+};
+
+#alias {_gswap_send} {
+    #send {gswap $gswap_pending};
     #unaction {^You feel... different.$};
     #line oneshot #action {^You feel... different.$} {
         #undelay gswap_wait;
         #script {menu_tmp} {printf '#var guild %s;\n' '$gswap_pending' > chars/$user/guild.tin};
         #NOP -- Give the game a moment to finish logging you back in before reloading;
-        #delay {gswap_reload} {.gswap $gswap_pending} {2};
+        #delay {gswap_reload} {.gswap $gswap_pending;_gswap_apply $gswap_pending} {2};
     };
     #delay {gswap_wait} {
         #unaction {^You feel... different.$};
         #echo {<eaa>No swap confirmation from the game, so 3kdb is still set up for $guild<088>};
     } {20};
+};
+
+#NOP -- Send guild %1's saved reflexes, ktrig, panic and repeat. Without a saved set: no reflexes, the old;
+#NOP -- combat-only and stopped settings, an empty ktrig, panic off, repeat off. ktrig is only touched if the;
+#NOP -- character has one (seen in the read). Repeats are sent to last forever (dur 0), which the listing doesn't show;
+#alias {_gswap_apply} {
+    #local {_k} {};
+    #local {_r} {};
+    #var gswap_ap {{reflex}{}{combat}{$gswap_rd[combat]}{stopped}{$gswap_rd[stopped]}{kcmds}{}{kon}{1}};
+    #script {menu_tmp} {test -f chars/$user/guilds/%1.game.tin && echo ok};
+    #if {"$menu_tmp[1]" == "ok"} {
+        #class {gswap_save} {kill};
+        #class {gswap_save} {read} {chars/$user/guilds/%1.game.tin};
+        #var gswap_ap {$gswap_game};
+        #class {gswap_save} {kill};
+    };
+    #send {reflex clear};
+    #foreach {$gswap_ap[reflex][%*]} {_r} {#send {reflex add $_r[stat] $_r[when] $_r[cmd]}};
+    #if {$gswap_ap[combat]} {#send {reflex combat on}} {#send {reflex combat off}};
+    #if {$gswap_ap[stopped]} {#send {reflex stop}} {#send {reflex start}};
+    #if {$gswap_rd[haskt]} {
+        #if {"$gswap_ap[kcmds]" == ""} {#send {ktrig CLEAR}} {
+            #send {ktrig $gswap_ap[kcmds]};
+            #if {$gswap_ap[kon]} {#send {ktrig ON}} {#send {ktrig OFF}};
+        };
+    };
+    #if {&gswap_ap[panic][action]} {
+        #if {"$gswap_ap[panic][action]" != ""} {#send {panic $gswap_ap[panic][action]/$gswap_ap[panic][when]/$gswap_ap[panic][phase]}} {#send {panic off}};
+    } {#send {panic off}};
+    #send {repeat off};
+    #foreach {always;combat;nocombat} {_k} {
+        #if {&gswap_ap[repeat][$_k][action]} {
+            #if {"$gswap_ap[repeat][$_k][action]" != ""} {#send {repeat $_k/$gswap_ap[repeat][$_k][action]/0/$gswap_ap[repeat][$_k][phase]}};
+        };
+    };
 };
 
 #NOP -- Linkdeath timers. Without the linkd VAF the game boots a linkdead character after this many hours.;
