@@ -617,8 +617,9 @@ menu_close_classes;
 #NOP -- it reloads 3kdb's scripts for the new guild and saves it for next login.;
 #NOP -- Reflexes, ktrig, panic and repeat live in the game per character, not per guild, so they would carry the;
 #NOP -- old guild's heals and corpse commands along. gswap reads them first and saves them as the old guild's set;
-#NOP -- in chars/<name>/guilds/<guild>.game.tin. After the swap it clears them and sends the new guild's saved set.;
-#NOP -- A guild with nothing saved yet starts with none of them;
+#NOP -- in gameGuild[<guild>] (chars/<name>/vars.tin, through _variable_export). After the swap it clears them and;
+#NOP -- sends the new guild's saved set. A guild with nothing saved yet is left as it is: set it up by hand once,;
+#NOP -- and the next gswap saves it;
 #alias {gswap %1} {
     #script {menu_tmp} {test -f common/guilds/%1/index.tin && echo ok};
     #if {"$menu_tmp[1]" != "ok"} {
@@ -707,15 +708,10 @@ menu_close_classes;
     #undelay {gswap_rdwait};
     #class {gswap_read} {kill};
     #if {"$guild" != ""} {
-        #script {menu_tmp} {mkdir -p chars/$user/guilds};
-        #class {gswap_save} {kill};
-        #class {gswap_save} {open};
-        #var gswap_game {{reflex}{$gswap_rd[reflex]}{combat}{$gswap_rd[combat]}{stopped}{$gswap_rd[stopped]}{haskt}{$gswap_rd[haskt]}{kcmds}{$gswap_rd[kcmds]}{kon}{$gswap_rd[kon]}};
-        #var gswap_game[panic] {$gswap_rd[panic]};
-        #var gswap_game[repeat] {$gswap_rd[repeat]};
-        #class {gswap_save} {close};
-        #class {gswap_save} {write} {chars/$user/guilds/$guild.game.tin};
-        #class {gswap_save} {kill};
+        #var gameGuild[$guild] {{reflex}{$gswap_rd[reflex]}{combat}{$gswap_rd[combat]}{stopped}{$gswap_rd[stopped]}{haskt}{$gswap_rd[haskt]}{kcmds}{$gswap_rd[kcmds]}{kon}{$gswap_rd[kon]}};
+        #var gameGuild[$guild][panic] {$gswap_rd[panic]};
+        #var gameGuild[$guild][repeat] {$gswap_rd[repeat]};
+        _variable_export;
     };
     _gswap_send;
 };
@@ -735,20 +731,16 @@ menu_close_classes;
     } {20};
 };
 
-#NOP -- Send guild %1's saved reflexes, ktrig, panic and repeat. Without a saved set: no reflexes, the old;
-#NOP -- combat-only and stopped settings, an empty ktrig, panic off, repeat off. ktrig is only touched if the;
-#NOP -- character has one (seen in the read). Repeats are sent to last forever (dur 0), which the listing doesn't show;
+#NOP -- Send guild %1's saved reflexes, ktrig, panic and repeat. ktrig is only touched if the character has one;
+#NOP -- (seen in the read). Repeats are sent to last forever (dur 0), which the listing doesn't show;
 #alias {_gswap_apply} {
     #local {_k} {};
     #local {_r} {};
-    #var gswap_ap {{reflex}{}{combat}{$gswap_rd[combat]}{stopped}{$gswap_rd[stopped]}{kcmds}{}{kon}{1}};
-    #script {menu_tmp} {test -f chars/$user/guilds/%1.game.tin && echo ok};
-    #if {"$menu_tmp[1]" == "ok"} {
-        #class {gswap_save} {kill};
-        #class {gswap_save} {read} {chars/$user/guilds/%1.game.tin};
-        #var gswap_ap {$gswap_game};
-        #class {gswap_save} {kill};
+    #if {!&gameGuild[%1]} {
+        #echo {<eaa>No reflexes, ktrig, panic or repeat saved for %1 yet. Set them up now, and your next gswap saves them<088>};
+        #return;
     };
+    #var gswap_ap {$gameGuild[%1]};
     #send {reflex clear};
     #foreach {$gswap_ap[reflex][%*]} {_r} {#send {reflex add $_r[stat] $_r[when] $_r[cmd]}};
     #if {$gswap_ap[combat]} {#send {reflex combat on}} {#send {reflex combat off}};

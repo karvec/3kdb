@@ -186,6 +186,8 @@
     #var xstrategyGuild $strategyGuild;
     #var xcorpseGuild $corpseGuild;
     #var xmkaGuild $mkaGuild;
+    #NOP -- The game's reflexes, ktrig, panic and repeat per guild (startmenu.tin's gswap);
+    #var xgameGuild $gameGuild;
     #var xcorpseActions $corpseActions;
     #var xmkaActions $mkaActions;
     #var xspiceBeers $spiceBeers;
@@ -285,6 +287,8 @@
     #if {"$strategyGuild" == "$xstrategyGuild"} {#var strategyGuild {}};
     #var corpseGuild $xcorpseGuild;
     #if {"$corpseGuild" == "$xcorpseGuild"} {#var corpseGuild {}};
+    #var gameGuild {};
+    #if {&xgameGuild} {#var gameGuild $xgameGuild};
     #var mkaGuild $xmkaGuild;
     #if {"$mkaGuild" == "$xmkaGuild"} {#var mkaGuild {}};
     #NOP -- Logging in to another guild than last time (the startup menu) uses that guild's lists;
