@@ -95,6 +95,7 @@
 #ACTION {^The magic of your song, 'Vampire', is fading.$} {#if {@bard_strategy{vampire} && !$idle_flag && $mip[round] > 0} {_bard_vampire 1}} {6};
 #ACTION {^The magic of your song, 'O Muse', is fading.$} {#if {@bard_prot{om;songs} && !$idle_flag && !@bard_singing{}} {perform o muse}} {6};
 
+
 #NOP -- MOB STATUS TRACKERS;
 #action {You wave your hands around, make swooshing and farting sounds,} {#var mob[noxious-cloud] 1;} {6};
 #action {You clasp your hands together, speak forth magical energies, and draw upon} {#var mob[lightning-vortex] 1;} {6};
@@ -110,6 +111,9 @@
     #var mob[critic] 0;
 } {2};
 #action {Your acid wash on %* is renewed.} {
+    #var mob[critic] 1;
+} {2};
+#action {Smoke curls up from %* as the acid burns.} {
     #var mob[critic] 1;
 } {2};
 
