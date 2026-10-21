@@ -77,25 +77,19 @@
 #delay {cast_dp} {recast_dp} {1};
 
 #NOP -- k <mob>: attack, cast slow, and darkness 3 seconds later;
-#alias {k %1} {kill %1;#if {$cast[slow]} {cast slow};#if {$cast[darkness]} {#delay {3} {cast darkness}}};
+#nop #alias {k %1} {kill %1;#if {$cast[slow]} {cast slow};#if {$cast[darkness]} {#delay {3} {cast darkness}}};
 
 #NOP -- Golem haste;
 #act {seems to slow down...$} {#if {$cast[golem_haste]} {cast haste on golem}};
 
 #NOP ===== summoner =====;
 
-#NOP -- Mage corpse actions: spell tap, slab, wrap, corpse blast, loot, stash components, cocoon, study spellbook.;
+#NOP -- Mage corpse actions: only stash components. The game's ktrig does spell tap, corpse blast and get all.;
+#NOP -- No coffin, freezer or cocoon, so no wrap/slab/fuse, and the heartbeat studies the spellbook out of combat.;
 #NOP -- Clears the list first. summoner_on only adds the missing ones;
 #alias corpsetrig1 {
      corpsetrig-clear;
-     corpsetrig+ spelltap;
-     corpsetrig+ slab;
-     corpsetrig+ wrap;
-     corpsetrig+ cBlast;
-     corpsetrig+ getAll;
      corpsetrig+ crafting;
-     corpsetrig+ cocoon;
-     corpsetrig+ spellbook;
 };
 
 #NOP -- Turn a mage strategy on. strategy toggles, so only call it when it is off;
@@ -132,26 +126,28 @@
 #NOP -- (spell tap always below 30% SP, never above 70%), gstrength (giant strength;
 #NOP -- on you and the party when mystic immersion starts). Mystic immersion, ash, saturation (explosive release or;
 #NOP -- corpse blast), self haste, study spellbook and the low SP or MC bot pause are always on in the mage heartbeat;
+#NOP -- shoosummons sends summons away when room damage (Zodiacs boulders) makes you attack them. summon_tank stays;
+#NOP -- off: its "defend me" swap doesn't move aggro, the summon config's defend mode is what makes summons tank;
 #alias {summoner_on} {
-    #foreach {slow;golem_assist;summon_mf;spelltap;gstrength} {_mst} {_ml_strategy_on $_mst};
+    #foreach {slow;golem_assist;summon_mf;spelltap;gstrength;shoosummons} {_mst} {_ml_strategy_on $_mst};
     #NOP -- summon_haste off: the stone golem can't be hasted, so it recast haste on summons every round;
-    _ml_strategy_off summon_haste;
-    #NOP -- The game's ktrig does spell tap, wrap, corpse blast and get all in mage (startmenu's gswap keeps it per;
-    #NOP -- guild), so those aren't corpse actions here;
-    #foreach {spelltap;wrap;cBlast;getAll} {_mca} {_ml_corpse_off $_mca};
-    #foreach {slab;crafting;cocoon;spellbook} {_mca} {_ml_corpse_on $_mca};
+    #foreach {summon_haste;summon_tank} {_mst} {_ml_strategy_off $_mst};
+    #NOP -- The game's ktrig does spell tap, corpse blast and get all in mage (startmenu's gswap keeps it per guild);
+    #foreach {spelltap;wrap;cBlast;getAll;slab;cocoon;spellbook} {_mca} {_ml_corpse_off $_mca};
+    _ml_corpse_on crafting;
 };
 
-#NOP -- summoner [defend]: set the game's summon config (badger's killmode). 4 monster summoning $cast[summon] assisting,;
-#NOP -- or with defend 2 defending (they tank) and 2 assisting, plus the golem assisting. Each needs 1500 SP and 70;
-#NOP -- concentration to cast. It costs SP, so it is never sent at login. shoo first to replace summons already out;
+#NOP -- summoner [assist]: set the game's summon config (badger's killmode). By default 2 monster summoning $cast[summon];
+#NOP -- defending (they tank) and 2 assisting, with assist all 4 assist. The golem always assists. Each needs 1500 SP;
+#NOP -- and 70 concentration to cast. It costs SP, so it is never sent at login. Summons already out keep the mode they;
+#NOP -- were cast with, so shoo them to get the new one;
 #alias {summoner} {
     clear_sconfig;
-    #if {"%0" == "defend"} {
+    #if {"%0" == "assist"} {
+        ms $cast[summon]##4#1500#70#assist#summons#always;
+    } {
         ms $cast[summon]##2#1500#70#defend#summons#always;
         ms $cast[summon]##2#1500#70#assist#summons#always;
-    } {
-        ms $cast[summon]##4#1500#70#assist#summons#always;
     };
     ms golema;
 };
