@@ -76,24 +76,48 @@
 
 #action {You have no {corpse|remains}.} {check_corpses;} {1};
 
-#NOP -- 1 unless the map's room has a different name from the room you're in (MIP's room[name]);
+#NOP -- 1 unless the map's room has a different name from the room you're in (MIP's room[name]). Rooms mapped;
+#NOP -- without a name (191 on the Celestial Zodiacs shadows side) can't be told apart, so they count as in sync;
 #function {dcoffin_synced} {
+	#local {_ok} {1};
 	#map get roomname dcoffin_mapname;
-	#var result 1;
-	#if {"$room[name]" != "" && "@findhere_base{$dcoffin_mapname}" !== "@findhere_base{$room[name]}"} {#var result 0};
+	#NOP -- findhere_base is a function too and overwrites result, so it's set once at the end;
+	#var dcoffin_mb {@findhere_base{$dcoffin_mapname}};
+	#var dcoffin_hb {@findhere_base{$room[name]}};
+	#if {"$room[name]" != "" && "$dcoffin_mapname" != "" && "$dcoffin_mb" !== "$dcoffin_hb"} {#var _ok 0};
+	#var result $_ok;
 };
 
 #NOP -- 1 if the game's room (MIP's room[name]) is the map room named %0: same name, and the same exits in any;
-#NOP -- order ("(n,s,w,e)" vs "(e,w,s,n)") when both list them;
+#NOP -- order ("(n,s,w,e)" vs "(e,w,s,n)") when both list them. For a map room without a name: a room other;
+#NOP -- than the one the wait started in (dcoffin_from) whose exits all exist on the map room (dcoffin_wantx);
 #function {dcoffin_here} {
-	#var result 0;
-	#if {"@findhere_base{$room[name]}" === "@findhere_base{%0}"} {
-		#var dcoffin_hx {@findhere_exits{$room[name]}};
-		#var dcoffin_wx {@findhere_exits{%0}};
-		#replace dcoffin_hx {,} {;};
-		#replace dcoffin_wx {,} {;};
-		#if {"$dcoffin_hx" == "" || "$dcoffin_wx" == "" || "@findhere_canon{$dcoffin_hx}" === "@findhere_canon{$dcoffin_wx}"} {#var result 1};
+	#local {_d} {};
+	#local {_ok} {0};
+	#NOP -- findhere_base/exits/canon are functions too and overwrite result, so it's set once at the end;
+	#if {"%0" == ""} {
+		#if {"$room[name]" != "" && "$room[name]" != "$dcoffin_from"} {
+			#var dcoffin_hx {@findhere_exits{$room[name]}};
+			#replace dcoffin_hx {,} {;};
+			#var _ok 1;
+			#foreach {$dcoffin_hx} {_d} {#if {"$_d" != "" && !&dcoffin_wantx[$_d]} {#var _ok 0}};
+		};
+	} {
+		#var dcoffin_hb {@findhere_base{$room[name]}};
+		#var dcoffin_wb {@findhere_base{%0}};
+		#if {"$dcoffin_hb" === "$dcoffin_wb"} {
+			#var dcoffin_hx {@findhere_exits{$room[name]}};
+			#var dcoffin_wx {@findhere_exits{%0}};
+			#replace dcoffin_hx {,} {;};
+			#replace dcoffin_wx {,} {;};
+			#if {"$dcoffin_hx" == "" || "$dcoffin_wx" == ""} {#var _ok 1} {
+				#var dcoffin_hc {@findhere_canon{$dcoffin_hx}};
+				#var dcoffin_wc {@findhere_canon{$dcoffin_wx}};
+				#if {"$dcoffin_hc" === "$dcoffin_wc"} {#var _ok 1};
+			};
+		};
 	};
+	#var result $_ok;
 };
 
 #NOP -- Donate your corpses to the morgue and then go back/resuming botting;
@@ -133,6 +157,8 @@
 #NOP -- Wait until the game's room is the one the map just walked to, then run %1;
 #alias {.dcoffin_wait} {
 	#map get roomname dcoffin_want;
+	#map get roomexits dcoffin_wantx;
+	#var dcoffin_from {$room[name]};
 	#var dcoffin_next {%1};
 	#var dcoffin_left $dcoffin_timeout;
 	#ticker {dcoffin_wait} {
