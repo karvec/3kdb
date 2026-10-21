@@ -1,0 +1,191 @@
+#class {again_fremen_train} {kill};
+#class {again_fremen_train} {open};
+
+#NOP -- Fremen skills: 'skills' capture, summary line, and the ftrain trainer walk;
+#NOP -- Trainers in walk order and the skills each one teaches;
+#var fremen_trainers {
+    {1} {{name} {jessica} {skills} {litany;pain;prescience;voice;weirding}}
+    {2} {{name} {otheym} {skills} {ambush;assault;chaumary;crysknife;desert hardening;devices;hide;projectile}}
+    {3} {{name} {akkar} {skills} {bindu;fiqh;ilm;nerve;prana}}
+    {4} {{name} {shimoom} {skills} {fai;huanui;water discipline}}
+};
+
+#NOP -- Ranks need a guild level and the Very Easy (career prime) skills at a rank (fhelp <rank>);
+#var fremen_ranks {
+    {1} {{name} {Naib} {glvl} {70} {ve} {25}}
+    {2} {{name} {Bashar} {glvl} {80} {ve} {28}}
+    {3} {{name} {Caid} {glvl} {90} {ve} {30}}
+    {4} {{name} {Burseg} {glvl} {100} {ve} {33}}
+    {5} {{name} {Mahdi} {glvl} {110} {ve} {35}}
+};
+
+#var my[fremen][train][state] {};
+
+#NOP -- skills table;
+#action {^Your skills:$} {
+    #var my[fremen][skill] {};
+} {2};
+
+#action {^{([A-Z][a-z]+(?: [a-z]+)?)\s+(Very Easy|Easy|Normal|Very Hard|Hard) \S*\s+(\d+)\s+(\d+)}$} {
+    #format tmpKey {%l} {%2};
+    #var my[fremen][skill][$tmpKey] {{rank} {%4} {cost} {%5} {diff} {%3}};
+} {2};
+
+#action {^Available gxp to spend:%s%S%sTotal gxp spent:%s%S$} {
+    #var tmpGxp %2;
+    #replace tmpGxp {,} {};
+    #var my[fremen][gxp][spend] $tmpGxp;
+    .fskills_summary;
+    #if {"$my[fremen][train][state]" == "plan"} {.ftrain_plan};
+} {2};
+
+#NOP -- Guild level is total ranks / 6, and the rank goal is the Very Easy rank the next rank needs;
+#NOP -- once the guild level is already there (Again: glvl 91, Assault/Weirding 28 -> Caid needs 30);
+#alias {.fskills_summary} {
+    #var tmpTotal 0;
+    #var tmpVeMin 999;
+    #foreach *my[fremen][skill][] tmpKey {
+        #math tmpTotal {$tmpTotal + $my[fremen][skill][$tmpKey][rank]};
+        #if {"$my[fremen][skill][$tmpKey][diff]" == "Very Easy" && $my[fremen][skill][$tmpKey][rank] < $tmpVeMin} {
+            #var tmpVeMin $my[fremen][skill][$tmpKey][rank];
+        };
+    };
+    #math my[fremen][glvl] {$tmpTotal / 6};
+    #math tmpNext {($my[fremen][glvl] + 1) * 6 - $tmpTotal};
+    #var my[fremen][ve_goal] 0;
+    #var tmpGoalName {};
+    #foreach *fremen_ranks[] tmpIdx {
+        #if {$my[fremen][glvl] >= $fremen_ranks[$tmpIdx][glvl] && $tmpVeMin < $fremen_ranks[$tmpIdx][ve]} {
+            #var my[fremen][ve_goal] $fremen_ranks[$tmpIdx][ve];
+            #var tmpGoalName $fremen_ranks[$tmpIdx][name];
+        };
+    };
+    #format tmpGxp {%g} {$my[fremen][gxp][spend]};
+    #if {$my[fremen][ve_goal]} {
+        #echo {<bfe>Ranks: $tmpTotal | Glvl: $my[fremen][glvl] | Next glvl in $tmpNext ranks | $tmpGoalName needs Very Easy skills at $my[fremen][ve_goal] | Gxp: $tmpGxp<088>};
+    } {
+        #echo {<bfe>Ranks: $tmpTotal | Glvl: $my[fremen][glvl] | Next glvl in $tmpNext ranks | Gxp: $tmpGxp<088>};
+    };
+};
+
+#alias {fskills} {#send {!skills}};
+
+#NOP -- Skills in training order (rank goal first, then cheapest) from the last 'skills';
+#alias {fskill-train} {
+    #if {!&my[fremen][skill][]} {#echo {<faa>Run fskills first.<088>}; #return};
+    .ftrain_order;
+    #foreach *tmpOrder[] tmpIdx {
+        #var tmpKey $tmpOrder[$tmpIdx][key];
+        #format tmpCost {%g} {$my[fremen][skill][$tmpKey][cost]};
+        #format tmpLine {%-20s %-6s %-12s %-10s} {$tmpKey} {$my[fremen][skill][$tmpKey][rank]} {$tmpCost} {$my[fremen][skill][$tmpKey][diff]};
+        #echo {<cff>$tmpLine<088>};
+    };
+};
+
+#alias {fskills-cheap} {fskill-train};
+
+#alias {.ftrain_order} {
+    #var tmpOrder {};
+    #foreach *my[fremen][skill][] tmpKey {
+        #var tmpSort $my[fremen][skill][$tmpKey][cost];
+        #if {"$my[fremen][skill][$tmpKey][diff]" != "Very Easy" || $my[fremen][skill][$tmpKey][rank] >= $my[fremen][ve_goal]} {
+            #math tmpSort {$tmpSort + 1000000000};
+        };
+        #list tmpOrder add {{{key} {$tmpKey} {sort} {$tmpSort}}};
+    };
+    #list tmpOrder indexate sort;
+    #list tmpOrder order;
+};
+
+#NOP -- ftrain: one rank per skill per round, in .ftrain_order while gxp lasts, then 'skills' and another round;
+#NOP -- Stops at the first skill it cannot afford (saves for it) and walks back when nothing is affordable;
+#alias {ftrain} {
+    #if {"%1" == "stop"} {
+        #var my[fremen][train][state] {};
+        #undelay ftrainProbe;
+        #echo {<faa>ftrain stopped.<088>};
+        #return;
+    };
+    #if {$incombat} {#echo {<faa>ftrain: finish the fight first.<088>}; #return};
+    #map get roomvnum tmpVnum;
+    #var my[fremen][train][from] $tmpVnum;
+    #var my[fremen][train][count] 0;
+    #var my[fremen][train][state] plan;
+    #send {!skills};
+};
+
+#alias {.ftrain_plan} {
+    .ftrain_order;
+    #var tmpBudget $my[fremen][gxp][spend];
+    #var tmpPicked {};
+    #foreach *tmpOrder[] tmpIdx {
+        #var tmpKey $tmpOrder[$tmpIdx][key];
+        #if {$my[fremen][skill][$tmpKey][cost] > $tmpBudget} {#break};
+        #math tmpBudget {$tmpBudget - $my[fremen][skill][$tmpKey][cost]};
+        #var tmpPicked[$tmpKey] 1;
+    };
+    #var my[fremen][train][stops] {};
+    #foreach *fremen_trainers[] tmpIdx {
+        #var tmpSkills {};
+        #foreach {$fremen_trainers[$tmpIdx][skills]} tmpKey {
+            #if {&tmpPicked[$tmpKey]} {#list tmpSkills add {$tmpKey}};
+        };
+        #if {&tmpSkills[]} {
+            #list my[fremen][train][stops] add {{{name} {$fremen_trainers[$tmpIdx][name]} {skills} {$tmpSkills}}};
+        };
+    };
+    #if {&my[fremen][train][stops][] == 0} {
+        #var my[fremen][train][state] {};
+        #if {$my[fremen][train][count]} {
+            #echo {<cfb>ftrain: trained $my[fremen][train][count] ranks, walking back.<088>};
+            #map run $my[fremen][train][from];
+        } {
+            #echo {<faa>ftrain: not enough gxp for the next skill.<088>};
+        };
+        #return;
+    };
+    .ftrain_next;
+};
+
+#NOP -- Next trainer, or 'skills' again to plan another round;
+#alias {.ftrain_next} {
+    #if {&my[fremen][train][stops][] == 0} {
+        #var my[fremen][train][state] plan;
+        #send {!skills};
+        #return;
+    };
+    #var my[fremen][train][stop] $my[fremen][train][stops][1];
+    #list my[fremen][train][stops] delete 1;
+    #var my[fremen][train][state] walking;
+    #var my[fremen][train][probes] 0;
+    go fremen_$my[fremen][train][stop][name];
+    #send {!train};
+};
+
+#NOP -- 'train' with no skill answers "Train what ?" at a trainer: that's the arrival check;
+#action {^Train what ?$} {
+    #if {"$my[fremen][train][state]" != "walking"} {#return};
+    #var my[fremen][train][state] training;
+    #foreach *my[fremen][train][stop][skills][] tmpIdx {
+        #send {!train $my[fremen][train][stop][skills][$tmpIdx]};
+    };
+    .ftrain_next;
+} {2};
+
+#NOP -- Still travelling (thopter, spacecraft): ask again, give up after two minutes;
+#action {^There is no one here to train you.$} {
+    #if {"$my[fremen][train][state]" != "walking"} {#return};
+    #math my[fremen][train][probes] {$my[fremen][train][probes] + 1};
+    #if {$my[fremen][train][probes] > 40} {
+        #var my[fremen][train][state] {};
+        #echo {<faa>ftrain: never reached $my[fremen][train][stop][name], stopped.<088>};
+        #return;
+    };
+    #delay {ftrainProbe} {#send {!train}} {3};
+} {2};
+
+#action {^You have been trained in %*.$} {
+    #math my[fremen][train][count] {$my[fremen][train][count] + 1};
+} {2};
+
+#class {again_fremen_train} {close};

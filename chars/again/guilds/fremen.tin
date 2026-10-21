@@ -1,0 +1,10 @@
+#NOP -- Again's fremen extras, read by config.tin after the guild scripts (login and gswap);
+#read chars/again/guilds/fremen_train.tin;
+#read chars/again/guilds/fremen_advance.tin;
+
+#NOP -- autoadvance strategy, added once (strategy autoadvance turns it on);
+#list strategyList find {autoadvance} tmpIdx;
+#if {!$tmpIdx} {
+    #list strategyList add {{{guild} {fremen} {name} {autoadvance} {active} {0} {description} {Fremen: Raise stats (fremen_adv_stats) after kills, level when no stat raises are left}}};
+    #list strategyList indexate name;
+};
