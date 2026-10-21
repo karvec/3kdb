@@ -10,7 +10,7 @@
 #NOP -- it walks the ingredient rooms and grabs each one turned on below until the;
 #NOP -- room runs out, fighting whatever each grab spawns. It stops in the assembly;
 #NOP -- area. Set an ingredient to 0 to walk past its room;
-#NOP -- Start it with +deathtaco (it walks to the entrance first); .stop ends it;
+#NOP -- Start it with +deathtaco (it walks to the entrance first), .stop ends it;
 #NOP -- Everything lives in the bot class and the deathtaco variable, so it is;
 #NOP -- removed with the bot. It leaves taco.tin/tacos.tin (upstream's taco bot);
 #NOP -- and common/areas/tacos.tin alone;

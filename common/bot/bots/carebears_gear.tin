@@ -14,7 +14,7 @@ touch demon rune;
 #NOP -- burning bear's embers. Each of those returned to the room it started in,;
 #NOP -- so the rest of the route is unchanged. It keeps the bathroom door;
 #NOP -- (Bathroom Bear's gloves) and the demonheart room (DemonHeart Bear's shadow;
-#NOP -- sword; its three bears attack on sight and block leaving, so all three;
+#NOP -- sword, its three bears attack on sight and block leaving, so all three;
 #NOP -- are targets). It only fights the bears that drop gear;
 #var {bot[path]} {path;n;e;e;w;s;n;n;e;w;s;w;enter;out;w;enter;out;climb;s;n;climb;n;e;n;n;s;s;e;rollout;{search forest;path};w;w;n;s;s;s;enter;w;n;{open door;.pause};s;e;e;e;n;n;n;n;w;e;s;{examine junk;examine equipment;get hyblomiter;w;search bones;.pause};e;s;s;s;w;w;out;n;n;e;e;e;rollout;castle;enter;w;e;e;w;n;n;out;{#send !fly bike}};
 
