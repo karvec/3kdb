@@ -56,7 +56,9 @@
 #alias {.uniquePickup} {
     #local _new 0;
     #local _old 0;
-    #if {!&uniqueOwned[%1]} {
+    #NOP -- Positive check: until uniqueOwned exists, !&uniqueOwned[x] stays literal text and is false, which made;
+    #NOP -- every first copy look like a second one;
+    #if {&uniqueOwned[%1]} {#NOP} {
         #var uniqueOwned[%1] {%2};
         #return;
     };
@@ -109,7 +111,7 @@
     #var my[uniques][$uniqueNew] {{key} {$uniqueNewKey} {tiers} {}};
     .uniqueBuild;
     #NOP -- One was exploding, so you have one;
-    #if {!&uniqueOwned[$uniqueNew]} {#var uniqueOwned[$uniqueNew] {}};
+    #if {&uniqueOwned[$uniqueNew]} {#NOP} {#var uniqueOwned[$uniqueNew] {}};
     .notify {<fcb>UNIQUE<ddd> a second $uniqueNew exploded. Learned it: from now on a second one is dropped (drop $uniqueNewKey)};
     #echo {<faa>UNIQUE: learned $uniqueNew (drop $uniqueNewKey). A second one is dropped from now on<088>};
 };
