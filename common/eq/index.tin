@@ -4,3 +4,4 @@
 #read common/eq/item_checker.tin;
 #read common/eq/item_tracker.tin;
 #read common/eq/zodiacs.tin;
+#read common/eq/unique_items.tin;
