@@ -5,8 +5,7 @@
 #NOP by typing "quit REALLY";
 #alias {quit} {
     #if { "%1" == "REALLY"} {
-        #NOP -- .quit tells the startup menu it wasn't a linkdeath;
-        .quit;
+        #SEND quit;
     } {
         #SEND shakeno;
         #SEND {emote pulls out a mirror and looks at himself.};
