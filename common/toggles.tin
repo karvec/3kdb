@@ -6,6 +6,7 @@
     #if {"${toggles[mission]}" == ""} {#var toggles[mission] 0};
     #if {"${toggles[3kreport]}" == ""} {#var toggles[3kreport] 1};
     #if {"${toggles[worlddrops]}" == ""} {#var toggles[worlddrops] 0};
+    #if {"${toggles[unique_pause]}" == ""} {#var toggles[unique_pause] 0};
     #if {"${toggles[chatlog_says]}" == ""} {#var toggles[chatlog_says] 1};
     #if {"${toggles[cult]}" == ""} {#var toggles[cult] 0};
     #if {"${toggles[corpse_echo]}" == ""} {#var toggles[corpse_echo] 0};

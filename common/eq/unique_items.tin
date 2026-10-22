@@ -4,9 +4,9 @@
 #NOP -- Unique items: a second copy explodes a round or two after you pick it up ("<item> shudders and trembles in;
 #NOP -- the presence of another of its kind and explodes!"), mostly from the corpse get all. When get all picks up a;
 #NOP -- second copy of one listed here, it's dropped at once so another character can have it. If its tier word is;
-#NOP -- better than yours, that's announced and the bot pauses so you can swap them by hand;
+#NOP -- better than yours that's announced, and with toggle unique_pause on the bot pauses so you can swap by hand;
 #NOP -- key: the word drop needs. tiers: the tier words from worst to best (WMT's Celestial Zodiacs scaler table and;
-#NOP -- our logs). malicious (sword) and tattered (grimoire) aren't on WMT and are guessed to be the lowest;
+#NOP -- our logs: malicious and tattered only dropped at scaler 67-69, below WMT's lowest);
 #var uniqueItems {
     {Helmet of Aeonos} {{key} {helmet} {tiers} {dim;gleaming;shining;luminous;radiant;transcendent}}
     {Jade Shield of Felines} {{key} {shield} {tiers} {moderate;remarkable;unbelievable}}
@@ -15,34 +15,44 @@
     {Zephyrak's Sword of Wrath} {{key} {sword} {tiers} {malicious;vicious;horrific;apocalyptic;malevolent}}
 };
 
-#NOP -- The names as one regex alternative for the actions below;
-#var uniqueAlt {};
-#foreach {*uniqueItems[]} {_u} {#if {"$uniqueAlt" == ""} {#var uniqueAlt {$_u}} {#var uniqueAlt {$uniqueAlt|$_u}}};
+#NOP -- Items that explode are learned into my[uniques] (saved with the character) with no tiers, so a second one;
+#NOP -- is dropped but never called an upgrade. uniqueAll is both lists, uniqueAlt their names as one regex;
+#NOP -- alternative. Rebuilt once the character's vars have loaded;
+#alias {.uniqueBuild} {
+    #local _u {};
+    #var uniqueAll $uniqueItems;
+    #if {&my[uniques][]} {#foreach {*my[uniques][]} {_u} {#var uniqueAll[$_u] $my[uniques][$_u]}};
+    #var uniqueAlt {};
+    #foreach {*uniqueAll[]} {_u} {#if {"$uniqueAlt" == ""} {#var uniqueAlt {$_u}} {#var uniqueAlt {$uniqueAlt|$_u}}};
+};
+.uniqueBuild;
+#delay {unique_build} {.uniqueBuild} {6};
+
+#NOP -- @uniqueTier{rest of the line}: the first (word) in it, the tier, or nothing;
+#function {uniqueTier} {#var result {};#regex {%0} {{\((\w+)\)}} {#var result {&2}}};
 
 #NOP -- uniqueOwned[<name>] is the tier of the copy you have. It's set from inventory rows (" 1 *Helmet of Aeonos;
 #NOP -- (luminous) (worn on head).") and pickups, and cleared when it leaves. Until the first i after login it's;
 #NOP -- unknown, so nothing is dropped;
-#action {{^\s*\d+ \*?($uniqueAlt) \((\w+)\)}} {#var uniqueOwned[%2] {%3}} {2};
-#action {{^You get ($uniqueAlt) \((\w+)\) from }} {.uniquePickup {%2} {%3}} {2};
+#action {{^\s*\d+ \*?($uniqueAlt)(\W.*)?$}} {#var uniqueOwned[%2] {@uniqueTier{%3}}} {2};
+#action {{^You get ($uniqueAlt)(\W.*)? from }} {.uniquePickup {%2} {@uniqueTier{%3}}} {2};
 #NOP -- get all says "<item>: Ok." per item. actions.tin's priority-4 "%*: Ok." clears encumbrance, so this one does too;
-#action {{^($uniqueAlt) \((\w+)\): Ok\.$}} {
+#action {{^($uniqueAlt)(\W[^:]*)?: Ok\.$}} {
     #var inventory[encumberance] 0;
-    .uniquePickup {%2} {%3};
+    .uniquePickup {%2} {@uniqueTier{%3}};
 } {2};
 #NOP -- Leaving: put, drop or give. The drop .uniquePickup sends for a second copy doesn't count;
-#action {{^You (put|drop|give) ($uniqueAlt) \((\w+)\)}} {
+#action {{^You (put|drop|give) ($uniqueAlt)(\W.*)?$}} {
     #if {&uniqueDropping[%3]} {
         #unvar uniqueDropping[%3];
         #return;
     };
     #unvar uniqueOwned[%3];
 } {2};
-#action {{^($uniqueAlt) \((\w+)\) shudders and trembles in}} {
-    #echo {<faa>UNIQUE: a second %2 (%3) exploded before it could be dropped<088>};
-} {2};
+#action {{^(.+?) shudders and trembles in}} {.uniqueExploded {%2}} {2};
 
 #NOP -- .uniquePickup <name> <tier>: the first copy is just remembered. A second one is dropped (the newest copy is;
-#NOP -- found first and yours is usually kept), and if its tier is better than yours the bot pauses;
+#NOP -- found first and yours is usually kept), and if its tier is better than yours that's announced;
 #alias {.uniquePickup} {
     #local _new 0;
     #local _old 0;
@@ -52,18 +62,56 @@
     };
     #if {$idle_flag} {#return};
     #var uniqueDropping[%1] 1;
-    #send {drop $uniqueItems[%1][key]};
-    #list uniqueTiers create {$uniqueItems[%1][tiers]};
+    #send {drop $uniqueAll[%1][key]};
+    #list uniqueTiers create {$uniqueAll[%1][tiers]};
     #list uniqueTiers find {%2} _new;
     #list uniqueTiers find {$uniqueOwned[%1]} _old;
     #if {$_new && $_old && $_new > $_old} {
         .notify {<fcb>UNIQUE UPGRADE<ddd> %1 (%2) beats your ($uniqueOwned[%1]), dropped at $roomvnum. Swap them by hand};
         #echo {<cfb>===========> <ccd>UPGRADE: %1 (%2) beats your ($uniqueOwned[%1]). Dropped it so it can't explode<088>};
-        #if {$bot[active] && !$bot[paused]} {.pause};
+        #if {$toggles[unique_pause] && $bot[active] && !$bot[paused]} {
+            #echo {<cfb>===========> <ccd>BOT PAUSED, 'toggle unique_pause' turns this off<088>};
+            .pause;
+        };
         #return;
     };
-    .notify {<fcb>UNIQUE<ddd> dropped a second %1 (%2) at $roomvnum, you have ($uniqueOwned[%1])};
-    #echo {<cfb>===========> <ccd>Dropped a second %1 (%2) so it can't explode. Yours: ($uniqueOwned[%1])<088>};
+    #NOP -- Learned items often have no tier, so the (tier) parts are left out then;
+    #var uniqueTag {};
+    #var uniqueMsg {};
+    #if {"%2" != ""} {#var uniqueTag { (%2)}};
+    #if {"$uniqueOwned[%1]" != ""} {#var uniqueMsg {, you have ($uniqueOwned[%1])}};
+    .notify {<fcb>UNIQUE<ddd> dropped a second %1$uniqueTag at $roomvnum$uniqueMsg};
+    #echo {<cfb>===========> <ccd>Dropped a second %1$uniqueTag so it can't explode$uniqueMsg<088>};
+};
+
+#NOP -- .uniqueExploded <name as shown>: the game just blew up a second copy. Learn the item without its <..> (..) [..];
+#NOP -- tags. Its key is the word before " of " (Helmet of Aeonos: helmet), else the last word (a swirling and;
+#NOP -- humming barrier shield: shield). Names with other characters aren't learned, they'd break the regex;
+#alias {.uniqueExploded} {
+    #local _k {};
+    #var uniqueNew {%1};
+    #var uniqueNewTier {@uniqueTier{%1}};
+    #replace uniqueNew {%s<%*>} {};
+    #replace uniqueNew {%s(%*)} {};
+    #replace uniqueNew {%s[%*]} {};
+    #if {&uniqueAll[$uniqueNew]} {
+        #echo {<faa>UNIQUE: a second $uniqueNew exploded before it could be dropped<088>};
+        #return;
+    };
+    #regex {$uniqueNew} {{^[A-Za-z' -]+$}} {#NOP} {
+        #echo {<faa>UNIQUE: $uniqueNew exploded, but its name can't be learned. Add it to uniqueItems by hand<088>};
+        #return;
+    };
+    #var uniqueNewKey {};
+    #regex {$uniqueNew} {{^(?:.*\s)?(\S+) of }} {#var uniqueNewKey {&2}};
+    #if {"$uniqueNewKey" == ""} {#regex {$uniqueNew} {{(\S+)$}} {#var uniqueNewKey {&2}}};
+    #format uniqueNewKey {%l} {$uniqueNewKey};
+    #var my[uniques][$uniqueNew] {{key} {$uniqueNewKey} {tiers} {}};
+    .uniqueBuild;
+    #NOP -- One was exploding, so you have one;
+    #if {!&uniqueOwned[$uniqueNew]} {#var uniqueOwned[$uniqueNew] {}};
+    .notify {<fcb>UNIQUE<ddd> a second $uniqueNew exploded. Learned it: from now on a second one is dropped (drop $uniqueNewKey)};
+    #echo {<faa>UNIQUE: learned $uniqueNew (drop $uniqueNewKey). A second one is dropped from now on<088>};
 };
 
 #class {unique_items} {close};
