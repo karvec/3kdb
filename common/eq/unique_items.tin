@@ -3,7 +3,8 @@
 
 #NOP -- Unique items: a second copy explodes a round or two after you pick it up ("<item> shudders and trembles in;
 #NOP -- the presence of another of its kind and explodes!"), mostly from the corpse get all. When get all picks up a;
-#NOP -- second copy of one listed here, it's dropped at once so another character can have it. If its tier word is;
+#NOP -- second copy of one listed here, it's smuggled away at once (a smuggled copy doesn't count, and nothing is left;
+#NOP -- on the floor for the next get all to pick up again), or dropped if it can't be smuggled. If its tier word is;
 #NOP -- better than yours that's announced, and with toggle unique_pause on the bot pauses so you can swap by hand;
 #NOP -- key: the word drop needs. tiers: the tier words from worst to best (WMT's Celestial Zodiacs scaler table and;
 #NOP -- our logs: malicious and tattered only dropped at scaler 67-69, below WMT's lowest);
@@ -41,7 +42,7 @@
     #var inventory[encumberance] 0;
     .uniquePickup {%2} {@uniqueTier{%3}};
 } {2};
-#NOP -- Leaving: put, drop or give. The drop .uniquePickup sends for a second copy doesn't count;
+#NOP -- Leaving: put, drop, give or smuggle. The smuggle (or drop) .uniquePickup sends for a second copy doesn't count;
 #action {{^You (put|drop|give) ($uniqueAlt)(\W.*)?$}} {
     #if {&uniqueDropping[%3]} {
         #unvar uniqueDropping[%3];
@@ -49,10 +50,34 @@
     };
     #unvar uniqueOwned[%3];
 } {2};
+#NOP -- uniqueDropping[<name>] is the tier of the second copy. If smuggle took your copy (same tier as yours), you;
+#NOP -- now hold the new one;
+#action {{^You smuggle away: ($uniqueAlt)(\W.*)?$}} {
+    #if {&uniqueDropping[%2]} {
+        #if {"@uniqueTier{%3}" == "$uniqueOwned[%2]"} {#var uniqueOwned[%2] {$uniqueDropping[%2]}};
+        #unvar uniqueDropping[%2];
+        #list uniqueSmuggling find {%2} uniqueIx;
+        #if {$uniqueIx} {#list uniqueSmuggling delete $uniqueIx};
+        #return;
+    };
+    #unvar uniqueOwned[%2];
+} {2};
+#NOP -- uniqueSmuggling: names sent to smuggle, oldest first. The failure lines don't name the item, so the oldest is;
+#NOP -- dropped instead;
+#list uniqueSmuggling clear;
+#action {{^(You are smuggling \d+ items, and that's about all you can handle|You cannot smuggle worn items|You don't appear to be carrying that)\.}} {
+    #if {&uniqueSmuggling[]} {
+        #local _n {$uniqueSmuggling[1]};
+        #list uniqueSmuggling delete 1;
+        #send {drop $uniqueAll[$_n][key]};
+        .notify {<fcb>UNIQUE<ddd> couldn't smuggle a second $_n, dropped it at $roomvnum};
+        #echo {<cfb>===========> <ccd>Couldn't smuggle the second $_n, dropped it instead<088>};
+    };
+} {2};
 #action {{^(.+?) shudders and trembles in}} {.uniqueExploded {%2}} {2};
 
-#NOP -- .uniquePickup <name> <tier>: the first copy is just remembered. A second one is dropped (the newest copy is;
-#NOP -- found first and yours is usually kept), and if its tier is better than yours that's announced;
+#NOP -- .uniquePickup <name> <tier>: the first copy is just remembered. A second one is smuggled (the newest copy is;
+#NOP -- found first), and if its tier is better than yours that's announced;
 #alias {.uniquePickup} {
     #local _new 0;
     #local _old 0;
@@ -63,14 +88,15 @@
         #return;
     };
     #if {$idle_flag} {#return};
-    #var uniqueDropping[%1] 1;
-    #send {drop $uniqueAll[%1][key]};
+    #var uniqueDropping[%1] {%2};
+    #list uniqueSmuggling add {%1};
+    #send {smuggle $uniqueAll[%1][key]};
     #list uniqueTiers create {$uniqueAll[%1][tiers]};
     #list uniqueTiers find {%2} _new;
     #list uniqueTiers find {$uniqueOwned[%1]} _old;
     #if {$_new && $_old && $_new > $_old} {
-        .notify {<fcb>UNIQUE UPGRADE<ddd> %1 (%2) beats your ($uniqueOwned[%1]), dropped at $roomvnum. Swap them by hand};
-        #echo {<cfb>===========> <ccd>UPGRADE: %1 (%2) beats your ($uniqueOwned[%1]). Dropped it so it can't explode<088>};
+        .notify {<fcb>UNIQUE UPGRADE<ddd> %1 (%2) beats your ($uniqueOwned[%1]), smuggled it at $roomvnum. To swap, put yours away, then smuggle remove $uniqueAll[%1][key]};
+        #echo {<cfb>===========> <ccd>UPGRADE: %1 (%2) beats your ($uniqueOwned[%1]). Smuggled it so it can't explode<088>};
         #if {$toggles[unique_pause] && $bot[active] && !$bot[paused]} {
             #echo {<cfb>===========> <ccd>BOT PAUSED, 'toggle unique_pause' turns this off<088>};
             .pause;
@@ -82,8 +108,8 @@
     #var uniqueMsg {};
     #if {"%2" != ""} {#var uniqueTag { (%2)}};
     #if {"$uniqueOwned[%1]" != ""} {#var uniqueMsg {, you have ($uniqueOwned[%1])}};
-    .notify {<fcb>UNIQUE<ddd> dropped a second %1$uniqueTag at $roomvnum$uniqueMsg};
-    #echo {<cfb>===========> <ccd>Dropped a second %1$uniqueTag so it can't explode$uniqueMsg<088>};
+    .notify {<fcb>UNIQUE<ddd> smuggled a second %1$uniqueTag at $roomvnum$uniqueMsg};
+    #echo {<cfb>===========> <ccd>Smuggled a second %1$uniqueTag so it can't explode$uniqueMsg<088>};
 };
 
 #NOP -- .uniqueExploded <name as shown>: the game just blew up a second copy. Learn the item without its <..> (..) [..];
