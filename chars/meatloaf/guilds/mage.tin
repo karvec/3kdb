@@ -5,12 +5,13 @@
 
 #read modules/dmgtracker/dmgtracker_mage.tin;
 
-#NOP -- Settings: k casts slow (and darkness 3s later), cperf performs ospell, golem_haste keeps the golem hasted.;
-#NOP -- Self haste is kept up by the mage heartbeat (common/guilds/mage/heartbeat.tin). slow is 0 because the;
+#NOP -- Settings: k casts slow (and darkness 3s later), cperf performs ospell, golem_haste (off) would keep the golem hasted.;
+#NOP -- Only haste yourself (karvec was told not to bother hasting summons), which the mage heartbeat keeps up;
+#NOP -- (common/guilds/mage/heartbeat.tin). slow is 0 because the;
 #NOP -- slow strategy (summoner_on) already casts it every fight. summon: the monster summoning level summoner uses;
 #var cast[darkness] 0;
 #var cast[slow] 0;
-#var cast[golem_haste] 1;
+#var cast[golem_haste] 0;
 #var cast[ospell] incinerate;
 #var cast[summon] 8;
 
