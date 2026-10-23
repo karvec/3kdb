@@ -897,13 +897,20 @@
 };
 
 #NOP -- For notifications we'll put these into the general chat log but won't post to discord;
+#NOP -- They also go into the day's chat log file, with the character's name, so they outlast the chat box. A braced;
+#NOP -- message keeps its braces in %0, so a single argument is logged from %1;
 #ALIAS {.notify} {
 	#format {timestamp} {%t} {<108>[<268>%H<108>:<268>%M<108>]<088> };
 	#if {&chat[general][] >= $chat[max]} {
 		#list chat[general] del 1;
 	};
 	#var chat[text]  <edc>NOTE: <ddd>%0<088>;
-	
+	#format {timestamp_save} {%t} {[%H:%M] };
+	#format {datestamp} {%t} {%Y-%m-%d.log};
+	#line log {logs/$sysUser/$datestamp} {$timestamp_save\};
+	#if {"%2" == ""} {#var notifyLine {%1}} {#var notifyLine {%0}};
+	#line log {logs/$sysUser/$datestamp} {<edc>NOTE ($user_cap): <ddd>$notifyLine<088>};
+
 	#var chat[entry] ${timestamp}${chat[text]};
 	#list chat[general] ins -1 $chat[entry];
 	#if {"$chatCategory" != "general"} {postChatCategory};
