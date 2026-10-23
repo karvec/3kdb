@@ -9,7 +9,7 @@
 #list strategyList add {{{guild} {bard} {name} {enrage} {active} {0} {description} {Bard: Enrage}}};
 #list strategyList add {{{guild} {bard} {name} {critic} {active} {0} {description} {Bard: Caustic Critic}}};
 #list strategyList add {{{guild} {bard} {name} {es} {active} {0} {description} {Bard: Empowered Strikes}}};
-#list strategyList add {{{guild} {bard} {name} {heartening} {active} {0} {description} {Bard: Heartening Laugh}}};
+#list strategyList add {{{guild} {bard} {name} {laugh} {active} {0} {description} {Bard: Heartening Laugh}}};
 #list strategyList add {{{guild} {bard} {name} {dharm} {active} {0} {description} {Bard: Defensive Harmony when HP is low}}};
 #list strategyList add {{{guild} {bard} {name} {fi} {active} {0} {description} {Bard: First Impression once a boot (checks stats at login)}}};
 #list strategyList add {{{guild} {bard} {name} {ks} {active} {0} {description} {Bard: Karmic Shield}}};
@@ -30,7 +30,7 @@
 #list strategyList add {{{guild} {bard} {name} {om} {active} {0} {description} {Bard: O Muse}}};
 #list strategyList indexate name;
 
-#NOP -- Timers of various spells (in seconds);
+#NOP -- Timers of various spells - this depends on guild level;
 #var criticDuration 58;
 
 #NOP -- dharm: cast defensive harmony below this HP percent, if karma is at least dharmKarma;
@@ -41,10 +41,10 @@
 
 #NOP -- Powers are sent straight (not _bard_cast), with a 6 second wait so they aren't resent before the;
 #NOP -- game's message comes back;
-#alias {_bard_heartening} {
+#alias {_bard_laugh} {
     #if {$my[status][laugh] || $hl_override || $my[gp1][current] < 400} {#return};
     #var hl_override 1;
-    heartening laugh;
+    #send {heartening laugh};
     #delay {hl_toggle} {#var hl_override 0} {6};
 };
 
@@ -121,7 +121,7 @@
 
     checkStrategy {critic} {_bard_critic};
     checkStrategy {es} {_bard_es};
-    checkStrategy {heartening} {_bard_heartening};
+    checkStrategy {laugh} {_bard_laugh};
     checkStrategy {dharm} {_bard_dharm};
     checkStrategy {vampire} {_bard_vampire};
     checkStrategy {enrage} {#if !$mob[enrage] {enrage};};
