@@ -44,7 +44,8 @@
     #NOP -- &x[key] is the key's position in the table (0 when missing), so test it as is, not == 1;
     #if {&webhook[url][worlddrops]} {
         #var discordChannel $webhook[url][worlddrops];
-        postDiscord {WORLD DROP: $user_cap found $name in $room[name] ($area)};
+        #format worldDropTime {%t} {%Y-%m-%d %H:%M};
+        postDiscord {[$worldDropTime] WORLD DROP: $user_cap found $name in $room[name] ($area)};
     };
     #if {$toggles[worlddrops] && $bot[active] && !$bot[paused]} {
         #echo {<cfb>===========> <ccd>BOT PAUSED, 'toggle worlddrops' turns this off<088>};
