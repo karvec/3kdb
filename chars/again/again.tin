@@ -4,7 +4,7 @@
 #NOP -- Clear the last character's saved variables so they don't carry over to this one;
 #class global kill;
 #read chars/$user/vars.tin;
-#var guild fremen;
+#var guild juggernaut;
 #NOP -- The startup menu and gswap save the current guild here;
 #read chars/$user/guild.tin;
 
