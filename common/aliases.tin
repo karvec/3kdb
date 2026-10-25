@@ -262,6 +262,10 @@
     #echo {<dfa>Please wait...<088>};
     #echo {<dfa>----------------------------------------------------<088>};
     
+    #NOP -- Save this guild's strategies, corpse and mob kill actions and put back the new guild's.;
+    #NOP -- Before the classes holding the lists and this alias are killed;
+    _guild_lists_swap %0;
+
     #NOP -- Clear the screen and kill all drawing classes;
     #screen clear all;
     #map flag vtmap off;
