@@ -9,7 +9,7 @@
 #NOP -- To set a cap, put #var sessionlog[cap_mb] <MB> in common/private.tin;
 #NOP -- Off by default. toggle sessionlog turns it on or off for this character and is saved with the;
 #NOP -- other toggles. #var sessionlog[enabled] 1 in common/private.tin turns it on for every character;
-#NOP -- that hasn't saved its own choice;
+#NOP -- that hasn't toggled it yet;
 
 #script {sessionlog_tmp} {whoami};
 #var sessionlog[dir] {logs/$sessionlog_tmp[1]};
@@ -17,11 +17,8 @@
 #var sessionlog[on] 0;
 #var sessionlog[enabled] 0;
 
-#NOP -- Shown by toggle-list and switched with toggle sessionlog (common/toggles.tin);
-#var toggleMap[sessionlog] {{var}{sessionlog[enabled]}{on}{.sessionlog_start}{off}{sessionlog off}{login}{.sessionlog_start}};
-
 #alias {.sessionlog_start} {
-	#if {$sessionlog[enabled] && !$sessionlog[on]} {
+	#if {"$toggles[sessionlog]" == "1" && !$sessionlog[on]} {
 		.sessionlog_open;
 		#showme <ffa>Session log on: $sessionlog[file]<088>;
 	};
@@ -68,14 +65,14 @@
 	};
 } {60};
 
-#NOP -- common/index.tin is read in the game session (config.tin opens it), never the startup one.;
-#NOP -- Starting waits until index.tin has also read common/private.tin. This character's saved toggle;
-#NOP -- (xtoggleMap, read from its vars.tin before index.tin) wins over that.;
+#NOP -- common/index.tin is read in the game session at login, never the startup one. Starting waits until;
+#NOP -- index.tin has read common/private.tin and defaults_on has put back the saved toggles, and a character;
+#NOP -- that has never toggled sessionlog gets sessionlog[enabled].;
 #NOP -- The first compress waits so common/private.tin can change the cap first;
 #info session save;
 #if {"$info[SESSION][NAME]" != "gts"} {
 	#delay {sessionlog_start} {
-		#if {&xtoggleMap[sessionlog]} {#var sessionlog[enabled] $xtoggleMap[sessionlog]};
+		#if {"${toggles[sessionlog]}" == ""} {#var toggles[sessionlog] $sessionlog[enabled]};
 		.sessionlog_start;
 	} {0};
 	#delay {sessionlog_compress} {.sessionlog_compress} {30};
