@@ -1,0 +1,96 @@
+#class {bot} {kill}
+#class {bot} {open}
+
+#var check_room 0;
+
+#echo {<afb>----      Elemental Planes: Conglomeration x2      ----<088>};
+
+#NOP -- Greaves and Armour of the Elements. From the portal chamber with the altar (1549, the room before;
+#NOP -- the chamber of elements 1576): kill the elemental in each corner (se earth, ne air, nw fire, sw water);
+#NOP -- and get its jar, back to the altar, place jars on altar, winds, kill the Conglomeration of Energies;
+#NOP -- Then gateway to the second portal chamber (5209), the same four corners and altar again, winds and;
+#NOP -- kill the second Conglomeration. It leaves Greaves of the Elements and Armour of the Elements on the;
+#NOP -- floor (bind on pickup, so the collector skips them). Lines from ser's 2026-10-25 run;
+#NOP -- Start it with +elements, .stop ends it;
+#var ecq[round] 1;
+#var ecq[trying] 0;
+
+#var ecq[corners] {se;se;.ecqJar;nw;nw;ne;ne;.ecqJar;sw;sw;nw;nw;.ecqJar;se;se;sw;sw;.ecqJar;ne;ne;.ecqAltar};
+#var {bot[path]} {.ecqTry};
+
+#NOP -- The second round's elementals are far bigger (about 29M against 100k), the same names;
+#list botmobs clear;
+#list botmobs add {{{long} {Conglomeration of Energies} {target} {elemental}}};
+#list botmobs add {{{long} {Elemental} {target} {elemental}}};
+
+#NOP -- The jar is on the floor once the corner's elemental is dead. The glance starts the next step;
+#alias {.ecqJar} {
+    get jar;
+    glance;
+};
+
+#NOP -- No answer to place jars in 10 seconds (a jar missing?) stops the bot;
+#alias {.ecqAltar} {
+    .pause;
+    place jars on altar;
+    #class {bot} {open};
+    #delay {ecqWait} {
+        #echo {<fab>ELEMENTS: the altar took no jars. Missing one? Check i for all four (earth, air, fire, water). Stopping.<088>};
+        .stop;
+    } {10};
+    #class {bot} {close};
+};
+
+#NOP -- Into the winds. Arriving there finds the Conglomeration and kills it, then the next path starts:;
+#NOP -- after the first one the gateway and the second round, after the second one .ecqDone;
+#alias {.ecqTry} {
+    #var ecq[trying] 1;
+    .ecqEnter;
+};
+
+#alias {.ecqWinds} {
+    #undelay {ecqWait};
+    #var ecq[trying] 0;
+    .ecqEnter;
+};
+
+#alias {.ecqEnter} {
+    #if {$ecq[round] == 1} {
+        #var bot[path] {gateway;.ecqTry};
+    } {
+        #var bot[path] {.ecqDone};
+    };
+    #list bot[steps] create {$bot[path]};
+    #var bot[step] 1;
+    #math ecq[round] {$ecq[round] + 1};
+    .unpause;
+    winds;
+};
+
+#alias {.ecqDone} {
+    #echo {<afa>ELEMENTS: both Conglomerations dead. Greaves and Armour of the Elements are on the floor (bind on pickup): get greaves, get armour.<088>};
+    .stop;
+};
+
+#action {^You place each jar respectfully in its place on the altar.} {.ecqWinds} {1};
+
+#action {^There is no reason to 'winds' here.$} {
+    #if {$ecq[trying]} {
+        #var ecq[trying] 0;
+        #math ecq[round] {$ecq[round] - 1};
+        #list bot[steps] create {$ecq[corners]};
+        #var bot[step] 1;
+        ..;
+    };
+} {1};
+
+
+#class {bot} {close}
+#read common/bot/generic.tin;
+
+#class {bot} {open};
+
+#NOP -- The paths end in .ecqAltar and .ecqDone, which carry on by themselves;
+#alias {.botComplete} {#NOP};
+
+#class {bot} {close};

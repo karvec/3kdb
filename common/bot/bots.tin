@@ -361,6 +361,7 @@
 .add_bot {wsea-box} {wsea-box} {Westersea: Iron Lockbox Hunter} {6016} {1} {1};
 .add_bot {orc-village} {orc-village} {Orc Village} {37296} {1} {1};
 .add_bot {xaxis} {xaxis} {Xaxis} {15859} {1} {1};
+.add_bot {elements} {elements} {Elemental Planes: Conglomeration x2 (Greaves/Armour of the Elements)} {1549} {0} {0};
 
 
 #NOP -------------------------- Science Steppers ----------------------------------;
