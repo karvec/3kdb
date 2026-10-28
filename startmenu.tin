@@ -739,11 +739,10 @@ menu_close_classes;
 #alias {_gswap_apply} {
     #local {_k} {};
     #local {_r} {};
-    #if {!&gameGuild[%1]} {
+    #if {&gameGuild[%1]} {#var gswap_ap {$gameGuild[%1]}} {
         #echo {<eaa>No reflexes, ktrig, panic or repeat saved for %1 yet. Set them up now, and your next gswap saves them<088>};
         #return;
     };
-    #var gswap_ap {$gameGuild[%1]};
     #send {reflex clear};
     #foreach {$gswap_ap[reflex][%*]} {_r} {#send {reflex add $_r[stat] $_r[when] $_r[cmd]}};
     #if {$gswap_ap[combat]} {#send {reflex combat on}} {#send {reflex combat off}};
