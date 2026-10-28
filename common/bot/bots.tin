@@ -359,7 +359,7 @@
 .add_bot {larem-cemetery} {larem-cemetery} {Larem Cemetery} {30237} {1} {1};
 .add_bot {lost-woods} {lost-woods} {Lost Woods} {19854} {1} {1};
 .add_bot {wsea-box} {wsea-box} {Westersea: Iron Lockbox Hunter} {6016} {1} {1};
-.add_bot {orc-village} {orc-village} {Orc Village} {37296} {1} {1};
+.add_bot {orc_village} {orc-village} {Orc Village} {37296} {1} {1};
 .add_bot {xaxis} {xaxis} {Xaxis} {15859} {1} {1};
 .add_bot {elements} {elements} {Elemental Planes: Conglomeration x2 (Greaves/Armour of the Elements)} {1549} {0} {0};
 
