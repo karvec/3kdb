@@ -1,7 +1,6 @@
 #class {default_aliases} {kill};
 #class {default_aliases} {open};
 
-#NOP -- %%0 so the event gets %0 (the sent text), not this alias's own argument;
 #alias {echo_on} {#EVENT {SEND OUTPUT} {#line ignore #showme {<038>%%0}};};
 #alias {debug} {#debug all on;#EVENT {SEND OUTPUT} {#line ignore #showme {<038>%%0}};};
 #alias {debugoff} {#debug all off;#UNEVENT {SEND OUTPUT};};
@@ -157,7 +156,6 @@
     #read common/strategy.tin;
     #read common/guilds/$guild/index.tin;
     #read common/guilds/eternal/eternal.tin;
-    #NOP -- The guild line parsers (.mipProcessGline<Guild>) live here, so reload them with the guild;
     #read modules/mip/stats.tin;
 };
 
