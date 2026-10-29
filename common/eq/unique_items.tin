@@ -65,7 +65,7 @@
 #NOP -- uniqueSmuggling: names sent to smuggle, oldest first. The failure lines don't name the item, so the oldest is;
 #NOP -- dropped instead;
 #list uniqueSmuggling clear;
-#action {{^(You are smuggling \d+ items, and that's about all you can handle|You cannot smuggle worn items|You don't appear to be carrying that)\.}} {
+#action {{^(You have not trained your smuggling skill|You are smuggling \d+ items, and that's about all you can handle|You cannot smuggle worn items|You don't appear to be carrying that)\.}} {
     #if {&uniqueSmuggling[]} {
         #local _n {$uniqueSmuggling[1]};
         #list uniqueSmuggling delete 1;
