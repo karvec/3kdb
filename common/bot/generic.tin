@@ -186,7 +186,7 @@
                     #if {$mob_kill_action} {
                         mka $mob[target];
                     } {
-                        kill $mob[target];
+                        checkStrategy {flipbird} {flipbird all} {kill $mob[target]};
                     };
                 };
             } {

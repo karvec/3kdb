@@ -15,6 +15,7 @@
 #list strategyList add {{{guild} {juggernaut} {name} {enhance} {active} {0} {description} {Jugger: Enhance: If at max sps/stim but below max enhance, use an enhance}}};
 #list strategyList add {{{guild} {juggernaut} {name} {mechwarrior} {active} {0} {description} {Jugger: Switch from defend to assault (best used with mech_resummon strategy)}}};
 #list strategyList add {{{guild} {juggernaut} {name} {mechelectric} {active} {0} {description} {Jugger: Switch from default fire to electric (specifically designed for Aegis)}}};
+#list strategyList add {{{guild} {juggernaut} {name} {flipbird} {active} {0} {description} {Jugger: Bots send flipbird all instead of kill}}};
 
 #list strategyList indexate name;
 
