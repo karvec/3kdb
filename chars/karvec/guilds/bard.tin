@@ -5,7 +5,7 @@
 
 #class {player_guild} {close}
 
-#NOP -- Put up defenses at login: turn on the spells and songs strategies (the heartbeat keeps them up).;
+#NOP -- Put up defenses at login: turn maint on (the heartbeat keeps the picked defenses up).;
 #NOP -- This file is also read on .reload and gswap, so a flag in its own class (which those don't kill);
 #NOP -- keeps it to once per session, and songs turned off later in the session stay off;
 #if {"$karvec_login[prots]" != "1"} {
@@ -13,7 +13,6 @@
     #var karvec_login[prots] 1;
     #class {karvec_login} {close};
     #delay {karvec_prots} {
-        _bard_strategy_on spells;
-        _bard_strategy_on songs;
+        maint;
     } {3};
 };

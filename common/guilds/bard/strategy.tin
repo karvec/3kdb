@@ -14,20 +14,6 @@
 #list strategyList add {{{guild} {bard} {name} {fi} {active} {0} {description} {Bard: First Impression once a boot (checks stats at login)}}};
 #list strategyList add {{{guild} {bard} {name} {ks} {active} {0} {description} {Bard: Karmic Shield}}};
 #list strategyList add {{{guild} {bard} {name} {vampire} {active} {0} {description} {Bard: Vampire song in combat}}};
-#NOP -- Defenses, kept up by the heartbeat in and out of combat (see bard_prot in heartbeat.tin);
-#list strategyList add {{{guild} {bard} {name} {spells} {active} {0} {description} {Bard: Defense spells (blink, prots, mind blank, hardened skin)}}};
-#list strategyList add {{{guild} {bard} {name} {songs} {active} {0} {description} {Bard: Defense songs (amazing grace, o muse)}}};
-#list strategyList add {{{guild} {bard} {name} {blink} {active} {0} {description} {Bard: Blink}}};
-#list strategyList add {{{guild} {bard} {name} {pe} {active} {0} {description} {Bard: Protection from Evil}}};
-#list strategyList add {{{guild} {bard} {name} {pg} {active} {0} {description} {Bard: Protection from Good}}};
-#list strategyList add {{{guild} {bard} {name} {pn} {active} {0} {description} {Bard: Protection from Neutral}}};
-#list strategyList add {{{guild} {bard} {name} {pf} {active} {0} {description} {Bard: Protection from Frost}}};
-#list strategyList add {{{guild} {bard} {name} {ph} {active} {0} {description} {Bard: Protection from Heat}}};
-#list strategyList add {{{guild} {bard} {name} {mb} {active} {0} {description} {Bard: Mind Blank}}};
-#list strategyList add {{{guild} {bard} {name} {hs} {active} {0} {description} {Bard: Hardened Skin}}};
-#list strategyList add {{{guild} {bard} {name} {hr} {active} {0} {description} {Bard: Harmonic Regeneration}}};
-#list strategyList add {{{guild} {bard} {name} {ag} {active} {0} {description} {Bard: Amazing Grace}}};
-#list strategyList add {{{guild} {bard} {name} {om} {active} {0} {description} {Bard: O Muse}}};
 #list strategyList indexate name;
 
 #NOP -- Timers of various spells - this depends on guild level;
