@@ -1,0 +1,6 @@
+[Unit]
+Description=Compare logged kill classes with ddata
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I %h/3kdb/scripts/ddata_seen.py
