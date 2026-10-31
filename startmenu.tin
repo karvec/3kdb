@@ -829,7 +829,7 @@ menu_close_classes;
         #var menu_ld_in 1;
         #var menu_ld_skip 0;
         #unvar xlinkdead_at;
-        #if {"$menu_refresh_on" == "1"} {#delay {menu_refresh_ld} {#zap} {0.5}};
+        #if {"$menu_refresh_on" == "1"} {#delay {menu_refresh_ld} {#zap} {0.1}};
     };
 };
 
@@ -857,17 +857,25 @@ menu_close_classes;
 
 #NOP -- Bring the menu back once every game session has closed (the startup session itself counts as one).;
 #NOP -- The event runs in the closing session, so the check is scheduled in the startup session;
+#alias {_menu_back_check} {
+    #info sessions save;
+    #if {&info[SESSIONS][] <= 1} {
+        #read startmenu.tin;
+    } {
+        #if {"$menu_refresh_on" == "1"} {#delay {menu_back} {_menu_back_check} {0.05}};
+    };
+};
 #event {SESSION DEACTIVATED} {
     #gts {
-        #delay {menu_back} {
-            #info sessions save;
-            #if {&info[SESSIONS][] <= 1} {#read startmenu.tin};
-        } {0.5};
+        #if {"$menu_refresh_on" == "1"} {
+            #delay {menu_back} {_menu_back_check} {0.02};
+        } {
+            #delay {menu_back} {_menu_back_check} {0.5};
+        };
     };
 };
 
 #NOP -- The mouse makes the menu clickable. Hold shift to select text while it's on;
 #config mouse on;
 menu_load;
-menu_draw;
-#if {"$menu_refresh_on" == "1"} {menu_refresh_next};
+#if {"$menu_refresh_on" == "1"} {menu_refresh_next} {menu_draw};
