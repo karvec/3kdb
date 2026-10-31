@@ -31,7 +31,7 @@
             #echo {<dea>  ktrack session stats cleared<088>};
         };
         #default {
-            #echo {<ccf>  ktrack on|off|reset. Logs time,char,room,mob,class,rounds,hp_lost,hp_min_pct,hp_max to $kt_file<088>};
+            #echo {<ccf>  ktrack on|off|reset. Logs time,char,area,scaler,room,mob,class,rounds,hp_lost,hp_min_pct,hp_max to $kt_file<088>};
             #echo {  <fff>logging: <ffa>$killtrack<fff>  kills this session: <ffa>$kt_count<088>};
             #echo {  <fff>biggest class killed: <ffa>$kt_best<fff> ($kt_bestmob)  most HP lost in one kill: <ffa>$kt_worstloss<088>};
         };
@@ -88,7 +88,7 @@
     #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
     #var kt_room $room[name];
     #replace kt_room {,} {;};
-    #line log {$kt_file} {$kt_now,$user,$kt_room,$kt_mob,$kt_class,$kt_rounds,$kt_hplost,$kt_hppct,$kt_hpmax};
+    #line log {$kt_file} {$kt_now,$user,$area,$currentScaler,$kt_room,$kt_mob,$kt_class,$kt_rounds,$kt_hplost,$kt_hppct,$kt_hpmax};
     #math kt_count {$kt_count + 1};
     #var kt_cnum $kt_class;
     #replace kt_cnum {,} {};
