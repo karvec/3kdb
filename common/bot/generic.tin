@@ -52,6 +52,37 @@
 };
 
 
+#var botstack[count] 0;
+#var botstack[fight] 0;
+#var botstack[wait] 0;
+#unvar botstack[seen];
+#if $botstack[max] {
+    #echo {<ffe>------ BOT STACK IS ACTIVE: FIGHT AFTER $botstack[max] MOBS --------<088>};
+};
+
+#alias .botStackCount {
+    #var tmpStackFound 0;
+    #foreach $room[mobs][%*] tmpStackMob {
+        #var tmpStackHit 0;
+        #foreach $bot[mobs][%*] tmpStackBotmob {
+            #if !$tmpStackHit {
+                #regexp {$tmpStackMob[name]} {%i$tmpStackBotmob[long]} {#var tmpStackHit 1};
+            };
+        };
+        #if $tmpStackHit {#math tmpStackFound {$tmpStackFound + 1}};
+    };
+    #map get roomvnum tmpStackVnum;
+    #if {&botstack[seen][$tmpStackVnum]} {
+        #if {$tmpStackFound > $botstack[seen][$tmpStackVnum]} {
+            #math botstack[count] {$botstack[count] + $tmpStackFound - $botstack[seen][$tmpStackVnum]};
+            #var botstack[seen][$tmpStackVnum] $tmpStackFound;
+        };
+    } {
+        #math botstack[count] {$botstack[count] + $tmpStackFound};
+        #var botstack[seen][$tmpStackVnum] $tmpStackFound;
+    };
+};
+
 #if $check_death {
         #echo {<ffe>------ CHECKDEATH IS ACTIVE --------<088>};
     } {
@@ -171,6 +202,28 @@
             #var bot[walk] 1;
             .botStep;
         } {
+            #if {$botstack[max] && !$botstack[fight]} {
+                #if {$bot[foundmob]} {.botStackCount};
+                #var tmpStackLevelEnd 0;
+                #regex {$bot[steps][$bot[step]]} {^{d|u}$} {#var tmpStackLevelEnd 1};
+                #if {$botstack[count] >= $botstack[max] || ($botstack[count] && $tmpStackLevelEnd)} {
+                    #var botstack[fight] 1;
+                    #var botstack[waits] 0;
+                    #echo {<ffe>BOT STACK: $botstack[count] mobs passed, fighting here<088>};
+                } {
+                    #var bot[foundmob] 0;
+                };
+            };
+            #if {$botstack[fight] && !$bot[foundmob]} {
+                #if {$botstack[waits] < 2 || ($incombat && $botstack[waits] < 5)} {
+                    #math botstack[waits] {$botstack[waits] + 1};
+                    #var botstack[wait] 1;
+                } {
+                    #var botstack[fight] 0;
+                    #var botstack[count] 0;
+                    #unvar botstack[seen];
+                };
+            };
             #if {$collector[items]} {
                 #if {"$area" == "Chaotic Sewers"} {#NOP} {get all;}
             } {
@@ -203,8 +256,13 @@
                         .check_room;
                     } {
                         #if $debug[bot] {#echo {<cfa>BOT DEBUG: No mob, no item, no check room - calling .botStep<088>}};
-                        #var bot[walk] 1;
-                        .botStep;
+                        #if {$botstack[wait]} {
+                            #var botstack[wait] 0;
+                            #delay {botstack_wait} {..} {3};
+                        } {
+                            #var bot[walk] 1;
+                            .botStep;
+                        };
                     };
                 };
             };
@@ -270,7 +328,7 @@
         #var bot[foundmob] 0;
         #var bot[aggro-mob] 0;
         #if !$idle_flag {
-            #if {"$bot[alias]" == "knights"} {#NOP} {
+            #if {"$bot[file]" == "knights" || ($botstack[max] && !$botstack[fight])} {#NOP} {
                 #if $actions_stacked {
                     do_action;
                     #delay 2 {

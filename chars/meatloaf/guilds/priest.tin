@@ -33,3 +33,8 @@
 #NOP -- Cancel mage.tin's pending delays after a gswap, or their alias names would go to the game as text;
 #undelay {meatloaf_summoner};
 #undelay {cast_dp};
+#undelay {meatloaf_defense};
+#undelay {def_step};
+#class {meatloaf_login} {open};
+#var meatloaf_login[guild] priest;
+#class {meatloaf_login} {close};

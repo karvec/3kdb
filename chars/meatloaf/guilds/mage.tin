@@ -29,19 +29,46 @@
      #list temp set %1 {%2};
 };
 
+#var def[min_sp] 3000;
+#var def[waiting] 0;
+#list defq create {};
+
 #alias {setup_defense} {
+     #undelay {def_step};
+     #if {"%0" == "stop"} {
+          #list defq clear;
+          #echo {<faa>setup_defense stopped.<088>};
+          #return;
+     };
      clear_c;
      clear_gc;
-     setup_c;
-     setup_gc;
-     #delay 2 {prots_ss};
-     #delay 4 {prots_MG};
-     #delay 6 {prots_ms};
-     #delay 8 {prots_armor};
-     #delay 10 {prots_ps};
-     #delay 12 {cast mantle};
-     #delay 14 {prots_pfe};
+     #list defq create {setup_c;gc_mantle;gc_ps;gc_mg;gc_ss;gc_shield;gc_armor;prots_ss;prots_MG;prots_ms;prots_armor;prots_ps;cast mantle;prots_pfe};
+     #var def[waiting] 0;
+     #delay {def_step} {.def_next} {2};
 };
+
+#alias {.def_next} {
+     #if {&defq[] == 0} {
+          #echo {<afa>setup_defense done.<088>};
+          #return;
+     };
+     #local {_sp} {0};
+     #if {&my[sp][current]} {#local {_sp} {$my[sp][current]}};
+     #if {$_sp >= $def[min_sp]} {
+          #var def[waiting] 0;
+          #local {_cmd} {$defq[1]};
+          #list defq delete 1;
+          $_cmd;
+     } {
+          #if {!$def[waiting]} {
+               #var def[waiting] 1;
+               #echo {<ffa>setup_defense: waiting for $def[min_sp] SP before $defq[1] ($_sp now).<088>};
+          };
+     };
+     #delay {def_step} {.def_next} {2};
+};
+
+#act {^You have no physical form and cannot perform actions.$} {#if {&defq[] > 0} {setup_defense stop}};
 
 #alias {setup_c} {
      cast contingency as prot_evil#cast protection from evil;
@@ -163,3 +190,11 @@
     #class {meatloaf_login} {close};
     #delay {meatloaf_summoner} {summoner_on} {3};
 };
+
+#if {&meatloaf_login[guild]} {#var _ml_from $meatloaf_login[guild]} {#var _ml_from login};
+#if {"$_ml_from" == "priest" || ("$_ml_from" == "login" && "$login_linkdeath" != "1")} {
+    #delay {meatloaf_defense} {setup_defense} {6};
+};
+#class {meatloaf_login} {open};
+#var meatloaf_login[guild] mage;
+#class {meatloaf_login} {close};

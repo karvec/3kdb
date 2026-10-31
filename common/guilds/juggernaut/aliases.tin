@@ -157,7 +157,7 @@ reset_tracking;
     dismiss;
     support summon;
     hp;
-    #delay 4 {#var dismiss_support 1;support defend;hp}
+    #delay 4 {#var dismiss_support 1;support assault fire;hp}
 };
 
 #alias {su2} {

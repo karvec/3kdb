@@ -829,7 +829,7 @@ menu_close_classes;
         #var menu_ld_in 1;
         #var menu_ld_skip 0;
         #unvar xlinkdead_at;
-        #if {"$menu_refresh_on" == "1"} {#delay {menu_refresh_ld} {ld} {10}};
+        #if {"$menu_refresh_on" == "1"} {#delay {menu_refresh_ld} {#zap} {0.5}};
     };
 };
 

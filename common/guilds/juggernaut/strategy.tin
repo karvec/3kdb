@@ -30,7 +30,7 @@
             #send {!hp};
             #delay 4 {
                 #var dismiss_support 1;
-                #send {!support defend};
+                #send {!support assault fire};
                 #send {!hp};
                 #NOP -- if enemy is higher than 10% hp then check mechwarrior strategy and switch mech into assault mode;
                 #if {$enemy[hp] > 10} {

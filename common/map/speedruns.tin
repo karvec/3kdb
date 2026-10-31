@@ -407,6 +407,7 @@
 .add_speedrun {cz_turqoise_stone} {eq} {54564} {Celestial Zodiacs: (Turqoise Stone)};
 .add_speedrun {marble_plinths} {area} {54078} {Marble Plinths};
 .add_speedrun {orc_village} {area} {37296} {Orc Village: Entrance};
+.add_speedrun {dryad} {area} {19915} {Dryad Tree: Bottom of the tree};
 
 #NOP -------------------------- Science Speedruns ----------------------------------;
 .add_speedrun {ico} {mob} {14312} {Camazots: Icodileies (Icodileies Armour)};
