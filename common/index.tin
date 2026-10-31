@@ -9,6 +9,7 @@
 #read common/aliases.tin;
 #read common/toggles.tin;
 #read common/corpsetrig.tin;
+#read common/killtrack.tin;
 #read common/defaults.tin;
 #read common/events.tin;
 #read common/gags/gags.tin;

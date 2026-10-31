@@ -1,0 +1,101 @@
+#class {killtrack} {kill}
+#class {killtrack} {open}
+
+#var killtrack 0;
+#var kt_count 0;
+#var kt_best 0;
+#var kt_bestmob {};
+#var kt_worstloss 0;
+#var kt_hpstart 0;
+#var kt_hpmin 0;
+#var kt_file {logs/killtrack.csv};
+
+#alias {ktrack} {
+    #switch {"%1"} {
+        #case {"on"} {
+            #var killtrack 1;
+            #var kt_hpstart 0;
+            #ticker {kt_hp} {.kt_sample} {1};
+            #echo {<dea>  ktrack on: every kill is logged to $kt_file<088>};
+        };
+        #case {"off"} {
+            #var killtrack 0;
+            #unticker {kt_hp};
+            #echo {<dea>  ktrack off<088>};
+        };
+        #case {"reset"} {
+            #var kt_count 0;
+            #var kt_best 0;
+            #var kt_bestmob {};
+            #var kt_worstloss 0;
+            #echo {<dea>  ktrack session stats cleared<088>};
+        };
+        #default {
+            #echo {<ccf>  ktrack on|off|reset. Logs time,char,room,mob,class,rounds,hp_lost,hp_min_pct,hp_max to $kt_file<088>};
+            #echo {  <fff>logging: <ffa>$killtrack<fff>  kills this session: <ffa>$kt_count<088>};
+            #echo {  <fff>biggest class killed: <ffa>$kt_best<fff> ($kt_bestmob)  most HP lost in one kill: <ffa>$kt_worstloss<088>};
+        };
+    };
+};
+
+#alias {.kt_sample} {
+    #if {$incombat && $my[hp][current] > 0} {
+        #if {$kt_hpstart == 0} {
+            #var kt_hpstart $my[hp][current];
+            #var kt_hpmin $my[hp][current];
+        };
+        #if {$my[hp][current] < $kt_hpmin} {#var kt_hpmin $my[hp][current]};
+    };
+};
+
+#alias {.killtrack_record} {
+    #var kt_rounds $deathReport[mob_rounds_to_kill];
+    #var kt_hpmax $my[hp][max];
+    #if {$kt_hpstart == 0} {#var kt_hpstart $my[hp][current];#var kt_hpmin $my[hp][current]};
+    #math kt_hplost {$kt_hpstart - $kt_hpmin};
+    #if {$kt_hpmax > 0} {#math kt_hppct {100 * $kt_hpmin / $kt_hpmax}} {#var kt_hppct 0};
+    #var kt_hpstart 0;
+    #action {^Last kills this boot:$} {.kt_arm2} {2};
+    #delay {kt_disarm} {.kt_disarm} {6};
+    killed;
+};
+
+#alias {.kt_arm2} {
+    #unaction {^Last kills this boot:$};
+    #action {^ ----%*$} {.kt_arm3} {2};
+};
+
+#alias {.kt_arm3} {
+    #unaction {^ ----%*$};
+    #action {^ %*$} {.kt_row %%0} {2};
+};
+
+#alias {.kt_disarm} {
+    #unaction {^Last kills this boot:$};
+    #unaction {^ ----%*$};
+    #unaction {^ %*$};
+};
+
+#alias {.kt_row} {
+    #undelay {kt_disarm};
+    #unaction {^ %*$};
+    #var kt_line %0;
+    #regex {$kt_line} {%* %S$} {#var kt_class {&2}};
+    #format kt_mob {%.30s} {$kt_line};
+    #replace kt_mob {,} {;};
+    #replace kt_mob {\\x7B} {(};
+    #replace kt_mob {\\x7D} {)};
+    #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
+    #var kt_room $room[name];
+    #replace kt_room {,} {;};
+    #line log {$kt_file} {$kt_now,$user,$kt_room,$kt_mob,$kt_class,$kt_rounds,$kt_hplost,$kt_hppct,$kt_hpmax};
+    #math kt_count {$kt_count + 1};
+    #var kt_cnum $kt_class;
+    #replace kt_cnum {,} {};
+    #regex {$kt_cnum} {^{[0-9.]+}k$} {#math kt_cnum {&1 * 1000}};
+    #regex {$kt_cnum} {^{[0-9.]+}m$} {#math kt_cnum {&1 * 1000000}};
+    #if {$kt_cnum > $kt_best} {#var kt_best $kt_cnum;#var kt_bestmob {$kt_mob}};
+    #if {$kt_hplost > $kt_worstloss} {#var kt_worstloss $kt_hplost};
+};
+
+#class {killtrack} {close}
