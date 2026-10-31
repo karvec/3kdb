@@ -340,6 +340,17 @@ menu_close_classes;
         #cursor set {%1};
         #return;
     };
+    #if {%1 == 0 && "${menu_num}" == ""} {
+        #if {"${menu_zero}" == "1"} {
+            #unvar menu_zero;
+            #undelay {menu_zero};
+            menu_refresh_ld;
+        } {
+            #var menu_zero 1;
+            #delay {menu_zero} {#unvar menu_zero} {1.5};
+        };
+        #return;
+    };
     #if {$menu[count] < 10} {
         #if {%1 <= $menu[count]} {menu_login %1};
         #return;
@@ -355,6 +366,49 @@ menu_close_classes;
     #var menu[row] $menu_num;
     #var menu[msg] {<ffa>Enter: log in to $menu_chars[$menu_num], or type the next digit<088>};
     menu_draw;
+};
+
+#NOP -- Hidden: 00 logs in every linkdead character one after another and sends each straight back linkdead,;
+#NOP -- which restarts the game's linkdead timer. Characters that only a reboot boots (vaf[linkd]) are skipped.;
+#NOP -- menu_refresh_on stays set while it runs so the game session knows to go linkdead again;
+#alias {menu_refresh_ld} {
+    #var menu_refresh_q {};
+    #var menu_refresh_n 0;
+    #foreach {$menu_chars[%*]} {menu_c} {
+        #if {"$menu_ld_at[$menu_c]" != "" && "$menu_linkd[$menu_c]" != "1"} {
+            #list menu_refresh_q add {$menu_c};
+            #math menu_refresh_n {$menu_refresh_n + 1};
+        };
+    };
+    #if {$menu_refresh_n == 0} {
+        #var menu[msg] {<ffa>No linkdead characters to refresh<088>};
+        menu_draw;
+        #return;
+    };
+    #var menu_refresh_done {};
+    #var menu_refresh_on 1;
+    menu_refresh_next;
+};
+
+#alias {menu_refresh_next} {
+    #undelay {menu_refresh_wd};
+    #if {$menu_refresh_n == 0} {
+        #unvar menu_refresh_on;
+        #var menu[msg] {<ffa>Linkdead timers refreshed:$menu_refresh_done<088>};
+        menu_draw;
+        #return;
+    };
+    #var menu_refresh_c $menu_refresh_q[1];
+    #list menu_refresh_q delete 1;
+    #math menu_refresh_n {$menu_refresh_n - 1};
+    #var menu_refresh_done {$menu_refresh_done $menu_refresh_c};
+    #delay {menu_refresh_wd} {
+        #unvar menu_refresh_on;
+        #showme {<faa>Linkdead refresh stopped: $menu_refresh_c did not finish in 2 minutes<088>};
+    } {120};
+    #loop 1 $menu[count] i {
+        #if {"$menu_chars[$i]" == "$menu_refresh_c"} {menu_login $i};
+    };
 };
 
 #NOP -- Arrows and Tab drop a number being typed;
@@ -775,6 +829,7 @@ menu_close_classes;
         #var menu_ld_in 1;
         #var menu_ld_skip 0;
         #unvar xlinkdead_at;
+        #if {"$menu_refresh_on" == "1"} {#delay {menu_refresh_ld} {ld} {10}};
     };
 };
 
@@ -815,3 +870,4 @@ menu_close_classes;
 #config mouse on;
 menu_load;
 menu_draw;
+#if {"$menu_refresh_on" == "1"} {menu_refresh_next};
