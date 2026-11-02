@@ -10,6 +10,9 @@
 #var kt_hpmin 0;
 #var kt_file {logs/killtrack.csv};
 
+#var toggleMap[ktrack] {{var}{killtrack}{on}{ktrack on}{off}{ktrack off}{login}{ktrack on}};
+#var toggleDesc[ktrack] {Logs every kill (area, scaler, room, mob, class, rounds, HP lost) to logs/killtrack.csv};
+
 #alias {ktrack} {
     #switch {"%1"} {
         #case {"on"} {
