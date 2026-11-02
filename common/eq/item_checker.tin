@@ -62,7 +62,9 @@
     #if {$worldDropNew && (&webhook[url][worlddrops] || &webhook[url][general])} {
         #if {&webhook[url][worlddrops]} {#var discordChannel $webhook[url][worlddrops]} {#var discordChannel $webhook[url][general]};
         #format worldDropTime {%t} {%Y-%m-%d %H:%M};
-        postDiscord {[$worldDropTime] WORLD DROP: $user_cap found $name in $room[name] [$roomvnum] ($area)};
+        #var worldDropRoom {$room[name]};
+        #if {"$worldDropRoom" == ""} {#map get roomname worldDropRoom};
+        postDiscord [$worldDropTime] WORLD DROP: $user_cap found $name in $worldDropRoom [$roomvnum] ($area);
     };
     #if {$toggles[worlddrops] && $bot[active] && !$bot[paused]} {
         #echo {<cfb>===========> <ccd>BOT PAUSED, 'toggle worlddrops' turns this off<088>};

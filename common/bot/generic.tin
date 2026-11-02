@@ -56,8 +56,11 @@
 #var botstack[fight] 0;
 #var botstack[wait] 0;
 #unvar botstack[seen];
-#if $botstack[max] {
+.botStackCheck;
+#if $botstack[active] {
     #echo {<ffe>------ BOT STACK IS ACTIVE: FIGHT AFTER $botstack[max] MOBS --------<088>};
+} {
+    #if $botstack[max] {#echo {<ffe>------ BOT STACK IS SET BUT ONLY WORKS IN AEGIS: FIGHTING EVERY MOB --------<088>}};
 };
 
 #alias .botStackCount {
@@ -146,6 +149,8 @@
 #nop kill the bot;
 #alias {.stop} {
     .backupBot;
+    #undelay {bot_kick};
+    #undelay {bot_restart};
     #unvar bot;
     #unalias {..};
     #class {bot} {kill};
@@ -202,7 +207,7 @@
             #var bot[walk] 1;
             .botStep;
         } {
-            #if {$botstack[max] && !$botstack[fight]} {
+            #if {$botstack[active] && !$botstack[fight]} {
                 #if {$bot[foundmob]} {.botStackCount};
                 #var tmpStackLevelEnd 0;
                 #regex {$bot[steps][$bot[step]]} {^{d|u}$} {#var tmpStackLevelEnd 1};
@@ -328,7 +333,7 @@
         #var bot[foundmob] 0;
         #var bot[aggro-mob] 0;
         #if !$idle_flag {
-            #if {"$bot[file]" == "knights" || ($botstack[max] && !$botstack[fight])} {#NOP} {
+            #if {"$bot[file]" == "knights" || ($botstack[active] && !$botstack[fight])} {#NOP} {
                 #if $actions_stacked {
                     do_action;
                     #delay 2 {
