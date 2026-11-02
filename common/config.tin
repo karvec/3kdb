@@ -281,7 +281,6 @@
 #NOP -- scripts are so spammy;
 #var sessionActive 0;
 #action {^3Kingdoms welcomes you!} {
-    #var login_linkdeath 0;
     #var sessionActive 1;
     #var login_linkdeath 0;
     _load_3kdb_common;
@@ -290,7 +289,6 @@
 } {1};
 #NOP -- login_linkdeath tells guild files (e.g. maint) this is a return from linkdeath, spells still up;
 #action {^3Kingdoms welcomes you back from linkdeath.} {
-    #var login_linkdeath 1;
     #var sessionActive 1;
     #var login_linkdeath 1;
     _load_3kdb_common;
