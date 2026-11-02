@@ -2,35 +2,10 @@
 
 ## Power management
 
-Features a built in power management system that lets you configure a set of powers to always be on. All powers are referred to by their in game power abbreviation. Adding a power to the configuration will attempt to always keep it on. The logic is stored in my[implants] for what you have installed and my[powers] stores what is in your hpbar/MIP to compare the two.
+Installed powers come from `gs`: `gs_powers` runs 5 seconds after the guild files load (login, `.reload`, gswap) and again on "Implant: Fully Operational.", and marks every installed power that has a key in data.tin in `my[implants]`. Run `gs_powers` yourself after installing or removing an implant. `my[powers]` holds what is up now, from your hpbar/MIP.
 
-- If a power is not on, it will be turned on.
-- If a power is about to expire, it will be refreshed.
-
-Features smart power management so it removes powers you have not included.
-
-- If a power is on but not in your configuration, it will be turned off.
-
-### Adding a power
-
-`addp <power>` ex. `addp Vr` 
-
-Adds the valor power to your power configuration.
-
-### Removing a power
-
-`remp <power>` ex. `remp Vr`
-
-### Show power configuration
-
-`showp` shows all powers that will be maintained
-
-```
-----------------
---- Defense ----
-----------------                                                     
-Vg - vigor                                                           
-```
+- Sustained powers are kept up by the heartbeat when they are installed and picked in `maint` (see Maint below). `maint list` shows each power: picked, installed, up now.
+- Single-use powers are strategies (see below).
 
 ### Forcing a power to be used
 
@@ -42,48 +17,7 @@ This is useful for things like `pset` (guild config) or evaluating a mob.
 
 ### Adding a new power
 
-In the guild heartbeat file, add the new power in the appropriate section. Ex. `_check_power {Vr} {valor};` will check that valor is turned on every heartbeat using the logic specified above.
-
-In the guild aliases file, add the new power in the appropriate section to the show power configuration alias. Ex.   `_show_power {Vr} {valor};` so when you use `showp` it will show if valor is configured or not.
-
-### Creating an alias to create a power configuration set
-
-All powers are stored inside a list called `my[implants]`. There are two values stored, whether it is installed and whether it is active.  Just setup an alias with any name you like and set the my[implants][active] to 0 or 1 as needed. 
-
-Here's an example of a defense setup:
-
-```
-#alias {defense} {
-  #var my[implants] {};
-
-  #nop -- Defense buffs;
-
-  #var my[implants][Vr][active] 0;
-  #var my[implants][Eb][active] 0;
-  #var my[implants][Cp][active] 0;
-  #var my[implants][Iv][active] 1;
-  #var my[implants][IV][active] 1;
-  #var my[implants][Ib][active] 1;
-  #var my[implants][IB][active] 1;
-  #var my[implants][Vg][active] 1;
-  #var my[implants][Vv][active] 0;
-  #var my[implants][ab][active] 1;
-
-  #nop -- Combat buffs;
-
-  #var my[implants][Sj][active] 1;
-  #var my[implants][Bo][active] 1;
-  #var my[implants][CP][active] 1;
-  #var my[implants][pf][active] 0;
-
-  #nop -- Combat powers;
-
-  #var my[implants][bc][active] 1;
-  #var my[implants][rpain][active] 1;
-};
-```
-
-It is recommended to create a default power set and run this as part your character's tintin++ initialization so that a set of powers is always present.
+Give it a key in data.tin (the hpbar code), then in the guild heartbeat file add it in the appropriate section. Ex. `_check_power {Vr} {valor};` checks that valor is up every heartbeat. Add it to `maint_spells`, `maint_order` and the name tables in maintenance.tin so `maint` can pick it.
 
 ## Specific powers
 
@@ -91,18 +25,14 @@ It is recommended to create a default power set and run this as part your charac
 
 If you add `exa mob` to your pre fight check, it will store the best damage type to use for adapt body. You'll need the right mskill that shows you the mobs damage type first. Then when starting the fight it will change adapt body to use the right damage type if it isn't already.
 
-Make sure to add adapt body to your power configuration with `addp ab`.
-
 ### Maint
 
-Sustained powers (valor, verve, vigor, biofeedback, precognition, barriers, jaws, astral constructs, adapt body...) are kept up by the heartbeat when they are picked in `maint` and their implant is on (`addp`). Maint starts on with every power picked, so nothing changes until you `maint del <power>` one. `maint list` shows the names, `maint-help` the commands. Picks save with the character.
+Sustained powers (valor, verve, vigor, biofeedback, precognition, barriers, jaws, astral constructs, adapt body...) are kept up by the heartbeat when they are installed (read from `gs`) and picked in `maint`. Maint starts on with every power picked, so nothing changes until you `maint del <power>` one. `maint list` shows the names, `maint-help` the commands. Picks save with the character.
 
 ### Demoralize, brilliant blast, flaming shroud
 
 Single-use powers are strategies: `strategy demoralize`, `strategy bblast`, `strategy fshroud`. Brilliant blast is used once per fight, at the start of combat; flaming shroud has no hpbar flag and lasts Intelligence / 2 rounds, so it is recast when that many combat rounds have passed (Int is read from `score short` the first time, run `fsint` after your Int changes); demoralize is repeated until the target can't be re-demoralized.
 
-Make sure to add them to your power configuration: `addp dm`, `addp bb` and `addp fs`
-
 ### Greater mindlink
 
-Add your greater mind link target to the heartbeat file `greater_mind_link_target` and `addp ML`
+Add your greater mind link target to the heartbeat file `greater_mind_link_target`.

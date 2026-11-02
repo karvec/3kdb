@@ -48,30 +48,6 @@
   fold reality;
 };
 
-#NOP --- Psicorps power configurations;
-
-#alias {solo} {
-addp GV;
-addp IB;
-addp PR;
-addp Di;
-addp Ib;
-addp Eb;
-addp Ab;
-addp SP;
-addp Vg;
-addp Gv;
-addp CP;
-addp Bo;
-addp Ac6;
-addp BC;
-addp ab;
-addp AA;
-addp dm;
-addp gc;
-addp D;
-}
-
 #alias {boostup} {
         psychofeedback wis for str;
         #delay {2} {improved vigor};

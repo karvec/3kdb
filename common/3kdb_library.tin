@@ -611,10 +611,7 @@
 
 #NOP -------------------------- Psicorps Guild Aliases ----------------------------------;
 #if {"$guild" == "psicorps"} {
-.add_library {addp} {guild} {add power to tracker list} {'addp'} {common/guilds/psicorps/aliases.tin};
-.add_library {remp} {guild} {remove power from tracker list} {'remp'} {common/guilds/psicorps/aliases.tin};
 .add_library {usep} {guild} {use selected psicorps power} {'usep'} {common/guilds/psicorps/aliases.tin};
-.add_library {showp} {guild} {show power details} {'showp'} {common/guilds/psicorps/aliases.tin};
 .add_library {ktrack} {misc} {log every kill's mob class, rounds and HP lost to logs/killtrack.csv} {ktrack on, ktrack off, ktrack reset, ktrack} {common/killtrack.tin};
 .add_library {psi_donate} {guild} {donate psi resource run} {'psi_donate'} {common/guilds/psicorps/aliases.tin};
 .add_library {maint} {guild} {keep picked psicorps powers up via the heartbeat} {maint, maint <power>, maint off/all/clear/list} {common/guilds/psicorps/maintenance.tin};
