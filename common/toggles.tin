@@ -43,7 +43,8 @@
 
 #NOP -- Toggles kept in their own variables by older on/off commands. toggle <name> flips these too,;
 #NOP -- toggle-list shows them and _variable_export saves them. Fields: var (holds 0/1), also (another;
-#NOP -- variable kept equal), on/off (run after switching), login (run when restored on), nosave (not saved);
+#NOP -- variable kept equal), on/off (run after switching), login (run when restored on), nosave (not saved),;
+#NOP -- default (1: on when nothing is saved for it yet, e.g. set in common/private.tin);
 #var toggleMap {
     {autocollect} {{var}{collector[items]}}
     {beep} {{var}{beepon}}
@@ -93,6 +94,12 @@
         #if {&toggleMap[$t][]} {
             .toggle_set $t $xtoggleMap[$t];
             #if {"$xtoggleMap[$t]" == "1" && "$toggleMap[$t][login]" != ""} {$toggleMap[$t][login]};
+        };
+    };
+    #foreach *toggleMap[] t {
+        #if {"$toggleMap[$t][default]" == "1" && "$xtoggleMap[$t]" != "0" && "$xtoggleMap[$t]" != "1"} {
+            .toggle_set $t 1;
+            #if {"$toggleMap[$t][login]" != ""} {$toggleMap[$t][login]};
         };
     };
 };
