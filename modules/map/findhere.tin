@@ -421,7 +421,6 @@
 		.findhere_auto_stop {this room has no standard exits to walk};
 		#return;
 	};
-	#NOP -- No exit splits them (e.g. a section mapped twice), so look further ahead;
 	#if {$findauto_bestscore >= &findroom[$find_count][] * 2} {
 		.findhere_auto_plan;
 		#if {"$findauto_plan" == ""} {
@@ -438,9 +437,6 @@
 	findhere2 $findauto_best;
 };
 
-#NOP -- Walk every direction from all the rooms at once, breadth first, until they meet in one room or reach;
-#NOP -- rooms that look different. findauto_plan is the first exit of the shortest such walk, or empty if;
-#NOP -- there's none within 300 groups of rooms;
 #alias {.findhere_auto_plan} {
 	#local fd {};
 	#local fv {};

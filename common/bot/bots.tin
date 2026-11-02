@@ -327,6 +327,10 @@
 .add_bot {groceries} {groceries} {Grocery Store} {302} {1} {1} {chaos};
 .add_bot {archon} {archon} {Archon (above the Chessboard)} {1273} {1} {1} {chaos};
 .add_bot {humpty} {humpty} {Humpty Dumpty} {30647} {1} {1} {chaos};
+.add_bot {truck} {truck} {Good Humor Truck: Ice Cream Freezers (start inside, see findtruck)} {25241} {1} {1} {chaos};
+.add_bot {puppies} {puppies} {Puppy Mill: Puppy Pen} {7340} {0} {0} {chaos};
+.add_bot {groceries} {groceries} {Grocery Store} {302} {1} {1} {chaos};
+.add_bot {archon} {archon} {Archon (above the Chessboard)} {1273} {1} {1} {chaos};
 
 
 #NOP -------------------------- Fantasy Steppers ----------------------------------;
