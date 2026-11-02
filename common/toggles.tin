@@ -103,6 +103,12 @@
             #if {"$toggleMap[$t][login]" != ""} {$toggleMap[$t][login]};
         };
     };
+    #NOP -- toggleDefault[<name>] (e.g. set in common/private.tin): toggles[<name>] when vars.tin saved no 0 or 1 for it;
+    #if {&toggleDefault} {
+        #foreach *toggleDefault[] t {
+            #if {"$toggles[$t]" != "0" && "$toggles[$t]" != "1"} {#var toggles[$t] $toggleDefault[$t]};
+        };
+    };
 };
 
 #NOP -- What each toggle does, shown in toggle-list;
