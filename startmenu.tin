@@ -368,9 +368,6 @@ menu_close_classes;
     menu_draw;
 };
 
-#NOP -- Hidden: 00 logs in every linkdead character one after another and sends each straight back linkdead,;
-#NOP -- which restarts the game's linkdead timer. Characters that only a reboot boots (vaf[linkd]) are skipped.;
-#NOP -- menu_refresh_on stays set while it runs so the game session knows to go linkdead again;
 #alias {menu_refresh_ld} {
     #var menu_refresh_q {};
     #var menu_refresh_n 0;
