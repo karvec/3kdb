@@ -130,12 +130,12 @@
     } {
         #if $cycle {
             #map run $bot[start_vnum];
-            #delay 2 {
+            #delay {bot_start} {
                 #read common/bot/bots/$bot[file].tin;
                 update_xp start;
                 .pre_bot_check;
                 ..;
-            };
+            } {2};
         } {
             #echo {<dfa>--- YOU ARE NOT IN THE CORRECT START ROOM ---<088>};
             #echo {<dfa>   Press (1) If you are not in the correct room, and would like to run there.<088>};
