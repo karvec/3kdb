@@ -326,11 +326,13 @@
 .add_bot {puppies} {puppies} {Puppy Mill: Puppy Pen} {7340} {0} {0} {chaos};
 .add_bot {groceries} {groceries} {Grocery Store} {302} {1} {1} {chaos};
 .add_bot {archon} {archon} {Archon (above the Chessboard)} {1273} {1} {1} {chaos};
+.add_bot {humpty} {humpty} {Humpty Dumpty} {30647} {1} {1} {chaos};
 
 
 #NOP -------------------------- Fantasy Steppers ----------------------------------;
 
 .add_bot {abyss} {abyss} {The Abyss} {26522} {0} {1};
+.add_bot {alizarian} {alizarian} {Alizarian Forest (need to slow to start)} {23545} {1} {1};
 .add_bot {catacombs} {catacombs} {Catacombs} {7996} {1} {1};
 .add_bot {catacombs} {catacombs2} {Catacombs v2.0} {20967} {1} {1};
 .add_bot {catacombs-easy} {catacombs2-easy} {Catacombs v2.0 - No Duke/Runner} {20967} {1} {1};
@@ -391,6 +393,8 @@
 .add_bot {xaxis} {xaxis} {Xaxis} {15859} {1} {1};
 .add_bot {elements} {elements} {Elemental Planes: Conglomeration x2 (Greaves/Armour of the Elements)} {1549} {0} {0};
 .add_bot {dragon-realms} {dragon-realms} {Dragon Realms: large and enormous dragons} {6279} {0} {1};
+.add_bot {tao} {tao} {Tao Te Cheng: All targets} {21400} {1} {0};
+.add_bot {treants} {treants} {Ravenloft: Treant Forest} {4439} {1} {1};
 
 
 #NOP -------------------------- Science Steppers ----------------------------------;
