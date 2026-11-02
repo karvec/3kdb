@@ -11,4 +11,17 @@
 #macro {\en} {sw};
 #macro {\e,} {se};
 
+#alias {.numpad} {#if {"$toggles[numpad]" == "1"} {%1} {#cursor set {%2}}};
+#macro {\eOq} {.numpad {sw} {1}};
+#macro {\eOr} {.numpad {s} {2}};
+#macro {\eOs} {.numpad {se} {3}};
+#macro {\eOt} {.numpad {w} {4}};
+#macro {\eOu} {.numpad {look;search} {5}};
+#macro {\eOv} {.numpad {e} {6}};
+#macro {\eOw} {.numpad {nw} {7}};
+#macro {\eOx} {.numpad {n} {8}};
+#macro {\eOy} {.numpad {ne} {9}};
+#macro {\eOp} {.numpad {d} {0}};
+#macro {\eOn} {.numpad {u} {.}};
+
 #class common_macros close;

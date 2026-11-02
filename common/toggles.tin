@@ -23,6 +23,7 @@
     #if {"${toggles[teleport]}" == ""} {#var toggles[teleport] 1};
     #if {"${toggles[auto_portrait]}" == ""} {#var toggles[auto_portrait] 1};
     #if {"${toggles[map_vnum]}" == ""} {#var toggles[map_vnum] 0};
+    #if {"${toggles[numpad]}" == ""} {#var toggles[numpad] 0};
     #if {"${toggles[portal_notify]}" == ""} {#var toggles[portal_notify] 0};
     #if {"${toggles[fracture_notify]}" == ""} {#var toggles[fracture_notify] 0};
     #if {"${toggles[portal_ctell]}" == ""} {#var toggles[portal_ctell] 0};
@@ -136,6 +137,7 @@
     {map_vnum} {Shows the room number in the bottom right corner of the map}
     {map_follow} {While you follow someone, moves your map with you each time they lead you to another room}
     {mission} {Asks for a mission when you find a mission giver}
+    {numpad} {Number pad walks: 7 8 9 are nw n ne, 4 5 6 are w, look and search, e, 1 2 3 are sw s se, 0 is d and . is u}
     {portal_ctell} {Zodiacs: portal_notify, and ctells your clan too}
     {portal_notify} {Zodiacs: NOTE in your chat window (and Discord) when timecheck shows a portal (tome) hour}
     {sessionlog} {Saves everything you see to a log file, one per day}
