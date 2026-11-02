@@ -22,6 +22,7 @@
     #if {"${toggles[farsight_ctell]}" == ""} {#var toggles[farsight_ctell] 0};
     #if {"${toggles[teleport]}" == ""} {#var toggles[teleport] 1};
     #if {"${toggles[auto_portrait]}" == ""} {#var toggles[auto_portrait] 1};
+    #if {"${toggles[map_vnum]}" == ""} {#var toggles[map_vnum] 0};
     #if {"${toggles[portal_notify]}" == ""} {#var toggles[portal_notify] 0};
     #if {"${toggles[fracture_notify]}" == ""} {#var toggles[fracture_notify] 0};
     #if {"${toggles[portal_ctell]}" == ""} {#var toggles[portal_ctell] 0};
@@ -132,6 +133,7 @@
     {fracture_ctell} {Zodiacs: fracture_notify, and ctells your clan too}
     {fracture_notify} {Zodiacs: NOTE in your chat window (and Discord) when timecheck shows a fracture (grimoire) hour}
     {go_echo} {Says 'here we go!' when go finds the room}
+    {map_vnum} {Shows the room number in the bottom right corner of the map}
     {map_follow} {While you follow someone, moves your map with you each time they lead you to another room}
     {mission} {Asks for a mission when you find a mission giver}
     {portal_ctell} {Zodiacs: portal_notify, and ctells your clan too}
@@ -174,6 +176,7 @@
                 };
                 #if {"$toggle_var" == "discord_post"} {#var discordPost $toggles[discord_post]};
                 #if {"$toggle_var" == "auto_portrait"} {init_screen;draw_all};
+                #if {"$toggle_var" == "map_vnum"} {init_map};
                 #if {"$toggle_var" == "sessionlog"} {#if $toggles[sessionlog] {.sessionlog_start} {sessionlog off}};
                 #if {"$toggle_var" == "worlddrops2"} {.worlddrops2_watch};
             };
