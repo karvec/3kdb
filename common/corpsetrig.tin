@@ -382,15 +382,18 @@
         #echo { <bba>corpse_trig will only fire on $user killing blow<088>};
         #var corpsetrigKB 1;
     };
+    #var toggles[corpsetrig_kb] $corpsetrigKB;
 };
 
 #alias corpsetrig-on {
     #var corpsetrigStatus 1;
+    #var toggles[corpsetrig] 1;
     #echo { <bba>corpse_trig is now on<088>};
 };
 
 #alias corpsetrig-off {
     #var corpsetrigStatus 0;
+    #var toggles[corpsetrig] 0;
     #echo { <bba>corpse_trig is now off<088>};
 };
 

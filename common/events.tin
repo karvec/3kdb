@@ -18,6 +18,7 @@
         #ECHO {<efb> 🐭🧀🐭  MOUSE IS ACTIVE AND REPORTING FOR SERVICE!  🐭🧀🐭<088>};
         #config mouse on;
     };
+    #var toggles[mouse] $mouseActive;
 };
 
 #EVENT {SCROLLED MOUSE WHEEL UP}{

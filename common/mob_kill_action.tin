@@ -223,12 +223,14 @@
 #alias mka-on {
     #var mkaStatus 1;
     #var mob_kill_action 1;
+    #var toggles[mka] 1;
     #echo { <bba>MOB KILL ACTIONS are now on<088>};
 };
 
 #alias mka-off {
     #var mkaStatus 0;
     #var mob_kill_action 0;
+    #var toggles[mka] 0;
     #echo { <bba>MOB KILL ACTIONS are now off<088>};
 };
 

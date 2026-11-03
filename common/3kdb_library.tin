@@ -653,7 +653,7 @@
 .add_library {dcup} {misc} {attacks mike/duplicates creature/touchs dove rune/attacks first mike} {'dcup'} {common/areas/hockey.tin};
 .add_library {beepon} {misc} {turn on terminal beep on events (toggle beep)} {'beepon'} {common/aliases.tin};
 .add_library {beepoff} {misc} {turn off terminal beep on events (toggle beep)} {'beepoff'} {common/aliases.tin};
-.add_library {qq} {misc} {toggle mouse capture for clickable UI (toggle mouseActive)} {'qq'} {common/events.tin};
+.add_library {qq} {misc} {toggle mouse capture for clickable UI (toggle mouse)} {'qq'} {common/events.tin};
 .add_library {toggle-list} {misc} {3kdb current toggles list} {'toggle-list'} {common/toggles.tin};
 .add_library {sessionlog} {misc} {log the whole game session to logs/<user>/sessions/<char>_<date>.log, old days zstd compressed - toggle sessionlog keeps it on for this character} {sessionlog on|off} {modules/sessionlog/sessionlog.tin};
 .add_library {grep} {misc} {search session scrollback buffer} {grep <pattern>} {common/aliases.tin};

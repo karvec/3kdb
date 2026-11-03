@@ -129,6 +129,7 @@
         #var bot[playercheck] 1;
         #delay .2 {#echo {<BAF><ffe>------ PLAYERCHECK IS NOW ON --------<088>}};
     };
+    #var toggles[playercheck] $bot[playercheck];
     _update_caption_data;
 };
 

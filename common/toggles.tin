@@ -42,84 +42,69 @@
     #if {"${toggles[discord_post]}" == ""} {#var toggles[discord_post] 0};
     #if {"${toggles[dog_care]}" == ""} {#var toggles[dog_care] 0};
     #var discordPost $toggles[discord_post];
+    .toggle_vars;
 };
 
 
-#NOP -- Toggles kept in their own variables by older on/off commands. toggle <name> flips these too,;
-#NOP -- toggle-list shows them and _variable_export saves them. Fields: var (holds 0/1), also (another;
-#NOP -- variable kept equal), on/off (run after switching), login (run when restored on), nosave (not saved),;
-#NOP -- default (1: on when nothing is saved for it yet, e.g. set in common/private.tin);
-#var toggleMap {
-    {autocollect} {{var}{collector[items]}}
-    {beep} {{var}{beepon}}
-    {chatlog_emotes} {{var}{chat[log][emotes]}}
-    {corpsetrig} {{var}{corpsetrigStatus}}
-    {corpsetrig_kb} {{var}{corpsetrigKB}}
-    {mka} {{var}{mkaStatus}{also}{mob_kill_action}}
-    {mouse} {{var}{mouseActive}{on}{#config mouse on}{off}{#config mouse off}{login}{#config mouse on}}
-    {aoe} {{var}{aoe_enabled}{on}{aoeon}{off}{aoeoff}}
-    {playercheck} {{var}{bot[playercheck]}{nosave}{1}{on}{_update_caption_data}{off}{_update_caption_data}}
-};
-
-#NOP -- .toggle_set <name> <0|1>: set a mapped toggle's variables;
-#alias {.toggle_set} {
-    #var {$toggleMap[%1][var]} {%2};
-    #if {"$toggleMap[%1][also]" != ""} {#var {$toggleMap[%1][also]} {%2}};
-};
-
-#alias {.toggle_mapped} {
-    #local toggle_new 1;
-    #if {"${$toggleMap[%1][var]}" == "1"} {#local toggle_new 0};
-    .toggle_set %1 $toggle_new;
-    #if {$toggle_new} {
-        #if {"$toggleMap[%1][on]" != ""} {$toggleMap[%1][on]};
-        #echo {<cfb>   -----  %1 has been turned on -----<088>};
-    } {
-        #if {"$toggleMap[%1][off]" != ""} {$toggleMap[%1][off]};
-        #echo {<faa>   -----  %1 has been turned off -----<088>};
+#alias {.toggle_from_var} {
+    #if {"${toggles[%1]}" != "0" && "${toggles[%1]}" != "1"} {
+        #if {"%2" == "0" || "%2" == "1"} {#var toggles[%1] %2} {#var toggles[%1] %3};
     };
 };
 
-#NOP -- Save the mapped toggles into xtoggleMap (written to vars.tin by _variable_export);
-#alias {.toggle_map_save} {
+#alias {.toggle_vars} {
+    .toggle_from_var aoe {$aoe_enabled} 0;
+    .toggle_from_var autocollect {$collector[items]} 0;
+    .toggle_from_var beep {$beepon} 1;
+    .toggle_from_var chatlog_emotes {$chat[log][emotes]} 0;
+    .toggle_from_var corpsetrig {$corpsetrigStatus} 1;
+    .toggle_from_var corpsetrig_kb {$corpsetrigKB} 0;
+    .toggle_from_var ktrack {$killtrack} 0;
+    .toggle_from_var mka {$mob_kill_action} 1;
+    .toggle_from_var mouse {$mouseActive} 0;
+    .toggle_from_var playercheck {$bot[playercheck]} 0;
+    #var aoe_enabled $toggles[aoe];
+    #var collector[items] $toggles[autocollect];
+    #var beepon $toggles[beep];
+    #var chat[log][emotes] $toggles[chatlog_emotes];
+    #var corpsetrigStatus $toggles[corpsetrig];
+    #var corpsetrigKB $toggles[corpsetrig_kb];
+    #var mkaStatus $toggles[mka];
+    #var mob_kill_action $toggles[mka];
+    #var mouseActive $toggles[mouse];
+    #var bot[playercheck] $toggles[playercheck];
+    #if $toggles[mouse] {#config mouse on};
+    #if {$toggles[ktrack] && "$killtrack" != "1"} {ktrack on};
+};
+
+#alias {.toggle_restore} {
     #local t {};
-    #local v {};
-    #unvar xtoggleMap;
-    #foreach *toggleMap[] t {
-        #local v ${$toggleMap[$t][var]};
-        #if {"$toggleMap[$t][nosave]" != "1" && ("$v" == "0" || "$v" == "1")} {#var xtoggleMap[$t] $v};
-    };
-};
-
-#NOP -- Restore them at login (_variable_import) and after .gswap reloads the common files;
-#alias {.toggle_map_restore} {
-    #local t {};
-    #foreach *xtoggleMap[] t {
-        #if {&toggleMap[$t][]} {
-            .toggle_set $t $xtoggleMap[$t];
-            #if {"$xtoggleMap[$t]" == "1" && "$toggleMap[$t][login]" != ""} {$toggleMap[$t][login]};
+    #if {&xtoggleMap} {
+        #foreach *xtoggleMap[] t {
+            #if {"$toggles[$t]" != "0" && "$toggles[$t]" != "1"} {#var toggles[$t] $xtoggleMap[$t]};
         };
+        #unvar xtoggleMap;
     };
-    #foreach *toggleMap[] t {
-        #if {"$toggleMap[$t][default]" == "1" && "$xtoggleMap[$t]" != "0" && "$xtoggleMap[$t]" != "1"} {
-            .toggle_set $t 1;
-            #if {"$toggleMap[$t][login]" != ""} {$toggleMap[$t][login]};
-        };
-    };
-    #NOP -- toggleDefault[<name>] (e.g. set in common/private.tin): toggles[<name>] when vars.tin saved no 0 or 1 for it;
     #if {&toggleDefault} {
         #foreach *toggleDefault[] t {
             #if {"$toggles[$t]" != "0" && "$toggles[$t]" != "1"} {#var toggles[$t] $toggleDefault[$t]};
         };
     };
+    .toggle_vars;
 };
 
 #NOP -- What each toggle does, shown in toggle-list;
 #var toggleDesc {
     {artifacts} {Grabs guild artifacts off the floor (not in Pinnacle) and puts them in your chat window and Discord}
     {3kreport} {Eternals: checks (cstats after a kill for the kill report}
+    {aoe} {Armour of the Elements: immolates corpses after a kill (same as aoeon/aoeoff)}
+    {autocollect} {Bots pick up everything in a room (get all), not just coins and tomes (same as autocollect)}
+    {beep} {Rings the terminal bell on events (same as beepon/beepoff)}
+    {chatlog_emotes} {Puts emotes in your chat log (same as chatlog emotes)}
     {chatlog_says} {Puts people's says in your chat log}
     {corpse_echo} {Tells you when a corpse comes out of your bag, coffin or freezer}
+    {corpsetrig} {Runs your corpse actions after a kill (same as corpsetrig-on/corpsetrig-off)}
+    {corpsetrig_kb} {Corpse actions only run on your own killing blows (same as corpsetrig-kb)}
     {cult} {Jumps into the next cult game by itself}
     {discord_post} {Sends your chat over to Discord}
     {dog_care} {Looks after your dog: feeds and pets it, digs in each new room. Vets also heal it when it's low and incite it at full vet commands}
@@ -136,10 +121,14 @@
     {fracture_ctell} {Zodiacs: fracture_notify, and ctells your clan too}
     {fracture_notify} {Zodiacs: NOTE in your chat window (and Discord) when timecheck shows a fracture (grimoire) hour}
     {go_echo} {Says 'here we go!' when go finds the room}
+    {ktrack} {Logs every kill (area, scaler, room, mob, class, rounds, HP lost) to logs/killtrack.csv}
     {map_vnum} {Shows the room number in the bottom right corner of the map}
     {map_follow} {While you follow someone, moves your map with you each time they lead you to another room}
     {mission} {Asks for a mission when you find a mission giver}
+    {mka} {Bots open fights with your mob kill actions (same as mka-on/mka-off)}
+    {mouse} {Mouse clicks and wheel scrolling in tt++ (same as qq)}
     {numpad} {Number pad walks: 7 8 9 are nw n ne, 4 5 6 are w, look and search, e, 1 2 3 are sw s se, 0 is d and . is u}
+    {playercheck} {Bots skip rooms with other players in them (each bot sets it when it starts, same as playercheck)}
     {portal_ctell} {Zodiacs: portal_notify, and ctells your clan too}
     {portal_notify} {Zodiacs: NOTE in your chat window (and Discord) when timecheck shows a portal (tome) hour}
     {sessionlog} {Saves everything you see to a log file, one per day}
@@ -165,9 +154,6 @@
         };
     } {
         #if {!$fremen_toggle} {
-            #if {&toggleMap[$toggle_var][]} {
-                .toggle_mapped $toggle_var;
-            } {
             #if {"$toggles[$toggle_var]" == ""} {
                 #echo {<ffe>   -----  $toggle_var not found in toggles  -----<088>};
             } {
@@ -184,7 +170,16 @@
                 #if {"$toggle_var" == "sessionlog"} {#if $toggles[sessionlog] {.sessionlog_start} {sessionlog off}};
                 #if {"$toggle_var" == "worlddrops2"} {.worlddrops2_watch};
                 #if {"$toggle_var" == "artifacts"} {.artifacts_watch};
-            };
+                #if {"$toggle_var" == "aoe"} {#if $toggles[aoe] {aoeon} {aoeoff}};
+                #if {"$toggle_var" == "autocollect"} {#var collector[items] $toggles[autocollect]};
+                #if {"$toggle_var" == "beep"} {#var beepon $toggles[beep]};
+                #if {"$toggle_var" == "chatlog_emotes"} {#var chat[log][emotes] $toggles[chatlog_emotes]};
+                #if {"$toggle_var" == "corpsetrig"} {#var corpsetrigStatus $toggles[corpsetrig]};
+                #if {"$toggle_var" == "corpsetrig_kb"} {#var corpsetrigKB $toggles[corpsetrig_kb]};
+                #if {"$toggle_var" == "ktrack"} {#if $toggles[ktrack] {ktrack on} {ktrack off}};
+                #if {"$toggle_var" == "mka"} {#var mkaStatus $toggles[mka];#var mob_kill_action $toggles[mka]};
+                #if {"$toggle_var" == "mouse"} {#var mouseActive $toggles[mouse];#if $toggles[mouse] {#config mouse on} {#config mouse off}};
+                #if {"$toggle_var" == "playercheck"} {#var bot[playercheck] $toggles[playercheck];_update_caption_data};
             };
         } {
             #send {!toggle $toggle_var};
@@ -215,15 +210,6 @@
             #var tmpLine {<fbb>$tmpLine};
         };
         .toggleListDesc {$toggleDesc[$item]};
-    };
-    #foreach *toggleMap[] item {
-        #if {"${$toggleMap[$item][var]}" == "1"} {
-            #format tmpLine {        %-25s         %+8s} {$item} {on};
-            #echo {<dfc>$tmpLine<088>};
-        } {
-            #format tmpLine {        %-25s         %+9s} {$item} { off};
-            #echo {<fbb>$tmpLine<088>};
-        };
     };
     #echo {<cfb>   ---++---        ---++---        ---++---       ---++---<088>};
 };

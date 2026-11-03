@@ -53,6 +53,7 @@
         #if {"${bot[alias]}" == "$botlist_alias[$index]"} {
             #var bot[loop] $botlist_loop[$index];
             #var bot[playercheck] $botlist_playercheck[$index];
+            #var toggles[playercheck] $bot[playercheck];
             #var bot[start_vnum] $botlist_start_vnum[$index];
             #var bot[file] $botlist_file[$index];
             #map run $bot[start_vnum];
@@ -114,6 +115,7 @@
         #if {"${bot[alias]}" == "$botlist_alias[$index]"} {
             #var bot[loop] $botlist_loop[$index];
             #var bot[playercheck] $botlist_playercheck[$index];
+            #var toggles[playercheck] $bot[playercheck];
             #var bot[start_vnum] $botlist_start_vnum[$index];
             #var bot[file] $botlist_file[$index];
         };

@@ -106,6 +106,7 @@
         #showme {<ffe>------ ITEM COLLECTOR ON --------<088>};
         #var collector[items] 1;
     };
+    #var toggles[autocollect] $collector[items];
 };
 
 #alias .kill_dmg_trackers {
@@ -198,8 +199,8 @@
 
 #var beepon 1;
 #alias {beep} {#if {$beepon == 1} { #bell; }};
-#alias {beepon} {#var beepon 1;#show Beep on.;};
-#alias {beepoff} {#var beepon 0;#show Beep off.;};
+#alias {beepon} {#var beepon 1;#var toggles[beep] 1;#show Beep on.;};
+#alias {beepoff} {#var beepon 0;#var toggles[beep] 0;#show Beep off.;};
 
 #alias {grep} {#grep {%1} {}};
 
@@ -266,9 +267,6 @@
     #echo {<dfa>Please wait...<088>};
     #echo {<dfa>----------------------------------------------------<088>};
     
-    #NOP -- Remember toggles kept in their own variables, since reloading the common files resets them;
-    .toggle_map_save;
-
     #NOP -- Save this guild's strategies, corpse and mob kill actions and put back the new guild's.;
     #NOP -- Before the classes holding the lists and this alias are killed;
     _guild_lists_swap %0;
@@ -312,7 +310,7 @@
     #read chars/$user/miphp.tin;
     #read chars/$user/private.tin;
     #read chars/$user/tickers.tin;
-    .toggle_map_restore;
+    .toggle_restore;
     
     #NOP -- Initialize everything except postload;
     mipon;

@@ -10,19 +10,19 @@
 #var kt_hpmin 0;
 #var kt_file {logs/killtrack.csv};
 
-#var toggleMap[ktrack] {{var}{killtrack}{on}{ktrack on}{off}{ktrack off}{login}{ktrack on}};
-#var toggleDesc[ktrack] {Logs every kill (area, scaler, room, mob, class, rounds, HP lost) to logs/killtrack.csv};
 
 #alias {ktrack} {
     #switch {"%1"} {
         #case {"on"} {
             #var killtrack 1;
+            #var toggles[ktrack] 1;
             #var kt_hpstart 0;
             #ticker {kt_hp} {.kt_sample} {1};
             #echo {<dea>  ktrack on: every kill is logged to $kt_file<088>};
         };
         #case {"off"} {
             #var killtrack 0;
+            #var toggles[ktrack] 0;
             #unticker {kt_hp};
             #echo {<dea>  ktrack off<088>};
         };

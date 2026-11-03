@@ -3,11 +3,13 @@
 
 #alias {aoeon} {
     #var aoe_enabled 1;
+    #var toggles[aoe] 1;
     #show Armour of Elements corpse immolation enabled.;
     @addcorpsetrigger{0;aeoimmolate};
 };
 #alias {aoeoff} {
     #var aoe_enabled 0;
+    #var toggles[aoe] 0;
     #show Armour of Elements corpse immolate disabled.;
 };
 

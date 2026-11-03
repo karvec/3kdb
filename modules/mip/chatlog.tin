@@ -625,6 +625,7 @@
 				#echo {<cfa> ========== CHATLOG IS NOW LOGGING EMOTES ========== };
 			};
 		};
+		#var toggles[chatlog_emotes] $chat[log][emotes];
 	};
 };
 
