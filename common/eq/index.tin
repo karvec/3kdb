@@ -3,6 +3,7 @@
 #read common/eq/data.tin;
 #read common/eq/general.tin;
 #read common/eq/item_checker.tin;
+#read common/eq/artifacts.tin;
 #read common/eq/item_tracker.tin;
 #read common/eq/zodiacs.tin;
 #read common/eq/unique_items.tin;
