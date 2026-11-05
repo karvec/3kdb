@@ -66,11 +66,18 @@
     #if {$kt_hpmax > 0} {#math kt_hppct {100 * $kt_hpmin / $kt_hpmax}} {#var kt_hppct 0};
     #var kt_hpstart 0;
     #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
-    #var kt_room {};
+    #map get roomname kt_mapname;
+    #map get roomarea kt_maparea;
+    #var kt_room {$kt_mapname};
+    #if {&{room_short}} {#var kt_room {$room_short};#replace kt_room {-R-_} {}};
     #if {&{room[name]}} {#var kt_room {$room[name]}};
     #var kt_scaler {};
-    #regex {$currentScaler} {^%d$} {#var kt_scaler &1};
-    #var kt_area {};
+    #if {&{dungeon[scalers]}} {
+        #loop 1 &dungeon[scalers][] kt_di {
+            #if {"$dungeon[scalers][$kt_di][name]" == "$kt_maparea"} {#regex {$currentScaler} {^%d$} {#var kt_scaler &1}};
+        };
+    };
+    #var kt_area {$kt_maparea};
     #if {&{area}} {#var kt_area {$area}};
     #list kt_buf add {{{time}{$kt_now}{area}{$kt_area}{scaler}{$kt_scaler}{room}{$kt_room}{mob}{$deathReport[mob_killed]}{rounds}{$kt_rounds}{hplost}{$kt_hplost}{hppct}{$kt_hppct}{hpmax}{$kt_hpmax}}};
     #var kt_buf_area {$area};
