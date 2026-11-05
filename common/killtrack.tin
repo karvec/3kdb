@@ -9,6 +9,12 @@
 #var kt_hpstart 0;
 #var kt_hpmin 0;
 #var kt_file {logs/killtrack.csv};
+#var kt_every 20;
+#var kt_pending 0;
+#var kt_buf_area {};
+#list kt_buf clear;
+#list kt_batch clear;
+#list kt_rows clear;
 
 
 #alias {ktrack} {
@@ -21,6 +27,7 @@
             #echo {<dea>  ktrack on: every kill is logged to $kt_file<088>};
         };
         #case {"off"} {
+            .kt_flush;
             #var killtrack 0;
             #var toggles[ktrack] 0;
             #unticker {kt_hp};
@@ -35,7 +42,7 @@
         };
         #default {
             #echo {<ccf>  ktrack on|off|reset. Logs time,char,area,scaler,room,mob,class,rounds,hp_lost,hp_min_pct,hp_max to $kt_file<088>};
-            #echo {  <fff>logging: <ffa>$killtrack<fff>  kills this session: <ffa>$kt_count<088>};
+            #echo {  <fff>logging: <ffa>$killtrack<fff>  kills this session: <ffa>$kt_count<fff>  waiting to be written: <ffa>&kt_buf[]<088>};
             #echo {  <fff>biggest class killed: <ffa>$kt_best<fff> ($kt_bestmob)  most HP lost in one kill: <ffa>$kt_worstloss<088>};
         };
     };
@@ -58,9 +65,26 @@
     #math kt_hplost {$kt_hpstart - $kt_hpmin};
     #if {$kt_hpmax > 0} {#math kt_hppct {100 * $kt_hpmin / $kt_hpmax}} {#var kt_hppct 0};
     #var kt_hpstart 0;
+    #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
+    #var kt_room $room[name];
+    #list kt_buf add {{{time}{$kt_now}{area}{$area}{scaler}{$currentScaler}{room}{$kt_room}{mob}{$deathReport[mob_killed]}{rounds}{$kt_rounds}{hplost}{$kt_hplost}{hppct}{$kt_hppct}{hpmax}{$kt_hpmax}}};
+    #var kt_buf_area {$area};
+    #if {&kt_buf[] >= $kt_every} {.kt_flush};
+};
+
+#event {VARIABLE UPDATED area} {
+    #if {&kt_buf[] && "$area" != "$kt_buf_area"} {.kt_flush};
+};
+
+#alias {.kt_flush} {
+    #if {$kt_pending || &kt_buf[] == 0} {#return};
+    #var kt_pending 1;
+    #list kt_batch copy kt_buf;
+    #list kt_buf clear;
+    #list kt_rows clear;
     #action {^Last kills this boot:$} {.kt_arm2} {2};
-    #delay {kt_disarm} {.kt_disarm} {6};
-    killed;
+    #delay {kt_disarm} {.kt_write} {6};
+    #send {!killed};
 };
 
 #alias {.kt_arm2} {
@@ -70,34 +94,76 @@
 
 #alias {.kt_arm3} {
     #unaction {^ ----%*$};
-    #action {^ %*$} {.kt_row %%0} {2};
-};
-
-#alias {.kt_disarm} {
-    #unaction {^Last kills this boot:$};
-    #unaction {^ ----%*$};
-    #unaction {^ %*$};
+    #action {^ %*$} {.kt_row {%%0}} {2};
 };
 
 #alias {.kt_row} {
-    #undelay {kt_disarm};
-    #unaction {^ %*$};
-    #var kt_line %0;
+    #var kt_line {%1};
+    #var kt_class {};
     #regex {$kt_line} {%* %S$} {#var kt_class {&2}};
-    #format kt_mob {%.30s} {$kt_line};
+    #regex {$kt_class} {{^[0-9.,]+[kKmMbB]?$}} {
+        #list kt_rows add {$kt_line};
+        #delay {kt_disarm} {.kt_write} {1};
+    } {
+        .kt_write;
+    };
+    #if {&kt_rows[] >= 20} {.kt_write};
+};
+
+#alias {.kt_name} {
+    #format kt_name {%.30s} {%1};
+    #format kt_name {%p} {$kt_name};
+    #format kt_name {%l} {$kt_name};
+};
+
+#alias {.kt_write} {
+    #undelay {kt_disarm};
+    #unaction {^Last kills this boot:$};
+    #unaction {^ ----%*$};
+    #unaction {^ %*$};
+    #if {!$kt_pending} {#return};
+    #var kt_ri 1;
+    #loop &kt_batch[] 1 kt_bi {
+        #var kt_batch[$kt_bi][class] {};
+        .kt_name {$kt_batch[$kt_bi][mob]};
+        #var kt_want {$kt_name};
+        #var kt_rj $kt_ri;
+        #while {$kt_rj <= &kt_rows[]} {
+            .kt_name {$kt_rows[$kt_rj]};
+            #if {"$kt_name" == "$kt_want"} {
+                #regex {$kt_rows[$kt_rj]} {%* %S$} {#var kt_batch[$kt_bi][class] {&2}};
+                #math kt_ri {$kt_rj + 1};
+                #var kt_rj 999;
+            } {
+                #math kt_rj {$kt_rj + 1};
+            };
+        };
+    };
+    #loop 1 &kt_batch[] kt_bi {
+        .kt_log $kt_bi;
+    };
+    #list kt_batch clear;
+    #list kt_rows clear;
+    #var kt_pending 0;
+    #if {&kt_buf[] >= $kt_every} {.kt_flush};
+};
+
+#alias {.kt_log} {
+    #format kt_mob {%-30.30s} {$kt_batch[%1][mob]};
     #replace kt_mob {,} {;};
     #replace kt_mob {\\x7B} {(};
     #replace kt_mob {\\x7D} {)};
-    #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
-    #var kt_room $room[name];
+    #var kt_room {$kt_batch[%1][room]};
     #replace kt_room {,} {;};
-    #line log {$kt_file} {$kt_now,$user,$area,$currentScaler,$kt_room,$kt_mob,$kt_class,$kt_rounds,$kt_hplost,$kt_hppct,$kt_hpmax};
+    #var kt_class {$kt_batch[%1][class]};
+    #var kt_hplost $kt_batch[%1][hplost];
+    #line log {$kt_file} {$kt_batch[%1][time],$user,$kt_batch[%1][area],$kt_batch[%1][scaler],$kt_room,$kt_mob,$kt_class,$kt_batch[%1][rounds],$kt_hplost,$kt_batch[%1][hppct],$kt_batch[%1][hpmax]};
     #math kt_count {$kt_count + 1};
     #var kt_cnum $kt_class;
     #replace kt_cnum {,} {};
     #regex {$kt_cnum} {^{[0-9.]+}k$} {#math kt_cnum {&1 * 1000}};
-    #regex {$kt_cnum} {^{[0-9.]+}m$} {#math kt_cnum {&1 * 1000000}};
-    #if {$kt_cnum > $kt_best} {#var kt_best $kt_cnum;#var kt_bestmob {$kt_mob}};
+    #regex {$kt_cnum} {^{[0-9.]+}{m|M}$} {#math kt_cnum {&1 * 1000000}};
+    #if {"$kt_cnum" != "" && $kt_cnum > $kt_best} {#var kt_best $kt_cnum;#var kt_bestmob {$kt_mob}};
     #if {$kt_hplost > $kt_worstloss} {#var kt_worstloss $kt_hplost};
 };
 

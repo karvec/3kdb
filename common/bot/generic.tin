@@ -412,6 +412,7 @@
     #NOP -- the bunker botpaths;
     #showme {------- BOT COMPLETE -----};
     #echo {<dfa>BOT HAS COMPLETED LOOP ENTERED<088>};
+    #if {$killtrack} {.kt_flush};
 
 
     #list botlist_alias find {$bot[alias]} {tmpIndex};
