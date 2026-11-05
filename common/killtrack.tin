@@ -66,8 +66,13 @@
     #if {$kt_hpmax > 0} {#math kt_hppct {100 * $kt_hpmin / $kt_hpmax}} {#var kt_hppct 0};
     #var kt_hpstart 0;
     #format kt_now {%t} {%Y-%m-%d %H:%M:%S};
-    #var kt_room $room[name];
-    #list kt_buf add {{{time}{$kt_now}{area}{$area}{scaler}{$currentScaler}{room}{$kt_room}{mob}{$deathReport[mob_killed]}{rounds}{$kt_rounds}{hplost}{$kt_hplost}{hppct}{$kt_hppct}{hpmax}{$kt_hpmax}}};
+    #var kt_room {};
+    #if {&{room[name]}} {#var kt_room {$room[name]}};
+    #var kt_scaler {};
+    #regex {$currentScaler} {^%d$} {#var kt_scaler &1};
+    #var kt_area {};
+    #if {&{area}} {#var kt_area {$area}};
+    #list kt_buf add {{{time}{$kt_now}{area}{$kt_area}{scaler}{$kt_scaler}{room}{$kt_room}{mob}{$deathReport[mob_killed]}{rounds}{$kt_rounds}{hplost}{$kt_hplost}{hppct}{$kt_hppct}{hpmax}{$kt_hpmax}}};
     #var kt_buf_area {$area};
     #if {&kt_buf[] >= $kt_every} {.kt_flush};
 };

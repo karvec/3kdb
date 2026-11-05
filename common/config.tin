@@ -50,7 +50,8 @@
     examine cooler;
     touch diamond rune;
     #send {(powers};
-    
+    #send {!scaler};
+
     .update_gags;
     init_screen;
     draw_all;
