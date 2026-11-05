@@ -124,8 +124,10 @@
 
 #alias {.kt_name} {
     #format kt_name {%.30s} {%1};
+    #replace kt_name {,} { };
     #format kt_name {%p} {$kt_name};
     #format kt_name {%l} {$kt_name};
+    #var kt_name {$kt_name };
 };
 
 #alias {.kt_write} {
@@ -142,8 +144,12 @@
         #var kt_rj $kt_ri;
         #while {$kt_rj <= &kt_rows[]} {
             .kt_name {$kt_rows[$kt_rj]};
-            #if {"$kt_name" == "$kt_want"} {
+            #format kt_len {%L} {$kt_want};
+            #format kt_pre {%.${kt_len}s} {$kt_name};
+            #if {"$kt_pre" == "$kt_want"} {
                 #regex {$kt_rows[$kt_rj]} {%* %S$} {#var kt_batch[$kt_bi][class] {&2}};
+                #format kt_tname {%.30s} {$kt_rows[$kt_rj]};
+                #var kt_batch[$kt_bi][mob] {$kt_tname};
                 #math kt_ri {$kt_rj + 1};
                 #var kt_rj 999;
             } {
