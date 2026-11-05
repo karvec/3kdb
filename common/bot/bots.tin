@@ -349,7 +349,6 @@
 .add_bot {crystals4} {crystals4} {Crystals Level 4} {11643} {1} {1};
 .add_bot {icyblue} {icyblue} {Icy Blue} {23844} {0} {0};
 .add_bot {knights} {knights} {Knights of Erah Training} {28795} {0} {0};
-.add_bot {knights} {kta} {Knights of Erah Training} {28795} {0} {0};
 .add_bot {banshees} {banshees} {Banshee's Lair: Levels 1-4} {27705} {1} {0};
 .add_bot {banshees12} {banshees12} {Banshee's Lair: Levels 1-2} {27705} {1} {0};
 .add_bot {banshees2} {banshees2} {Banshee's Lair: Level 2} {27713} {1} {0};
