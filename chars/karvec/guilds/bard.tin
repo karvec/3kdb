@@ -99,7 +99,7 @@
 	#var prot_show $prot_string;
 	#if {"$prot_show" == ""} {#var prot_show $prot_string_display};
 
-	#if {$my[song][rounds] > 0} {#var song_string ${theme[bard_song]}<dae>Singing: $my[song][title] - $my[song][rounds]<088>;} {#var song_string {           }};
+	#if {$my[song][rounds] > 0} {#var song_string { ${theme[bard_song]}<dae>Singing: $my[song][title] - $my[song][rounds]<088>}} {#var song_string {}};
 	
 	#list temp clear;
 	_kbm_pair {H} {$hp} {$hp_max};
@@ -115,8 +115,7 @@
 		#var _kbm_line {$_kbm_line $_kbm_out};
 	};
 	#list temp add {$_kbm_line};
-	#list temp add {<fff>Prots: $prot_show};
-	#list temp add {$song_string};
+	#list temp add {<fff>Prots: $prot_show$song_string};
 	#var hpbar[prompt] $temp;
 	#list hpbar[prompt] size _kbm_rows;
 	#format _kbm_height {%d} {$hpbar[height]};
