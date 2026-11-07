@@ -4,7 +4,6 @@
 #var es_override 0;
 #var karma_use_corpse_between_songs 650;
 #var resume_song 1;
-
 #NOP -- _bard_cast <spell>: bards get one spell a round, so only the first auto-cast each round goes out (one;
 #NOP -- every 1.5 seconds out of combat). The rest aren't queued: whatever wanted them checks again next;
 #NOP -- heartbeat, so the order below decides what goes first. bard_cast_sent says whether this one went out;
@@ -87,6 +86,7 @@
 		
 		#if {$my[defs][ag] > 0} {#NOP} {#if {$defs[ag] && !@bard_singing{}} {perform amazing grace} {#nop}};
 		#if {$my[defs][o] > 0}  {#NOP} {#if {$defs[om] && !@bard_singing{}} {perform o muse} {#nop}};
+		#if {$my[defs][v] > 0}  {#NOP} {#if {$defs[v] && $mip[round] > 0} {_bard_vampire} {#nop}};
 
 		#NOP -- actions that should only be attempted once per round;
 		#if {$action_round < $mip[round] && $mip[round] > 0} {

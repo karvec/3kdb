@@ -26,7 +26,6 @@
 #alias {clear_prots} {
 	#var defs 0;
 	#var maint_active 0;
-	#unticker {maint_watch};
 	_maint_save;
 	#foreach {ks;vampire} {bard_i} {_bard_strategy_off $bard_i};
 };
