@@ -30,9 +30,9 @@
 
 #alias {_kbm_cell} {
 	#format _kbm_len {%L} {%1};
-	#math _kbm_lp {(17 - $_kbm_len) / 2};
+	#math _kbm_lp {(15 - $_kbm_len) / 2};
 	#format _kbm_lp {%d} {$_kbm_lp};
-	#math _kbm_rp {17 - $_kbm_len - $_kbm_lp};
+	#math _kbm_rp {15 - $_kbm_len - $_kbm_lp};
 	#format _kbm_txt {%-${_kbm_lp}s%s%-${_kbm_rp}s} {} {%1} {};
 	#format _kbm_w {%L} {$_kbm_txt};
 	#var _kbm_pct 0;
@@ -40,7 +40,7 @@
 	#format _kbm_pct {%d} {$_kbm_pct};
 	#if {$_kbm_pct > 100} {#var _kbm_pct 100};
 	#if {$_kbm_pct < 0} {#var _kbm_pct 0};
-	#math _kbm_n {$_kbm_w * $_kbm_pct / 100};
+	#math _kbm_n {17 * $_kbm_pct / 100};
 	#format _kbm_n {%d} {$_kbm_n};
 	#var _kbm_bg <AFA>;
 	#if {$_kbm_pct < 100} {#var _kbm_bg <AEA>};
@@ -52,12 +52,17 @@
 	#if {$_kbm_pct < 40} {#var _kbm_bg <EBA>};
 	#if {$_kbm_pct < 30} {#var _kbm_bg <EAA>};
 	#if {$_kbm_pct < 20} {#var _kbm_bg <FAA>};
+	#if {$_kbm_n > 0} {#var _kbm_lbg $_kbm_bg} {#var _kbm_lbg <AAA>};
+	#if {$_kbm_n >= 17} {#var _kbm_rbg $_kbm_bg} {#var _kbm_rbg <AAA>};
+	#math _kbm_n {$_kbm_n - 1};
+	#if {$_kbm_n < 0} {#var _kbm_n 0};
+	#if {$_kbm_n > 15} {#var _kbm_n 15};
 	#format _kbm_a {%.${_kbm_n}s} {$_kbm_txt};
 	#math _kbm_rn {$_kbm_w - $_kbm_n};
 	#format _kbm_r {%r} {$_kbm_txt};
 	#format _kbm_r {%.${_kbm_rn}s} {$_kbm_r};
 	#format _kbm_b {%r} {$_kbm_r};
-	#var _kbm_out {<008>$_kbm_bg$_kbm_a<070>$_kbm_b<088>};
+	#var _kbm_out {<fff>$_kbm_lbg▏<008>$_kbm_bg$_kbm_a<070>$_kbm_b<fff>$_kbm_rbg▕<088>};
 };
 
 #alias {_karvec_bard_miphp} {
