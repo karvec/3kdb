@@ -48,6 +48,10 @@
 	#list temp add {<fff>Prots: $prot_show};
 	#list temp add {$song_string};
 	#var hpbar[prompt] $temp;
+	#list hpbar[prompt] size _kbm_rows;
+	#format _kbm_height {%d} {$hpbar[height]};
+	#format _kbm_drawn {%d} {$draw[initiated]};
+	#if {$_kbm_drawn && "$draw[hpbar][active]" == "on" && $_kbm_rows != $_kbm_height} {init_screen};
 };
 
 #class {player_guild} {close}
