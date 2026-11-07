@@ -29,7 +29,11 @@
 };
 
 #alias {_kbm_cell} {
-	#format _kbm_txt { %-15s } {%1};
+	#format _kbm_len {%L} {%1};
+	#math _kbm_lp {(17 - $_kbm_len) / 2};
+	#format _kbm_lp {%d} {$_kbm_lp};
+	#math _kbm_rp {17 - $_kbm_len - $_kbm_lp};
+	#format _kbm_txt {%-${_kbm_lp}s%s%-${_kbm_rp}s} {} {%1} {};
 	#format _kbm_w {%L} {$_kbm_txt};
 	#var _kbm_pct 0;
 	#if {"%2" != "" && "%3" != "" && "%3" != "0"} {#math _kbm_pct {100.0 * %2 / %3}};
