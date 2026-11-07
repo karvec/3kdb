@@ -77,7 +77,7 @@
 };
 
 #ticker {dogcare_hp} {
-    #if {"$toggles[dog_care]" == "1" && "$idle_flag" != "1" && !$dogcare[gone]} {
+    #if {"$toggles[dog_care]" == "1" && "$idle_flag" != "1" && !$dogcare[gone] && ("$deadman_armed" == "0" || $idle < 300)} {
         #send {!dog hp};
         #delay {dogcare_gone} {#var dogcare[gone] 1} {10};
     };
