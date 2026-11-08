@@ -35,15 +35,18 @@
 #NOP -- uniqueOwned[<name>] is the tier of the copy you have. It's set from inventory rows (" 1 *Helmet of Aeonos;
 #NOP -- (luminous) (worn on head).") and pickups, and cleared when it leaves. Until the first i after login it's;
 #NOP -- unknown, so nothing is dropped;
+#action {{^\s*# Item\s*$}} {#var uniqueOwned {}} {6};
 #action {{^\s*\d+ \*?($uniqueAlt)(\W.*)?$}} {#var uniqueOwned[%2] {@uniqueTier{%3}}} {2};
+#action {{^You unsmuggle: ($uniqueAlt)(\W.*)?$}} {#var uniqueOwned[%2] {@uniqueTier{%3}}} {2};
 #action {{^You get ($uniqueAlt)(\W.*)? from }} {.uniquePickup {%2} {@uniqueTier{%3}}} {2};
 #NOP -- get all says "<item>: Ok." per item. actions.tin's priority-4 "%*: Ok." clears encumbrance, so this one does too;
 #action {{^($uniqueAlt)(\W[^:]*)?: Ok\.$}} {
     #var inventory[encumberance] 0;
     .uniquePickup {%2} {@uniqueTier{%3}};
 } {2};
-#NOP -- Leaving: put, drop, give or smuggle. The smuggle (or drop) .uniquePickup sends for a second copy doesn't count;
-#action {{^You (put|drop|give) ($uniqueAlt)(\W.*)?$}} {
+#NOP -- Leaving: put, drop, give, donate, trashcan or smuggle. The smuggle (or drop) .uniquePickup sends for a second copy doesn't count;
+#action {{^You decide ($uniqueAlt)(\W.*)? isn't worth keeping}} {#unvar uniqueOwned[%2]} {2};
+#action {{^You (put|drop|give|donate) ($uniqueAlt)(\W.*)?$}} {
     #if {&uniqueDropping[%3]} {
         #unvar uniqueDropping[%3];
         #return;
