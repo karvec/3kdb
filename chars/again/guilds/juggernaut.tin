@@ -1,0 +1,25 @@
+#unvar {my[jugg]};
+#read chars/again/guilds/juggernaut_advance.tin;
+#read chars/again/guilds/juggernaut_glevel.tin;
+#read chars/again/guilds/juggernaut_train.tin;
+
+#list strategyList find {autoadvance} tmpIdx;
+#if {!$tmpIdx} {
+    #list strategyList add {{{guild} {juggernaut} {name} {autoadvance} {active} {0} {description} {Jugger: Raise stats (jugg_adv_stats) after kills}}};
+    #list strategyList indexate name;
+};
+#list strategyList find {autolevel} tmpIdx;
+#if {!$tmpIdx} {
+    #list strategyList add {{{guild} {juggernaut} {name} {autolevel} {active} {0} {description} {Jugger: Advance level after kills when affordable, before any stat}}};
+    #list strategyList indexate name;
+};
+#list strategyList find {autoglevel} tmpIdx;
+#if {!$tmpIdx} {
+    #list strategyList add {{{guild} {juggernaut} {name} {autoglevel} {active} {0} {description} {Jugger: At 100% gxp after a kill, upgrade at the guild and walk back}}};
+    #list strategyList indexate name;
+};
+#list strategyList find {autotrain} tmpIdx;
+#if {!$tmpIdx} {
+    #list strategyList add {{{guild} {juggernaut} {name} {autotrain} {active} {0} {description} {Jugger: Train skills (jugg_train_skills weights) from gs2 after kills, every 5 min}}};
+    #list strategyList indexate name;
+};

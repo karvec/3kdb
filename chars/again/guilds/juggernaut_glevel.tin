@@ -1,0 +1,196 @@
+#class {again_jugg_glevel} {kill};
+#class {again_jugg_glevel} {open};
+
+#var jugg[glvl][state] {};
+#var jugg_trip_avoid {%*Revelwood%*};
+#var jugg_stash_level 30;
+#var jugg_stash_cmd {put all component in box};
+
+#var jugg_tech_plan[elemental] {energy weapons 1@1;blow absorption 1@1;targeting computer 1@1;heat sinks 1@1;energy weapons 2@10;blow absorption 2@1;internal structure 6@1;stim efficiency 1@1;heat capacity 1@1};
+#var jugg_tech_plan[gnome] {blow absorption 2@1;internal structure 3@1;stim efficiency 1@1;internal structure 5@1;stim regen 1@1;salvage efficiency 1@1;point defense 1@1;internal structure 8@1;stim efficiency 2@1;blow absorption 3@1;salvage efficiency 2@1;internal structure 10@1;stim regen 2@1;stim efficiency 3@1;heat sinks 1@1;heat capacity 1@1;salvage efficiency 3@1;internal structure 12@1;blow absorption 4@1;internal structure 22@1;stim efficiency 4@1;stim regen 3@1;blow absorption 5@1;cargo truck 4@1;salvage efficiency 4@1;stim efficiency 6@1;blow absorption 6@1;heat sinks 2@1;heat capacity 2@1;stim regen 4@1;salvage efficiency 5@1;blow absorption 8@1;stim efficiency 8@1;stim regen 5@1;cargo truck 5@1;plasma focusing 1@1};
+#var jugg[tech][failed] {{none}{1}};
+#var jugg[tech][last] {};
+
+#action {%w has just been upgraded to a level %d %w!!!} {
+    #if {"%1" != "$user_cap"} {#return};
+    #var jugg[suitlvl] %2;
+    #format jugg[suit] {%l} {%3};
+} {2};
+
+#action {^%s%w%s:%s%d V:%*<=-*-=>} {
+    #var jugg[suitlvl] %5;
+    #format jugg[suit] {%l} {%2};
+} {2};
+
+#action {^%sLevel: %d%sExperience: } {#var jugg[plevel] %2} {2};
+#action {Level: %d (%w)%sGender: } {#var jugg[plevel] %1} {2};
+
+#alias {.jglvl_check} {
+    #if {$idle_flag || $incombat || "$jugg[glvl][state]" != ""} {#return};
+    #format tmpGxp {%d} {$gxp};
+    #if {$tmpGxp < 100} {#return};
+    #var jugg[glvl][bot] 0;
+    #if {$bot[active] && !$bot[paused]} {#var jugg[glvl][bot] 1};
+    #map get roomvnum jugg[glvl][from];
+    #var jugg[glvl][state] walking;
+    #var jugg[glvl][probes] 0;
+    #echo {<cfb>autoglevel: gxp $gxp%%, going to upgrade.<088>};
+    #delay {jglvlGiveUp} {.jglvl_giveup} {180};
+    #if {&jugg[plevel]} {
+        #if {$jugg[plevel] >= $jugg_stash_level} {
+            #echo {<cfb>autoglevel: storing components at home first.<088>};
+            .jglvl_avoid on;
+            go home;
+            .jglvl_avoid off;
+            #send {!$jugg_stash_cmd};
+        };
+    };
+    .jglvl_avoid on;
+    go jugg_upgrade;
+    .jglvl_avoid off;
+    #send {!upgrade};
+};
+
+#alias {.jglvl_avoid} {
+    #foreach {$jugg_trip_avoid} tmpPat {
+        #map list {roomname} {$tmpPat} {variable} tmpRooms;
+        #foreach {*tmpRooms[]} tmpV {#map at $tmpV {#map roomflag avoid %1}};
+    };
+};
+
+#action {^There is no reason to 'upgrade' here.$} {
+    #if {"$jugg[glvl][state]" != "walking"} {#return};
+    #math jugg[glvl][probes] {$jugg[glvl][probes] + 1};
+    #if {$jugg[glvl][probes] > 40} {
+        .jglvl_giveup;
+        #return;
+    };
+    #delay {jglvlProbe} {#send {!upgrade}} {3};
+} {2};
+
+#action {^You are awarded %d credits for honoring your clan.$} {
+    #if {"$jugg[glvl][state]" == ""} {#return};
+    #var jugg[glvl][state] upgrading;
+    #undelay jglvlProbe;
+    #delay {jglvlNext} {.jglvl_again} {3};
+} {2};
+
+#alias {.jglvl_again} {
+    #format tmpGxp {%d} {$gxp};
+    #if {$tmpGxp >= 100} {
+        #send {!upgrade};
+        #delay {jglvlNext} {.jglvl_tech} {5};
+    } {
+        .jglvl_tech;
+    };
+};
+
+#alias {.jglvl_tech} {
+    #undelay jglvlNext;
+    #if {&jugg[suit]} {
+        #if {&jugg_tech_plan[$jugg[suit]]} {
+            #var jugg[glvl][state] tech;
+            #var jugg[tech][row] {{none}{}};
+            #var jugg[tech][last] {};
+            #delay {jglvlTech} {.jglvl_tech_timeout} {20};
+            go jugg_tech;
+            #send {!purchase};
+            #return;
+        };
+    };
+    .jglvl_return;
+};
+
+#action {{^([A-Z][A-Za-z ]*[a-z])\s+(\d+):(\d+)\s*$}} {
+    #if {"$jugg[glvl][state]" != "tech"} {#return};
+    #format tmpName {%l} {%2};
+    #var jugg[tech][row][$tmpName] {{cur}{%3}{cost}{%4}};
+} {2};
+
+#action {^You currently have %d credits available.} {
+    #if {"$jugg[glvl][state]" != "tech"} {#return};
+    #var jugg[tech][credits] %1;
+    .jglvl_buy;
+} {2};
+
+#action {^The computer chirps '%* purchased for %d'} {
+    #if {"$jugg[glvl][state]" != "tech"} {#return};
+    #if {"$jugg[tech][last]" == "energy weapons"} {
+        #echo {<cfb>autoglevel: energy weapons raised, buy the bigger mount at jugg_mount.<088>};
+    };
+    #var jugg[tech][last] {};
+    #delay {jglvlTech} {.jglvl_tech_timeout} {20};
+    #send {!purchase};
+} {2};
+
+#alias {.jglvl_buy} {
+    #var tmpPick {};
+    #foreach {$jugg_tech_plan[$jugg[suit]]} tmpEntry {
+        #if {"$tmpPick" != ""} {#break};
+        #var tmpTech {};
+        #regex {$tmpEntry} {^%* %d@%d$} {
+            #var tmpTech {&1};
+            #var tmpTo &2;
+            #var tmpMin &3;
+        };
+        #if {"$tmpTech" != "" && &jugg[tech][row][$tmpTech]} {
+            #if {&jugg[tech][failed][$tmpTech]} {
+                #nop;
+            } {
+                #if {$jugg[tech][row][$tmpTech][cur] < $tmpTo && $jugg[suitlvl] >= $tmpMin} {
+                    #var tmpPick $tmpTech;
+                };
+            };
+        };
+    };
+    #if {"$tmpPick" == ""} {
+        .jglvl_return;
+        #return;
+    };
+    #if {$jugg[tech][row][$tmpPick][cost] <= $jugg[tech][credits]} {
+        #var jugg[tech][last] $tmpPick;
+        #echo {<cfb>autoglevel: buying $tmpPick for $jugg[tech][row][$tmpPick][cost] credits.<088>};
+        #send {!purchase $tmpPick};
+    } {
+        #echo {<cfb>autoglevel: saving for $tmpPick ($jugg[tech][row][$tmpPick][cost] credits, have $jugg[tech][credits]).<088>};
+        .jglvl_return;
+    };
+};
+
+#alias {.jglvl_tech_timeout} {
+    #if {"$jugg[tech][last]" != ""} {
+        #var jugg[tech][failed][$jugg[tech][last]] 1;
+        #echo {<faa>autoglevel: purchase $jugg[tech][last] got no answer, skipping it this session.<088>};
+    };
+    .jglvl_return;
+};
+
+#alias {.jglvl_return} {
+    #undelay jglvlNext;
+    #undelay jglvlTech;
+    #undelay jglvlProbe;
+    #undelay jglvlGiveUp;
+    #var jugg[glvl][state] {};
+    #if {$idle_flag} {
+        #echo {<cfb>autoglevel: done, idle (deadman), staying here with the bot paused.<088>};
+        #return;
+    };
+    #echo {<cfb>autoglevel: done, walking back.<088>};
+    .jglvl_avoid on;
+    #map run $jugg[glvl][from];
+    .jglvl_avoid off;
+    #if {$jugg[glvl][bot]} {
+        #delay {jglvlResume} {#if {!$idle_flag && $bot[active] && $bot[paused]} {..}} {10};
+    };
+};
+
+#alias {.jglvl_giveup} {
+    #undelay jglvlNext;
+    #undelay jglvlTech;
+    #undelay jglvlProbe;
+    #undelay jglvlGiveUp;
+    #var jugg[glvl][state] {};
+    #echo {<faa>autoglevel: never reached the upgrade room, stopped here (bot stays paused).<088>};
+};
+
+#class {again_jugg_glevel} {close};

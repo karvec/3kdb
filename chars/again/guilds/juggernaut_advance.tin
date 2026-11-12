@@ -1,0 +1,162 @@
+#class {again_jugg_advance} {kill};
+#class {again_jugg_advance} {open};
+
+#var jugg_adv_stats {{con}{1}{dex}{2}{str}{2}{int}{5}};
+#var jugg_adv_max {{int}{100}};
+#var jugg[adv][pending] 0;
+#var jugg[adv][chain] 0;
+#var jugg[adv][last] {};
+#var jugg[adv][need] {};
+#var jugg[adv][capped] {{none}{1}};
+
+#action {^You need %S experience to achieve your next level.$} {
+    #var tmpXp %1;
+    #replace tmpXp {,} {};
+    #var jugg[adv][need] $tmpXp;
+} {2};
+
+#action {^You have %S to spend.$} {
+    #var tmpXp %1;
+    #replace tmpXp {,} {};
+    #var jugg[adv][spend] $tmpXp;
+    checkStrategy {autolevel} {.jlvl_check};
+    checkStrategy {autoadvance} {.jadv_check};
+    checkStrategy {autoglevel} {.jglvl_check};
+    checkStrategy {autotrain} {.jtrain_check};
+} {2};
+
+#action {^ [%*]%s%w%s[%s%d]%s%S experience points$} {
+    #format tmpStat {%l} {%3};
+    #format tmpStat {%.3s} {$tmpStat};
+    #var tmpXp %8;
+    #replace tmpXp {,} {};
+    #var jugg[adv][cost][$tmpStat] $tmpXp;
+    #var jugg[adv][val][$tmpStat] %6;
+} {2};
+
+#action {^%sYou need %S more experience points to advance your level.} {
+    #var tmpXp %2;
+    #replace tmpXp {,} {};
+    #var jugg[adv][need] $tmpXp;
+} {2};
+
+#action {^%sYou may advance your level at any time.} {
+    #var jugg[adv][need] 0;
+} {2};
+
+#action {^%sYou have %S experience points to put towards raising your stats.} {
+    #var tmpXp %2;
+    #replace tmpXp {,} {};
+    #var jugg[adv][spend] $tmpXp;
+} {2};
+
+#action {You may advance %d stat} {
+    #var jugg[adv][slots] %1;
+    .jadv_table_done;
+} {2};
+
+#action {You are unable to advance any stats at your current level.} {
+    #var jugg[adv][slots] 0;
+    .jadv_table_done;
+} {2};
+
+#action {^Your body becomes stronger and more powerful.$} {.jadv_done 1} {2};
+#action {^You become more nimble in skill and execution.$} {.jadv_done 1} {2};
+#action {^You become stronger in body and soul.$} {.jadv_done 1} {2};
+#action {^You become more aware of the world around you.$} {.jadv_done 1} {2};
+#action {^You gain new insight on the world and a stronger will.$} {.jadv_done 1} {2};
+#action {^You gain new understanding and skill in the dealings with others.$} {.jadv_done 1} {2};
+#action {^You do not have enough experience to %w your %w.$} {.jadv_done 0} {2};
+#action {^You don't have enough experience.$} {.jadv_done 0} {2};
+
+#action {^Sorry sir, but you must gain another level before you can advance that} {
+    #if {"$jugg[adv][last]" != ""} {
+        #var jugg[adv][capped][$jugg[adv][last]] 1;
+    };
+    .jadv_done 1;
+} {2};
+
+#action {{^(?:Well done! You are now|Welcome to your new level|Very well done) \w+, level (\d+)\.$}} {
+    #var jugg[plevel] %2;
+    #var jugg[adv][capped] {{none}{1}};
+    .jadv_done 1;
+} {2};
+
+#alias {.jadv_done} {
+    #if {$idle_flag} {
+        #var jugg[adv][pending] 0;
+        #var jugg[adv][chain] 0;
+        #undelay jadvPending;
+        #return;
+    };
+    #if {$jugg[adv][pending]} {
+        #var jugg[adv][chain] %1;
+        #send {!rcost};
+    };
+};
+
+#alias {.jadv_table_done} {
+    #var jugg[adv][pending] 0;
+    #undelay jadvPending;
+    #if {$jugg[adv][chain]} {
+        #var jugg[adv][chain] 0;
+        checkStrategy {autolevel} {.jlvl_check};
+        checkStrategy {autoadvance} {.jadv_check};
+    };
+};
+
+#alias {.jlvl_check} {
+    #if {$idle_flag || $jugg[adv][pending]} {#return};
+    #if {"$jugg[adv][need]" == ""} {#return};
+    #if {$jugg[adv][need] > 0} {#return};
+    #var jugg[adv][pending] 1;
+    #delay {jadvPending} {#var jugg[adv][pending] 0} {20};
+    #var jugg[adv][last] {};
+    #echo {<cfb>autolevel: level<088>};
+    #send {!advance};
+    #send {y};
+};
+
+#alias {.jadv_check} {
+    #if {$idle_flag || $jugg[adv][pending]} {#return};
+    #var jugg[adv][pending] 1;
+    #delay {jadvPending} {#var jugg[adv][pending] 0} {20};
+    #if {&jugg[adv][slots]} {
+        #nop;
+    } {
+        #var jugg[adv][chain] 1;
+        #send {!rcost};
+        #return;
+    };
+    #var tmpStat {};
+    #var tmpBest 0;
+    #if {$jugg[adv][slots] > 0} {
+        #foreach *jugg_adv_stats[] tmpKey {
+            #var tmpFull 0;
+            #if {&jugg_adv_max[$tmpKey] && &jugg[adv][val][$tmpKey]} {
+                #if {$jugg[adv][val][$tmpKey] >= $jugg_adv_max[$tmpKey]} {#var tmpFull 1};
+            };
+            #if {$tmpFull || &jugg[adv][capped][$tmpKey] || !&jugg[adv][cost][$tmpKey]} {
+                #nop;
+            } {
+                #math tmpScore {$jugg[adv][cost][$tmpKey] * $jugg_adv_stats[$tmpKey]};
+                #if {"$tmpStat" == "" || $tmpScore < $tmpBest} {
+                    #var tmpStat $tmpKey;
+                    #var tmpBest $tmpScore;
+                };
+            };
+        };
+    };
+    #if {"$tmpStat" != ""} {
+        #if {$jugg[adv][cost][$tmpStat] <= $jugg[adv][spend]} {
+            #var jugg[adv][last] $tmpStat;
+            #echo {<cfb>autoadvance: $tmpStat for $jugg[adv][cost][$tmpStat] xp<088>};
+            #send {!advance $tmpStat};
+            #return;
+        };
+    };
+    #var jugg[adv][pending] 0;
+    #undelay jadvPending;
+};
+
+#class {again_jugg_advance} {close};

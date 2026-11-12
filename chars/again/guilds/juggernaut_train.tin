@@ -1,0 +1,109 @@
+#class {again_jugg_train} {kill};
+#class {again_jugg_train} {open};
+
+#var jugg_train_skills {{death from above}{1}{punch}{2}{kick}{2}{jump jet}{3}{heat management}{3}{transpose}{1}{critical hit}{1}};
+#var jugg_train_from {{transpose}{50}{critical hit}{55}};
+#var jugg_train_every 300;
+#var jugg[train][pending] 0;
+#var jugg[train][chain] 0;
+#var jugg[train][block] 0;
+#var jugg[train][last] 0;
+#var jugg[train][skill] {{none}{}};
+
+#alias {.jtrain_check} {
+    #if {$idle_flag || $jugg[train][pending]} {#return};
+    #format tmpNow {%T};
+    #math tmpAge {$tmpNow - $jugg[train][last]};
+    #if {$tmpAge < $jugg_train_every} {#return};
+    #var jugg[train][chain] 0;
+    .jtrain_ask;
+};
+
+#alias {.jtrain_ask} {
+    #var jugg[train][pending] 1;
+    #delay {jtrainPending} {.jtrain_done} {20};
+    #send {!gs2};
+};
+
+#alias {.jtrain_done} {
+    #var jugg[train][pending] 0;
+    #var jugg[train][chain] 0;
+    #undelay jtrainPending;
+    #format jugg[train][last] {%T};
+};
+
+#action {^.%*-Juggernaut Guild Advancements-%*.$} {
+    #if {!$jugg[train][pending]} {#return};
+    #line gag;
+    #var jugg[train][block] 1;
+    #action {%*} {.jtrain_line {%%0}} {9};
+    #delay {jtrainBlock} {.jtrain_unblock} {5};
+} {2};
+
+#alias {.jtrain_unblock} {
+    #var jugg[train][block] 0;
+    #unaction {%*};
+};
+
+#alias {.jtrain_line} {
+    #if {!$jugg[train][block]} {#return};
+    #line gag;
+    #var tmpLine {%1};
+    #regex {$tmpLine} {{^'-+'$}} {
+        #var jugg[train][block] 0;
+        #delay {jtrainBlock} {.jtrain_unblock} {0.1};
+        .jtrain_pick;
+    };
+    #regex {$tmpLine} {Skill Points Available: %d} {#var jugg[train][points] &1};
+    #var tmpMore 1;
+    #while {$tmpMore} {
+        #var tmpMore 0;
+        #regex {$tmpLine} {{^\s*([A-Za-z][A-Za-z ]*[a-z])\s*:\s+(\d+)/(\d+) \(\s*(\d+)\)(.*)$}} {
+            #format tmpName {%l} {&2};
+            #var jugg[train][skill][$tmpName] {{rank}{&3}{max}{&4}{cost}{&5}};
+            #var tmpLine {&6};
+            #var tmpMore 1;
+        };
+    };
+};
+
+#alias {.jtrain_pick} {
+    #var tmpSkill {};
+    #var tmpBest 0;
+    #foreach *jugg_train_skills[] tmpKey {
+        #var tmpReady 1;
+        #if {&jugg_train_from[$tmpKey]} {
+            #var tmpReady 0;
+            #if {&jugg[suitlvl]} {
+                #if {$jugg[suitlvl] >= $jugg_train_from[$tmpKey]} {#var tmpReady 1};
+            };
+        };
+        #if {$tmpReady && &jugg[train][skill][$tmpKey] && $jugg_train_skills[$tmpKey] > 0} {
+            #if {$jugg[train][skill][$tmpKey][rank] < $jugg[train][skill][$tmpKey][max]} {
+                #math tmpScore {$jugg[train][skill][$tmpKey][cost] * $jugg_train_skills[$tmpKey]};
+                #if {"$tmpSkill" == "" || $tmpScore < $tmpBest} {
+                    #var tmpSkill $tmpKey;
+                    #var tmpBest $tmpScore;
+                };
+            };
+        };
+    };
+    #if {"$tmpSkill" != ""} {
+        #if {$jugg[train][skill][$tmpSkill][cost] <= $jugg[train][points]} {
+            #echo {<cfb>autotrain: $tmpSkill for $jugg[train][skill][$tmpSkill][cost] points<088>};
+            #var jugg[train][chain] 1;
+            #send {!train $tmpSkill};
+            #return;
+        };
+    };
+    .jtrain_done;
+};
+
+#action {^The computer chirps '%* increased to %d.'} {
+    #if {$jugg[train][chain]} {
+        #var jugg[train][chain] 0;
+        #if {$idle_flag} {.jtrain_done} {.jtrain_ask};
+    };
+} {2};
+
+#class {again_jugg_train} {close};

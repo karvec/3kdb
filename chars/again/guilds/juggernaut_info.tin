@@ -1,0 +1,87 @@
+#class {again_jugg_info} {kill};
+#class {again_jugg_info} {open};
+
+#var jinfo[on] 0;
+
+#alias {jinfo} {
+    #if {"%1" == "stop"} {
+        .jinfo_end;
+        #return;
+    };
+    #var jinfo[on] 1;
+    #list jinfo[queue] clear;
+    #var jinfo[count] 0;
+    #var jinfo[idle] 0;
+    #if {"%1" == "more"} {
+        #foreach {%2} tmpTopic {.jinfo_add $tmpTopic};
+    } {
+        #var jinfo[seen] {{index}{1}};
+        #send {!info};
+    };
+    #echo {<cfb>jinfo: reading every info file, one every 0.2 seconds. jinfo stop to quit.<088>};
+    #ticker {jinfo} {.jinfo_next} {0.2};
+};
+
+#alias {.jinfo_add} {
+    #var tmpTopic {%0};
+    #replace tmpTopic {,} {};
+    #format tmpTopic {%p} {$tmpTopic};
+    #if {"$tmpTopic" == ""} {#return};
+    #if {&jinfo[seen][$tmpTopic]} {#return};
+    #var jinfo[seen][$tmpTopic] 1;
+    #list jinfo[queue] add {$tmpTopic};
+};
+
+#alias {.jinfo_next} {
+    #if {&jinfo[queue][] == 0} {
+        #math jinfo[idle] {$jinfo[idle] + 1};
+        #if {$jinfo[idle] > 15} {.jinfo_end};
+        #return;
+    };
+    #var jinfo[idle] 0;
+    #list jinfo[queue] get 1 tmpTopic;
+    #list jinfo[queue] delete 1;
+    #math jinfo[count] {$jinfo[count] + 1};
+    #send {!info $tmpTopic};
+};
+
+#alias {.jinfo_end} {
+    #unticker {jinfo};
+    #if {$jinfo[on]} {
+        #echo {<cfb>jinfo: done, $jinfo[count] info files read.<088>};
+    };
+    #var jinfo[on] 0;
+};
+
+#action {%S) %*} {
+    #if {!$jinfo[on]} {#return};
+    #var jinfo[line] {%0};
+    #var jinfo[more] 1;
+    #while {$jinfo[more]} {
+        #var jinfo[more] 0;
+        #regex {$jinfo[line]} {%S) %*} {
+            #var jinfo[num] {&1};
+            #var jinfo[line] {&2};
+            #var jinfo[more] 1;
+        };
+        #if {$jinfo[more]} {
+            #regex {$jinfo[num]} {^{[0-9]+(\.[0-9]+)*}$} {.jinfo_add $jinfo[num]};
+        };
+    };
+} {9};
+
+#action {^%sRelated %w:%s%*$} {
+    #if {!$jinfo[on]} {#return};
+    #var tmpTopics {%4};
+    #replace tmpTopics {, } {;};
+    #foreach {$tmpTopics} tmpTopic {.jinfo_add $tmpTopic};
+} {9};
+
+#action {^%sBackground:%s%*$} {
+    #if {!$jinfo[on]} {#return};
+    #var tmpTopics {%3};
+    #replace tmpTopics {, } {;};
+    #foreach {$tmpTopics} tmpTopic {.jinfo_add $tmpTopic};
+} {9};
+
+#class {again_jugg_info} {close};
