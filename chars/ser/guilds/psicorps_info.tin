@@ -1,0 +1,185 @@
+#class {ser_psi_info} {kill};
+#class {ser_psi_info} {open};
+
+#var pinfo[on] 0;
+#var pinfo[file] {notes/psicorps_info.txt};
+#var pinfo[skip] {{command}{1}{cost}{1}{description}{1}{duration}{1}{expertise}{1}{maintain}{1}{note}{1}{power level}{1}{target}{1}};
+
+#alias {infoscroll} {
+    #if {"%1" == "stop"} {
+        .pinfo_end;
+    } {
+        #var pinfo[on] 1;
+        #var pinfo[seen] {};
+        #list pinfo[queue] clear;
+        #list pinfo[miss] clear;
+        #list pinfo[pages] clear;
+        #var pinfo[count] 0;
+        #var pinfo[asked] 0;
+        #if {"%1" == "more"} {
+            #var pinfo[seeded] 1;
+            #foreach {%2} tmpTopic {.pinfo_add {$tmpTopic}};
+            #echo {<cfb>pinfo: reading &pinfo[queue][] info files into $pinfo[file] (added at the end). infoscroll stop to quit.<088>};
+            .pinfo_next;
+        } {
+            #var pinfo[seeded] 0;
+            #script {tmpOut} {: > $pinfo[file]};
+            #echo {<cfb>pinfo: reading every psicorps info file and powers ALL into $pinfo[file]. infoscroll stop to quit.<088>};
+            .pinfo_ask {};
+        };
+    };
+};
+
+#alias {.pinfo_add} {
+    #var tmpTopic {%1};
+    #format tmpTopic {%p} {$tmpTopic};
+    #if {"$tmpTopic" != ""} {
+        #format tmpKey {%l} {$tmpTopic};
+        #if {!&pinfo[seen][$tmpKey]} {
+            #var pinfo[seen][$tmpKey] 1;
+            #list pinfo[queue] add {$tmpTopic};
+        };
+    };
+};
+
+#alias {.pinfo_powers} {
+    #var pinfo[seeded] 1;
+    #var pinfo[topic] {};
+    #var pinfo[hit] 0;
+    #class {pinfo_read} {kill};
+    #class {pinfo_read} {open};
+    #action {^%*$} {.pinfo_pline {%%1}} {9};
+    #action {There is no reason to 'pinfomark' here.} {#line gag;.pinfo_done} {1};
+    #class {pinfo_read} {close};
+    #send {!powers ALL};
+    #send {pinfomark};
+    #delay {pinfo_wait} {.pinfo_done} {15};
+};
+
+#alias {.pinfo_pline} {
+    #var tmpLine {%1};
+    #regex {$tmpLine} {^%*guild abilities:$} {
+        #var pinfo[hit] 1;
+        #math pinfo[count] {$pinfo[count] + 1};
+        #list pinfo[pages] add {powers ALL};
+        #line log {$pinfo[file]} { };
+        #line log {$pinfo[file]} {-- powers ALL};
+    };
+    #if {$pinfo[hit]} {
+        #line log {$pinfo[file]} {$tmpLine};
+        #regex {$tmpLine} {{^[* ]?([a-z]+(?: [a-z0-9]+)*)\s{2,}\d+\s+\d+}} {.pinfo_add {&2}};
+    };
+};
+
+#alias {.pinfo_next} {
+    #if {$pinfo[on]} {
+        #if {&pinfo[queue][] == 0 && !$pinfo[seeded]} {.pinfo_powers} {
+            #if {&pinfo[queue][] == 0} {
+                .pinfo_end;
+            } {
+                #if {"$incombat" == "1"} {
+                    #delay {pinfo_step} {.pinfo_next} {3};
+                } {
+                    #list pinfo[queue] get 1 tmpTopic;
+                    #list pinfo[queue] delete 1;
+                    .pinfo_ask {$tmpTopic};
+                };
+            };
+        };
+    };
+};
+
+#alias {.pinfo_ask} {
+    #var pinfo[topic] {%1};
+    #var pinfo[hit] 0;
+    #var pinfo[detail] 0;
+    #var pinfo[list] 0;
+    #regex {$pinfo[topic]} {^{powers|skills}} {#var pinfo[list] 1};
+    #math pinfo[asked] {$pinfo[asked] + 1};
+    #if {$pinfo[asked] % 25 == 0} {
+        #echo {<cfb>pinfo: $pinfo[asked] asked, &pinfo[queue][] waiting.<088>};
+    };
+    #class {pinfo_read} {kill};
+    #class {pinfo_read} {open};
+    #action {^%*$} {.pinfo_line {%%1}} {9};
+    #action {There is no reason to 'pinfomark' here.} {#line gag;.pinfo_done} {1};
+    #class {pinfo_read} {close};
+    #if {"%1" == ""} {#send {!info}} {#send {!info %1}};
+    #send {pinfomark};
+    #delay {pinfo_wait} {.pinfo_done} {15};
+};
+
+#alias {.pinfo_line} {
+    #var tmpLine {%1};
+    #var tmpKind {body};
+    #regex {$tmpLine} {^--=%*=--$} {#var tmpKind {rule}};
+    #regex {$tmpLine} {^-- PsiCorps Info: %*$} {#var tmpKind {title};#var tmpTitle {&1}};
+    #if {"$tmpKind" == "rule" && !$pinfo[hit]} {
+        #var pinfo[hit] 1;
+        #line log {$pinfo[file]} { };
+    };
+    #if {$pinfo[hit]} {
+        #line log {$pinfo[file]} {$tmpLine};
+        #if {"$tmpKind" == "title"} {
+            #math pinfo[count] {$pinfo[count] + 1};
+            #list pinfo[pages] add {$tmpTitle};
+        };
+        #if {"$tmpKind" == "body"} {.pinfo_topics};
+    };
+};
+
+#alias {.pinfo_topics} {
+    #var tmpAlso {};
+    #var tmpKey {};
+    #regex {$tmpLine} {^%sPower Level%s:} {#var pinfo[detail] 1};
+    #format tmpLow {%l} {$tmpLine};
+    #regex {$tmpLow} {^%ssee also%s:%s%*$} {#var tmpAlso {&4}};
+    #regex {$tmpLine} {^%s{[A-Za-z][A-Za-z0-9 ]*[A-Za-z0-9]}%s: %*$} {#var tmpKey {&2}};
+    #if {"$tmpAlso" != ""} {
+        #replace tmpAlso {,} {;};
+        #foreach {$tmpAlso} tmpTopic {.pinfo_add {$tmpTopic}};
+    } {
+        #if {"$tmpKey" != ""} {
+            #format tmpLow {%l} {$tmpKey};
+            #if {!$pinfo[detail] && !&pinfo[skip][$tmpLow]} {.pinfo_add {$tmpKey}};
+        } {
+            #if {$pinfo[list]} {.pinfo_cells};
+        };
+    };
+};
+
+#alias {.pinfo_cells} {
+    #var tmpCells {$tmpLine};
+    #replace tmpCells {{\s{2,}|,\s*}} {;};
+    #foreach {$tmpCells} tmpCell {
+        #replace tmpCell {{\s*[\(\[].*$}} {};
+        #format tmpCell {%p} {$tmpCell};
+        #regex {$tmpCell} {^{[A-Za-z][A-Za-z0-9' -]{1,30}}$} {.pinfo_add {&1}};
+    };
+};
+
+#alias {.pinfo_done} {
+    #undelay {pinfo_wait};
+    #class {pinfo_read} {kill};
+    #if {!$pinfo[hit] && "$pinfo[topic]" != ""} {#list pinfo[miss] add {$pinfo[topic]}};
+    #if {$pinfo[on]} {#delay {pinfo_step} {.pinfo_next} {0.5}};
+};
+
+#alias {.pinfo_end} {
+    #undelay {pinfo_wait};
+    #undelay {pinfo_step};
+    #class {pinfo_read} {kill};
+    #if {$pinfo[on]} {
+        #line log {$pinfo[file]} { };
+        #line log {$pinfo[file]} {==== Contents: $pinfo[count] pages ====};
+        #foreach {$pinfo[pages][%*]} tmpTitle {#line log {$pinfo[file]} {  $tmpTitle}};
+        #if {&pinfo[miss][]} {
+            #line log {$pinfo[file]} {==== No info file for: &pinfo[miss][] topics ====};
+            #foreach {$pinfo[miss][%*]} tmpTopic {#line log {$pinfo[file]} {  $tmpTopic}};
+        };
+        #echo {<cfb>pinfo: done, $pinfo[count] pages in $pinfo[file], &pinfo[miss][] topics had no info file.<088>};
+    };
+    #var pinfo[on] 0;
+};
+
+#class {ser_psi_info} {close};

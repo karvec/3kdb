@@ -642,9 +642,14 @@
 
 #ALIAS {.mipProcessGlinePsicorps} {
 	#IF {%1 == 1} {
-		#REGEX {$mip[gline][1]} {\[\[ %* \]\]} {_hpbar_handle_powers {&1}};
+		#line strip #var _psi_gline {$mip[gline][1]};
+		#replace _psi_gline {[[} {};
+		#replace _psi_gline {]]} {};
+		#format _psi_gline {%p} {$_psi_gline};
+		#if {"$_psi_gline" != ""} {_hpbar_handle_powers {$_psi_gline}};
 	}; #ELSEIF {%1 == 2} {
-		#NOP;
+		#REGEX {$mip[gline][2]} {{\$: (\d+)}} {#VAR {my[mip_coins]} {&2}};
+		#REGEX {$mip[gline][2]} {{G2N: (-?\d*)}} {#VAR {my[g2n]} {&2}};
 	}; #ELSE {
 		#ECHO {<171> Invalid Gline Number <088>};
 	};

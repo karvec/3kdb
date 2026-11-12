@@ -1,0 +1,29 @@
+#read chars/ser/guilds/psicorps_info.tin;
+
+#class {player_guild} {kill}
+#class {player_guild} {open}
+
+#read common/hpcells.tin;
+
+#alias {_ser_psi_miphp} {
+	#list temp clear;
+	_hpc_pair {H} {$hp} {$hp_max};
+	#var _sph_line {$_hpc_out};
+	_hpc_pair {S} {$sp} {$sp_max};
+	#var _sph_line {$_sph_line $_hpc_out};
+	_hpc_pair {P} {$gp1} {$gp1_max};
+	#var _sph_line {$_sph_line $_hpc_out};
+	_hpc_pair {T} {$gp2} {$gp2_max};
+	#var _sph_line {$_sph_line $_hpc_out};
+	_hpc_enemy;
+	#var _sph_line {$_sph_line$_hpc_enemy};
+	#list temp add {$_sph_line};
+	#list temp add {<def>Powers: $powers_string  <eeb>Coins: <ffe>$my[mip_coins] <eeb>G2N: <ffe>$my[g2n]%<088>};
+	#var hpbar[prompt] $temp;
+	#list hpbar[prompt] size _sph_rows;
+	#format _sph_height {%d} {$hpbar[height]};
+	#format _sph_drawn {%d} {$draw[initiated]};
+	#if {$_sph_drawn && "$draw[hpbar][active]" == "on" && $_sph_rows != $_sph_height} {init_screen};
+};
+
+#class {player_guild} {close}

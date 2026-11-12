@@ -8,52 +8,19 @@
 };
 
 #action {^HP: %d/%d SP: %d/%d PE: %d/%d ST: %d/%d EC: %d AAT: %* Gold: %d} {
-    #if $gags[hpbar] {
-        #line gag;
-    };
-    #VAR {my[hp][current]} {%1};
-    #VAR {my[hp][max]} {%2};
-    #math my[hp][percent] {1.00 * $my[hp][current] / $my[hp][max]};
-    
-    #VAR {my[sp][current]} {%3};
-    #VAR {my[sp][max]} {%4};
-    #math my[sp][percent] {1.00 * $my[sp][current] / $my[sp][max]};
-    
-    #VAR {my[gp1][current]} {%5};
-    #VAR {my[gp1][max]} {%6};
-    #math my[gp1][percent] {1.00 * $my[gp1][current] / $my[gp1][max]};
-    
-    #VAR {my[gp2][current]} {%7};
-    #VAR {my[gp2][max]} {%8};
-    #math my[gp2][percent] {1.00 * $my[gp2][current] / $my[gp2][max]};
-
-    #var my[aa] %10;
-
-    #line oneshot #action {^POW: $} {
-        #if $gags[hpbar] {#line gag;};
-        #NOP -- If you just see a POW, there are no powers online;
-        #var powers_string <ebc>NONE<088>;
-        #var my[powers] {}; 
-    };
-    
-    #line oneshot #action {^POW: [[ %* ]]$} {
-        #NOP -- Unaction the last power check _use_power in heartbeat.tin so we're only notified on a new round;
-        #unaction {{You must wait %d round%w before you can use this power again.|You may only use one power per round.}};
-        #if $gags[hpbar] {
-            #line gag;
-        };
-        #if {"%%1" == ""} {
-            #NOP -- If you just see a POW, there are no powers online;
-            #var powers_string <ebc>NONE<088>;
-            #var my[powers] {};
-        } {
-            #var powers %%1;
-            _hpbar_handle_powers {$powers};
-        };
-    };
+    #if $gags[hpbar] {#line gag};
 } {2};
 
+#action {^POW: %*} {
+    #if $gags[hpbar] {#line gag};
+} {2};
+
+#action {^You take on the %* of {a|an} %w.$} {#var my[aa] %3} {2};
+#action {^You release the %* of {a|an} %w.$} {#var my[aa] (none)} {2};
+#action {^Your animal affinity fades.$} {#var my[aa] (none)} {2};
+
 #alias {_hpbar_handle_powers} {
+    #unaction {{You must wait %d round%w before you can use this power again.|You may only use one power per round.}};
     #NOP -- Move hpbar handler here and add support if it multi-lines;
     #NOP -- String for HPBAR;
     #var powers_string %0;
@@ -94,6 +61,7 @@
             #var my[powers][$powers_keys[$key_index]][time] &1;
         };
     };
+    #if {"$my[powers][AA]" == ""} {#var my[aa] (none)};
 
     #NOP -- Get the active adapt body type if available;
     #regex $powers {ab: %dJag} {#var current_adapt_body edged};

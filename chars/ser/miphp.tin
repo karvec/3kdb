@@ -2,7 +2,7 @@
 #class {miphp} {open}
 
 #alias {_player_miphp} {
-	#NOP
+	#if {"$guild" == "psicorps"} {#var guild_miphp 0;_ser_psi_miphp};
 };
 
 
