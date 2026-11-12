@@ -288,12 +288,13 @@
 
 #ALIAS {.mipProcessGlineElemental} {
 	#IF {%1 == 1} {
-		#REGEX {$mip[gline][1]}	{Emit> : <%w%d>} 			{#VAR {my[emit][level]}		{&2}};
+		#REGEX {$mip[gline][1]}	{{Emit> : <[a-z](\d+)}}	{#VAR {my[emit][level]}		{&2}};
 		#REGEX {$mip[gline][1]}	{Form>: <c%w>\(<r%d>\)}		{#VAR {my[form][type]}		{&1};
 															 #VAR {my[form][size]}		{&2};};
 		#REGEX {$mip[gline][1]}	{Rating>: <r%d>}			{#VAR {my[rating]}		{&1}};
 	}; #ELSEIF {%1 == 2} {
 		#REGEX {$mip[gline][2]} {{Blasts|Gems|Stones}/Waves/Shrouds>: <%w%d>/<%w%d>/<%w%d>\(%d\%\)} {
+			#VAR {my[blast_word]}	{&1};
 			#VAR {my[blasts]}		{&3};
 			#VAR {my[waves]}		{&5};
 			#VAR {my[shrouds]}		{&7};

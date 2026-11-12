@@ -1,0 +1,28 @@
+#class {player_guild} {kill}
+#class {player_guild} {open}
+
+#read common/hpcells.tin;
+
+#alias {_anecdote_elemental_miphp} {
+	#list temp clear;
+	_hpc_pair {H} {$hp} {$hp_max};
+	#var _aeh_line {$_hpc_out};
+	_hpc_pair {S} {$sp} {$sp_max};
+	#var _aeh_line {$_aeh_line $_hpc_out};
+	_hpc_pair {N} {$gp1} {$gp1_max};
+	#var _aeh_line {$_aeh_line $_hpc_out};
+	_hpc_pair {C} {$gp2} {$gp2_max};
+	#var _aeh_line {$_aeh_line $_hpc_out};
+	_hpc_enemy;
+	#var _aeh_line {$_aeh_line$_hpc_enemy};
+	#format _aeh_bw {%.1s} {$my[blast_word]};
+	#list temp add {$_aeh_line};
+	#list temp add {<dea>Emit<cfe>: <ade>$my[emit][level] <dea>Form<cfe>: <cad>$my[form][type] <cfe>(<ccd>$my[form][size]<cfe>) <bea>Rating<cfe>: <ccd>$my[rating] <dea>$_aeh_bw<cfe>/<dea>W<cfe>/<dea>S<cfe>: <bfc>$my[blasts]<cfe>/<bfc>$my[waves]<cfe>/<bfc>$my[shrouds] <cfe>($my[reset]%) <dea>Solidify<cfe>:<088> $my[solidify] <dea>G2N<cfe>: <cae>$my[g2n]<088>};
+	#var hpbar[prompt] $temp;
+	#list hpbar[prompt] size _aeh_rows;
+	#format _aeh_height {%d} {$hpbar[height]};
+	#format _aeh_drawn {%d} {$draw[initiated]};
+	#if {$_aeh_drawn && "$draw[hpbar][active]" == "on" && $_aeh_rows != $_aeh_height} {init_screen};
+};
+
+#class {player_guild} {close}
