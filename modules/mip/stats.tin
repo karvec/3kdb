@@ -621,7 +621,7 @@
 
 	}; #ELSEIF {%1 == 2} {
 		#NOP Smile, GXP, song performing, rounds left;
-		#REGEX {$mip[gline][2]} { S:%d}		{#VAR {my[smile]}		{&1}};
+		#REGEX {$mip[gline][2]} {{(?:^|\s)S:(\d+);?(\d*)}}	{#VAR {my[smile]}		{&2};#VAR {my[smile_reset]}	{&3}};
 		#REGEX {$mip[gline][2]} { NGL: %d%}	{#VAR {my[g2nl]}		{&1}};
 		#REGEX {$mip[gline][2]} { %*: %d} {
 			#var song_match 0;

@@ -6,64 +6,7 @@
 #var prot_string_display {};
 #var prot_show {};
 
-#alias {_kbm_num} {
-	#format _kbm_v {%d} {%1};
-	#if {$_kbm_v >= 1000000} {#var _kbm_unit M;#math _kbm_t {$_kbm_v / 100000}} {#var _kbm_unit k;#math _kbm_t {$_kbm_v / 100}};
-	#format _kbm_t {%d} {$_kbm_t};
-	#math _kbm_i {$_kbm_t / 10};
-	#format _kbm_i {%d} {$_kbm_i};
-	#math _kbm_d {$_kbm_t - $_kbm_i * 10};
-	#var _kbm_numout {$_kbm_i.$_kbm_d$_kbm_unit};
-};
-
-#alias {_kbm_pair} {
-	#format _kbm_c {%d} {%2};
-	#format _kbm_m {%d} {%3};
-	#if {$_kbm_c >= 100000 || $_kbm_m >= 100000} {
-		_kbm_num {$_kbm_c};
-		#var _kbm_c {$_kbm_numout};
-		_kbm_num {$_kbm_m};
-		#var _kbm_m {$_kbm_numout};
-	};
-	_kbm_cell {%1:$_kbm_c/$_kbm_m} {%2} {%3};
-};
-
-#alias {_kbm_cell} {
-	#format _kbm_len {%L} {%1};
-	#math _kbm_lp {(15 - $_kbm_len) / 2};
-	#format _kbm_lp {%d} {$_kbm_lp};
-	#math _kbm_rp {15 - $_kbm_len - $_kbm_lp};
-	#format _kbm_txt {%-${_kbm_lp}s%s%-${_kbm_rp}s} {} {%1} {};
-	#format _kbm_w {%L} {$_kbm_txt};
-	#var _kbm_pct 0;
-	#if {"%2" != "" && "%3" != "" && "%3" != "0"} {#math _kbm_pct {100.0 * %2 / %3}};
-	#format _kbm_pct {%d} {$_kbm_pct};
-	#if {$_kbm_pct > 100} {#var _kbm_pct 100};
-	#if {$_kbm_pct < 0} {#var _kbm_pct 0};
-	#math _kbm_n {17 * $_kbm_pct / 100};
-	#format _kbm_n {%d} {$_kbm_n};
-	#var _kbm_bg <AFA>;
-	#if {$_kbm_pct < 100} {#var _kbm_bg <AEA>};
-	#if {$_kbm_pct < 90} {#var _kbm_bg <BEA>};
-	#if {$_kbm_pct < 80} {#var _kbm_bg <BDA>};
-	#if {$_kbm_pct < 70} {#var _kbm_bg <CDA>};
-	#if {$_kbm_pct < 60} {#var _kbm_bg <DCA>};
-	#if {$_kbm_pct < 50} {#var _kbm_bg <DBA>};
-	#if {$_kbm_pct < 40} {#var _kbm_bg <EBA>};
-	#if {$_kbm_pct < 30} {#var _kbm_bg <EAA>};
-	#if {$_kbm_pct < 20} {#var _kbm_bg <FAA>};
-	#if {$_kbm_n > 0} {#var _kbm_lbg $_kbm_bg} {#var _kbm_lbg <AAA>};
-	#if {$_kbm_n >= 17} {#var _kbm_rbg $_kbm_bg} {#var _kbm_rbg <AAA>};
-	#math _kbm_n {$_kbm_n - 1};
-	#if {$_kbm_n < 0} {#var _kbm_n 0};
-	#if {$_kbm_n > 15} {#var _kbm_n 15};
-	#format _kbm_a {%.${_kbm_n}s} {$_kbm_txt};
-	#math _kbm_rn {$_kbm_w - $_kbm_n};
-	#format _kbm_r {%r} {$_kbm_txt};
-	#format _kbm_r {%.${_kbm_rn}s} {$_kbm_r};
-	#format _kbm_b {%r} {$_kbm_r};
-	#var _kbm_out {<fff>$_kbm_lbg▏<008>$_kbm_bg$_kbm_a<070>$_kbm_b<fff>$_kbm_rbg▕<088>};
-};
+#read common/hpcells.tin;
 
 #alias {_karvec_bard_miphp} {
 	#if {$my[defs][ab] == 1}						{#var ab_string <ACA><fff>ab*<088>} 				{#var ab_string {}};
@@ -99,23 +42,27 @@
 	#var prot_show $prot_string;
 	#if {"$prot_show" == ""} {#var prot_show $prot_string_display};
 
-	#if {$my[song][rounds] > 0} {#var song_string { ${theme[bard_song]}<dae>Singing: $my[song][title] - $my[song][rounds]<088>}} {#var song_string {}};
+	_bard_perf_line;
+	#if {$_bmp_left > 0} {
+		_hpc_cell {P:$_bmp_left/$_bmp_total} {$_bmp_left} {$_bmp_total};
+		#var song_string {$_hpc_out };
+	} {
+		#var song_string {};
+	};
 	
 	#list temp clear;
-	_kbm_pair {H} {$hp} {$hp_max};
-	#var _kbm_line {$_kbm_out};
-	_kbm_pair {S} {$sp} {$sp_max};
-	#var _kbm_line {$_kbm_line $_kbm_out};
-	_kbm_pair {K} {$gp1} {$gp1_max};
-	#var _kbm_line {$_kbm_line $_kbm_out};
-	_kbm_pair {V} {$gp2} {$gp2_max};
-	#var _kbm_line {$_kbm_line $_kbm_out};
-	#if {"$enemy[hp]" != ""} {
-		_kbm_cell {E:$enemy[hp]%} {$enemy[hp]} {100};
-		#var _kbm_line {$_kbm_line $_kbm_out};
-	};
+	_hpc_pair {H} {$hp} {$hp_max};
+	#var _kbm_line {$_hpc_out};
+	_hpc_pair {S} {$sp} {$sp_max};
+	#var _kbm_line {$_kbm_line $_hpc_out};
+	_hpc_pair {K} {$gp1} {$gp1_max};
+	#var _kbm_line {$_kbm_line $_hpc_out};
+	_hpc_pair {V} {$gp2} {$gp2_max};
+	#var _kbm_line {$_kbm_line $_hpc_out};
+	_hpc_enemy;
+	#var _kbm_line {$_kbm_line$_hpc_enemy};
 	#list temp add {$_kbm_line};
-	#list temp add {<fff>Prots: $prot_show$song_string};
+	#list temp add {$song_string<fff>Prots: $prot_show  <dae>Smiles: <fff>$my[smile]<888>/$my[smile_reset]%  <dae>NGL: <fff>$my[g2nl]%<088>};
 	#var hpbar[prompt] $temp;
 	#list hpbar[prompt] size _kbm_rows;
 	#format _kbm_height {%d} {$hpbar[height]};
