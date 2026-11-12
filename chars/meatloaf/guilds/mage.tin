@@ -180,6 +180,74 @@
     ms golema;
 };
 
+#read common/hpcells.tin;
+
+#var _mlh_known {{SS}{1}{PA}{1}{PS}{1}{A}{1}{B}{1}{MB}{1}{S}{1}{MS}{1}{M}{1}{RS}{1}{MG}{1}{mg}{1}{PG}{1}{PE}{1}{SB}{1}};
+
+#alias {_meatloaf_mage_miphp} {
+	_guild_miphp;
+	#list temp clear;
+	_hpc_pair {H} {$hp} {$hp_max};
+	#var _mlh_line {$_hpc_out};
+	_hpc_pair {S} {$sp} {$sp_max};
+	#var _mlh_line {$_mlh_line $_hpc_out};
+	_hpc_pair {Sat} {$gp1} {$gp1_max} {r};
+	#var _mlh_line {$_mlh_line $_hpc_out};
+	_hpc_pair {C} {$gp2} {$gp2_max} {r};
+	#var _mlh_line {$_mlh_line $_hpc_out};
+	_hpc_enemy;
+	#var _mlh_line {$_mlh_line$_hpc_enemy};
+	#var _mlh_extra {};
+	#var _mlh_sp {$mip[gline][1]};
+	#replace _mlh_sp {%*Spells>: } {};
+	#replace _mlh_sp { } {;};
+	#foreach {$_mlh_sp} {_mlh_t} {
+		#regex {$_mlh_t} {{^<[a-z]<?([A-Za-z]+)>?>$}} {
+			#if {!&_mlh_known[&2]} {#var _mlh_extra {$_mlh_extra &2}};
+		};
+	};
+	#var _mlh_p {$prots_show$_mlh_extra};
+	#replace _mlh_p {<ACA><fff> } { <ACA><fff>};
+	#replace _mlh_p { <088>} {<088> };
+	#replace _mlh_p {  } { };
+	#format _mlh_p {%p} {$_mlh_p};
+	#var _mlh_ash {$ash_string};
+	#replace _mlh_ash {PLYRS} {PLY};
+	_hpc_num {$my[g2n]};
+	#list temp add {$_mlh_line};
+	#list temp add {<eeb>P:<ffe>$_mlh_p 💎<ffe>$my[gem]% <eeb>MC:<ffe>$my[mental_cognition]% <eeb>ASH:$_mlh_ash <eeb>G:<ffe>$my[golem][current]/$my[golem][reset]% <eeb>S:<ffe>$my[super][current]/$my[super][reset]% <eeb>I:<ffe>$immersion_string <eeb>ST:<ffe>$my[spelltap][bonus]/$my[spelltap][corpses] <eeb>G2N:<ffe>$_hpc_numout<088>};
+	#var _mlh_sl {$my[mip_summons]};
+	#replace _mlh_sl {, } {;};
+	#var _mlh_row {};
+	#var _mlh_n 0;
+	#foreach {$_mlh_sl} {_mlh_s} {
+		#var _mlh_hp {};
+		#regex {$_mlh_s} {{^(.+?):(\S*?)(\d+)%$}} {
+			#var _mlh_sn {&2};
+			#var _mlh_sf {&3};
+			#var _mlh_hp {&4};
+		};
+		#if {"$_mlh_hp" != ""} {
+			#replace _mlh_sf {mf} {};
+			#format _mlh_pl {%L} {$_mlh_hp%};
+			#format _mlh_fl {%L} {$_mlh_sf};
+			#math _mlh_nl {10 - $_mlh_pl - $_mlh_fl};
+			#format _mlh_sn {%.${_mlh_nl}s} {$_mlh_sn};
+			#format _mlh_sn {%p} {$_mlh_sn};
+			_hpc_cell {$_mlh_sf$_mlh_sn $_mlh_hp%} {$_mlh_hp} {100};
+			#if {"$_mlh_row" == ""} {#var _mlh_row {$_hpc_out}} {#var _mlh_row {$_mlh_row $_hpc_out}};
+			#math _mlh_n {$_mlh_n + 1};
+			#if {$_mlh_n % 7 == 0} {#list temp add {$_mlh_row};#var _mlh_row {}};
+		};
+	};
+	#if {"$_mlh_row" != ""} {#list temp add {$_mlh_row}};
+	#var hpbar[prompt] $temp;
+	#list hpbar[prompt] size _mlh_rows;
+	#format _mlh_height {%d} {$hpbar[height]};
+	#format _mlh_drawn {%d} {$draw[initiated]};
+	#if {$_mlh_drawn && "$draw[hpbar][active]" == "on" && $_mlh_rows != $_mlh_height} {init_screen};
+};
+
 #class {player_guild} {close}
 
 #NOP -- summoner_on once per session, the first time this file is read (login or gswap to mage). The flag is in its;

@@ -244,7 +244,7 @@
 
 
 #ALIAS {.mipProcessGlineMage} {
-	#NOP Gem, MC, immersion, spelltap and prots. The mage hpbar line sets prots too when it comes (combat, or hp);
+	#NOP Gem, MC, immersion, spelltap and prots. Prots come only from here, the mage hpbar line just keeps the coffin count;
 
 	#IF {%1 == 1} {
 		#REGEX {$mip[gline][1]}	{Gem:%d\%}  		{#VAR {my[gem]}				   {&1}	}	{#VAR {my[gem]}					{0}	};
@@ -277,9 +277,9 @@
 													 #VAR {my[golem][reset]}		{&2}};
 		#REGEX {$mip[gline][2]}	{S: %d\/%d\%}		{#VAR {my[super][current]}		{&1};
 													 #VAR {my[super][reset]}		{&2}};
-		#REGEX {$mip[gline][2]}	{G2N:%d\%}			{#VAR {my[g2n]}					{&1}};
-		#REGEX {$mip[gline][2]}	{G2N:-%d\%}			{#VAR {my[g2n]}					{&1}};
+		#REGEX {$mip[gline][2]}	{{G2N:(-?\d+)}}		{#VAR {my[g2n]}					{&2}};
 		#REGEX {$mip[gline][2]}	{I: %d}				{#VAR {my[immersion][count]}	{&1}};
+		#REGEX {$mip[gline][2]}	{{G2N:-?\d+%?\s+(\S.*)$}}	{#VAR {my[mip_summons]}	{&2}}	{#VAR {my[mip_summons]}	{}};
 
 	}; #ELSE {
 		#ECHO {<171> Invalid Gline Number <088>};

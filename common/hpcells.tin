@@ -1,0 +1,82 @@
+#alias {_hpc_num} {
+	#format _hpc_v {%d} {%1};
+	#if {$_hpc_v < 10000} {
+		#var _hpc_numout $_hpc_v;
+	} {
+		#if {$_hpc_v < 1000000} {
+			#math _hpc_i {$_hpc_v / 1000};
+			#format _hpc_numout {%dk} {$_hpc_i};
+		} {
+			#math _hpc_t {$_hpc_v / 100000};
+			#format _hpc_t {%d} {$_hpc_t};
+			#math _hpc_i {$_hpc_t / 10};
+			#format _hpc_i {%d} {$_hpc_i};
+			#math _hpc_d {$_hpc_t - $_hpc_i * 10};
+			#if {$_hpc_i >= 10} {#var _hpc_numout {${_hpc_i}M}} {#var _hpc_numout {$_hpc_i.${_hpc_d}M}};
+		};
+	};
+};
+
+#alias {_hpc_pair} {
+	#format _hpc_c {%d} {%2};
+	#format _hpc_m {%d} {%3};
+	#if {$_hpc_m == 100} {
+		_hpc_cell {%1:$_hpc_c%} {%2} {%3} {%4};
+	} {
+		_hpc_num {$_hpc_c};
+		#var _hpc_c {$_hpc_numout};
+		_hpc_num {$_hpc_m};
+		_hpc_cell {%1:$_hpc_c/$_hpc_numout} {%2} {%3} {%4};
+	};
+};
+
+#alias {_hpc_cell} {
+	#format _hpc_txt {%.11s} {%1};
+	#format _hpc_len {%L} {$_hpc_txt};
+	#math _hpc_lp {(11 - $_hpc_len) / 2};
+	#format _hpc_lp {%d} {$_hpc_lp};
+	#math _hpc_rp {11 - $_hpc_len - $_hpc_lp};
+	#format _hpc_txt {%-${_hpc_lp}s%s%-${_hpc_rp}s} {} {$_hpc_txt} {};
+	#format _hpc_w {%L} {$_hpc_txt};
+	#var _hpc_pct 0;
+	#if {"%2" != "" && "%3" != "" && "%3" != "0"} {#math _hpc_pct {100.0 * %2 / %3}};
+	#format _hpc_pct {%d} {$_hpc_pct};
+	#var _hpc_over 0;
+	#if {$_hpc_pct > 100} {#var _hpc_pct 100;#var _hpc_over 1};
+	#if {$_hpc_pct < 0} {#var _hpc_pct 0};
+	#math _hpc_n {13 * $_hpc_pct / 100};
+	#format _hpc_n {%d} {$_hpc_n};
+	#var _hpc_cp $_hpc_pct;
+	#if {"%4" == "r"} {#math _hpc_cp {100 - $_hpc_pct}};
+	#var _hpc_bg <AFA>;
+	#if {$_hpc_cp < 100} {#var _hpc_bg <AEA>};
+	#if {$_hpc_cp < 90} {#var _hpc_bg <BEA>};
+	#if {$_hpc_cp < 80} {#var _hpc_bg <BDA>};
+	#if {$_hpc_cp < 70} {#var _hpc_bg <CDA>};
+	#if {$_hpc_cp < 60} {#var _hpc_bg <DCA>};
+	#if {$_hpc_cp < 50} {#var _hpc_bg <DBA>};
+	#if {$_hpc_cp < 40} {#var _hpc_bg <EBA>};
+	#if {$_hpc_cp < 30} {#var _hpc_bg <EAA>};
+	#if {$_hpc_cp < 20} {#var _hpc_bg <FAA>};
+	#if {$_hpc_over} {#var _hpc_bg <AEF>};
+	#if {$_hpc_n > 0} {#var _hpc_lbg $_hpc_bg} {#var _hpc_lbg <AAA>};
+	#if {$_hpc_n >= 13} {#var _hpc_rbg $_hpc_bg} {#var _hpc_rbg <AAA>};
+	#math _hpc_n {$_hpc_n - 1};
+	#if {$_hpc_n < 0} {#var _hpc_n 0};
+	#if {$_hpc_n > 11} {#var _hpc_n 11};
+	#format _hpc_a {%.${_hpc_n}s} {$_hpc_txt};
+	#math _hpc_rn {$_hpc_w - $_hpc_n};
+	#format _hpc_r {%r} {$_hpc_txt};
+	#format _hpc_r {%.${_hpc_rn}s} {$_hpc_r};
+	#format _hpc_b {%r} {$_hpc_r};
+	#var _hpc_out {<fff>$_hpc_lbg▏<008>$_hpc_bg$_hpc_a<070>$_hpc_b<fff>$_hpc_rbg▕<088>};
+};
+
+#alias {_hpc_enemy} {
+	#var _hpc_enemy {};
+	#if {"$enemy[hp]" != ""} {
+		_hpc_cell {E:$enemy[hp]%} {$enemy[hp]} {100};
+		#format _hpc_en {%.22s} {$enemy[name]};
+		#var _hpc_enemy { $_hpc_out <fff>$_hpc_en<088> <888>R$mip[round]<088>};
+	};
+};

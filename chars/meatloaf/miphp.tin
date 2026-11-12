@@ -2,7 +2,7 @@
 #class {player_miphp} {open}
 
 #alias {_player_miphp} {
-	#NOP
+	#if {"$guild" == "mage"} {#var guild_miphp 0;_meatloaf_mage_miphp};
 };
     
 
