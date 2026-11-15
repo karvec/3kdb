@@ -1,0 +1,28 @@
+#class {areas_deathtaco} {kill};
+#class {areas_deathtaco} {open};
+
+#alias {tacodrops} {
+    #showme {<fca>---- Death Taco drops, worst to best tier (best drops from scaler 91) ----<088>};
+    #showme {<ddd>taco names: plain, Suspiciously Strong (~55-65), Nasty (67-80), Deadly (91+)<088>};
+    #showme {<ffa>veggie taco<088>  shell lettuce tomatoes};
+    #showme {  Veggie Taco    plain (+3 wis, 75 overmax hp) / crisp (+4 wis, 100 overmax hp)};
+    #showme {  side of rice   moist (37 overmax hp+sp) / steaming (50 overmax hp+sp)};
+    #showme {  pop            small (~100 sp x3) / large (250 sp x4) / gigantic, 'refill pop'};
+    #showme {  Cerveza        plain (+2 con, 50 sp) / refreshing (+3 con, 83 sp) / strong (+4 con, 100 sp)};
+    #showme {<ffa>cheesy taco<088>  + cheese  <ddd>(one tier seen, scaler 67 to 150)<088>};
+    #showme {  foil wrapper (shiny) rad/mental ac    nacho cheese (huge) ice/acid ac};
+    #showme {  meat paste (brick) edged/energy ac    sour cream (huge) fire/elec ac};
+    #showme {  refried beans (brick) blunt/poison ac};
+    #showme {<ffa>meat taco<088>    + meat  <ddd>(one tier known)<088>};
+    #showme {  side of beans (spicy) room damage     sliced jalapenos (hot) +10 hp a round};
+    #showme {  cinnamon twists (sugary) extra damage wet wipe (gigantic) 'wipe hands' = room peace};
+    #showme {<ffa>works taco<088>   + sour cream, guacamole  <ddd>(one tier known)<088>};
+    #showme {  cup of salsa (giant) stats            lime wedge (juicy) acid on weapon};
+    #showme {  packet of hot sauce (fire) fire on weapon   leaf of lettuce +wc, all blunt};
+    #showme {<ffa>DEATH TACO<088>   + hot sauce};
+    #showme {  spork lance    bendy wc 35 / straight wc 50 / sharp wc 67 / wicked wc 93};
+    #showme {  guacamole skin treatment  medium / huge (damage reduction)};
+    #showme {  quesadilla codpiece (massive)  91+, 142 total ac};
+};
+
+#class {areas_deathtaco} {close};

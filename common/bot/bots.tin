@@ -12,6 +12,10 @@
         #delay 10 {..};
     } {
         #if {$lastBot[pause_room]} {
+            #if {@mapSlipArea{$lastBot[pause_room]}} {
+                .mapStepTo {$lastBot[pause_room]} {..};
+                #return;
+            };
             #map run $lastBot[pause_room];
         };
         #echo {10 seconds until $lastBot[rating] resumes...};
@@ -48,6 +52,7 @@
     #NOP -- This assumes your 3k location and the map location are in sync;
     
     #var bot[alias] %1;
+    #var bot[walk] 0;
 
     #loop 1 &botlist_alias[] index {
         #if {"${bot[alias]}" == "$botlist_alias[$index]"} {
@@ -56,16 +61,27 @@
             #var toggles[playercheck] $bot[playercheck];
             #var bot[start_vnum] $botlist_start_vnum[$index];
             #var bot[file] $botlist_file[$index];
-            #map run $bot[start_vnum];
+            #var bot[walk] 1;
         };
     };
-    
-    #delay {bot_start} {
-        #read common/bot/bots/$bot[file].tin;
-        update_xp start;
-        .pre_bot_check;
-        ..;
-    } {4};
+
+    #if {$bot[walk]} {.dogcare_botstart {.botStartWalk}} {.botStartWalk};
+};
+
+#alias {.botStartWalk} {
+    #if {$bot[walk] && @mapSlipArea{$bot[start_vnum]}} {
+        .mapStepTo {$bot[start_vnum]} {.botStartRead};
+        #return;
+    };
+    #if {$bot[walk]} {#map run $bot[start_vnum]};
+    #delay {bot_start} {.botStartRead} {4};
+};
+
+#alias {.botStartRead} {
+    #read common/bot/bots/$bot[file].tin;
+    update_xp start;
+    .pre_bot_check;
+    ..;
 };
 
 
@@ -265,9 +281,9 @@
 .add_bot {treehouse-hammer} {treehouse-hammer} {Treehouse - Get hammer only} {25462} {0} {0} {chaos, dungeon};
 .add_bot {treehouse-purple} {treehouse-purple} {Treehouse - Make Purple Ring (HP & SP regen)} {25462} {0} {0} {chaos, dungeon};
 .add_bot {chessboard} {chessboard} {Chessboard} {1209} {1} {0} {chaos, dungeon};
-.add_bot {hoteltrans} {hoteltrans} {Hotel Transylvania} {1850} {0} {0} {chaos, dungeon};
-.add_bot {hoteltrans2} {hoteltrans2} {Hotel Transylvania - Basement} {26417} {0} {0} {chaos, dungeon};
-.add_bot {hoteltrans3} {hoteltrans3} {Hotel Transylvania - Vamps + Zombies} {1850} {0} {0} {chaos, dungeon};
+.add_bot {hoteltrans} {hoteltrans} {Hotel Transylvania} {1836} {0} {0} {chaos, dungeon};
+.add_bot {hoteltrans2} {hoteltrans2} {Hotel Transylvania - Basement} {1836} {0} {0} {chaos, dungeon};
+.add_bot {hoteltrans3} {hoteltrans3} {Hotel Transylvania - Vamps + Zombies} {1836} {0} {0} {chaos, dungeon};
 .add_bot {angels} {angels} {Tree of Life} {24584} {0} {0} {chaos};
 .add_bot {angels} {angels2} {Tree of Life v2.0} {24606} {0} {0} {chaos};
 .add_bot {dundee8} {dundee8} {Dundee Swamps: Swamp Level 8} {10446} {1} {1} {chaos};
@@ -315,7 +331,7 @@
 .add_bot {summerset2} {summerset2} {Summerset Warrens 2.0} {50193} {0} {1} {chaos, dungeon};
 .add_bot {witchhat} {witchhat} {Witch's Hat} {44364} {1} {1} {chaos};
 .add_bot {pande2} {pande2} {Pandemonium 2} {49569} {0} {1} {chaos};
-.add_bot {anchorman} {anchorman} {Anchorman (skips Ron)} {4206} {1} {0} {chaos, dungeon};
+.add_bot {anchorman} {anchorman} {Anchorman (skips Ron)} {1836} {1} {0} {chaos, dungeon};
 .add_bot {observatory} {observatory} {Carina's Observatory} {201} {1} {1} {chaos};
 .add_bot {cowville} {cowville} {Cowville} {30654} {1} {1} {chaos};
 .add_bot {cowville-arena} {cowville-arena} {Cowville Arena} {53020} {0} {0};

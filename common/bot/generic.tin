@@ -150,6 +150,8 @@
 
 #nop kill the bot;
 #alias {.stop} {
+    .dogcare_botdone;
+    .mapStepStop;
     .backupBot;
     #NOP -- Pending kicks would send .bot to the mud once the bot class is gone;
     #undelay {bot_kick};
@@ -238,7 +240,7 @@
                 };
             };
             #if {$collector[items]} {
-                #if {"$area" == "Chaotic Sewers"} {#NOP} {get all;}
+                .uniqueGetAll
             } {
                 #if $room_coins {get coins};
                 #if $room_tome {get tome};
@@ -299,6 +301,18 @@
         #var bot[walk] 1;
         .botStep;
     };
+};
+
+#alias {.movie_ticket} {
+    #var bot[ticket] 0;
+    #format bot[ticket_buy] {%l} {%0};
+    #action {^%s%d %*ticket to see '%0'%*$} {#var bot[ticket] 1} {1};
+    #send {i};
+    #delay {bot_ticket} {
+        #unaction {^%s%d %*ticket to see '%0'%*$};
+        #if {!$bot[ticket]} {#send {buy $bot[ticket_buy]}};
+        glance
+    } {2};
 };
 
 #NOP -- starts or continues the bot after it's loaded;

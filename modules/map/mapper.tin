@@ -32,6 +32,7 @@
 	#if {&{rej_area_name}} {.rej_map_entered %0};
 	#NOP -- Lets artifacts know the map was in town, see common/eq/artifacts.tin;
 	#if {&{artifactTownAreas}} {.artifactRoomEntered %0};
+	#if {"%0" == "6517"} {tacodrops};
 };
 
 #event {MAP EXIT ROOM} {

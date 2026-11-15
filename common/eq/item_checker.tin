@@ -24,7 +24,7 @@
     #class {worlddrops2_watch} {kill};
     #if {"$toggles[worlddrops2]" == "1"} {
         #class {worlddrops2_watch} {open};
-        #line substitute variables {#action {^{(?i)(?:-[a-z!]+-)?((?:(?:a|an|the) )?(?:$worldDropNames)[^:]*?)\.$}} {.notifyWorldDrop {%%2} {floor}} {2}};
+        #line substitute variables {#action {^{(?i)(?:-[a-z!]+-)?((?:(?:a|an|the) )?(?:$worldDropNames)(?: (?:[(][^)]*[)]|<[^>]*>))*)\.$}} {.notifyWorldDrop {%%2} {floor}} {2}};
         #class {worlddrops2_watch} {close};
     };
 };

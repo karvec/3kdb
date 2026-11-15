@@ -6,7 +6,7 @@
 #var bot_message_2 '----     ALL TARGETS       ----';
 #show $bot_message_1;#show $bot_message_2;
 
-#var {bot[path]} {e;e;e;e;e;e;e;w;se;w;w;se;e;e;se;sw;e;s;ne;e;s;w;s;w;w;se;e;e;e;e;w;w;w;w;w;w;w;w;sw;e;e;e;e;w;sw;w;w;w;w;w;nw;e;e;e;ne;n;n;e;ne;w;n;n;nw;s;w;n;w;s;s;se;n;e;s;sw;s;s;w;w;ne;w;ne;w;ne;w;n;n;n;w;s;s;s;n;n;n;n};
+#var {bot[path]} {.movie_ticket Hotel Transylvania;theatre;e;enter;pull;n;d;e;e;e;e;e;e;e;w;se;w;w;se;e;e;se;sw;e;s;ne;e;s;w;s;w;w;se;e;e;e;e;w;w;w;w;w;w;w;w;sw;e;e;e;e;w;sw;w;w;w;w;w;nw;e;e;e;ne;n;n;e;ne;w;n;n;nw;s;w;n;w;s;s;se;n;e;s;sw;s;s;w;w;ne;w;ne;w;ne;w;n;n;n;w;s;s;s;n;n;n;n};
 
 
 

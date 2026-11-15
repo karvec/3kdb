@@ -38,7 +38,7 @@
 #action {{^\s*# Item\s*$}} {#var uniqueOwned {}} {6};
 #action {{^\s*\d+ \*?($uniqueAlt)(\W.*)?$}} {#var uniqueOwned[%2] {@uniqueTier{%3}}} {2};
 #action {{^You unsmuggle: ($uniqueAlt)(\W.*)?$}} {#var uniqueOwned[%2] {@uniqueTier{%3}}} {2};
-#action {{^You get ($uniqueAlt)(\W.*)? from }} {.uniquePickup {%2} {@uniqueTier{%3}}} {2};
+#action {{^You get ($uniqueAlt)(\W.*?)? from (.+?)\.?\s*$}} {.uniquePickup {%2} {@uniqueTier{%3}} {%4}} {2};
 #NOP -- get all says "<item>: Ok." per item. actions.tin's priority-4 "%*: Ok." clears encumbrance, so this one does too;
 #action {{^($uniqueAlt)(\W[^:]*)?: Ok\.$}} {
     #var inventory[encumberance] 0;
@@ -49,6 +49,7 @@
 #action {{^You (put|drop|give|donate) ($uniqueAlt)(\W.*)?$}} {
     #if {&uniqueDropping[%3]} {
         #unvar uniqueDropping[%3];
+        #if {"%2" == "put" && "$uniquePutting[1][name]" == "%3"} {#list uniquePutting delete 1};
         #return;
     };
     #unvar uniqueOwned[%3];
@@ -56,6 +57,14 @@
 #NOP -- uniqueDropping[<name>] is the tier of the second copy. If smuggle took your copy (same tier as yours), you;
 #NOP -- now hold the new one;
 #action {{^You smuggle away: ($uniqueAlt)(\W.*)?$}} {
+    #if {&uniqueBlown[%2]} {
+        #unvar uniqueBlown[%2];
+        #list uniqueSmuggling find {%2} uniqueIx;
+        #if {$uniqueIx} {#list uniqueSmuggling delete $uniqueIx};
+        #send {smuggle remove $uniqueAll[%2][key]};
+        #echo {<cfb>===========> <ccd>The second %2 exploded first and smuggle took yours, getting it back<088>};
+        #return;
+    };
     #if {&uniqueDropping[%2]} {
         #if {"@uniqueTier{%3}" == "$uniqueOwned[%2]"} {#var uniqueOwned[%2] {$uniqueDropping[%2]}};
         #unvar uniqueDropping[%2];
@@ -72,6 +81,11 @@
     #if {&uniqueSmuggling[]} {
         #local _n {$uniqueSmuggling[1]};
         #list uniqueSmuggling delete 1;
+        #if {&uniqueBlown[$_n]} {
+            #unvar uniqueBlown[$_n];
+            #echo {<cfb>===========> <ccd>The second $_n exploded first, kept yours<088>};
+            #return;
+        };
         #send {drop $uniqueAll[$_n][key]};
         .notify {<fcb>UNIQUE<ddd> couldn't smuggle a second $_n, dropped it at $roomvnum};
         #echo {<cfb>===========> <ccd>Couldn't smuggle the second $_n, dropped it instead<088>};
@@ -79,11 +93,27 @@
 } {2};
 #action {{^(.+?) shudders and trembles in}} {.uniqueExploded {%2}} {2};
 
-#NOP -- .uniquePickup <name> <tier>: the first copy is just remembered. A second one is smuggled (the newest copy is;
-#NOP -- found first), and if its tier is better than yours that's announced;
+#NOP -- A second copy gotten from a box or bag is put back in it: smuggle may be full, and a drop in a house room;
+#NOP -- destroys the item (karvec 11-15 10:54, Jade Shield of Felines from the Office box). A full container;
+#NOP -- falls back to smuggle. uniquePutting: {name}{container} rows, oldest first;
+#list uniquePutting clear;
+#action {{^(The box cannot hold any more stuff|There is not room for more)\.}} {
+    #if {&uniquePutting[]} {
+        #local _n {$uniquePutting[1][name]};
+        #list uniquePutting delete 1;
+        #list uniqueSmuggling add {$_n};
+        #send {smuggle $uniqueAll[$_n][key]};
+        #echo {<cfb>===========> <ccd>No room to put the second $_n back, smuggling it<088>};
+    };
+} {2};
+
+#NOP -- .uniquePickup <name> <tier> [from]: the first copy is just remembered. A second one is put back in the;
+#NOP -- container it came from, else smuggled (the newest copy is found first), and if its tier is better than;
+#NOP -- yours that's announced;
 #alias {.uniquePickup} {
     #local _new 0;
     #local _old 0;
+    #local _c {};
     #NOP -- Positive check: until uniqueOwned exists, !&uniqueOwned[x] stays literal text and is false, which made;
     #NOP -- every first copy look like a second one;
     #if {&uniqueOwned[%1]} {#NOP} {
@@ -92,6 +122,27 @@
     };
     #if {$idle_flag} {#return};
     #var uniqueDropping[%1] {%2};
+    #NOP -- the container's word: the word before " of " (Bag of Holding: bag), else the last word (the small box: box);
+    #if {"%3" != "" && "%3" != "%*corpse%*"} {
+        #regex {%3} {{^(?:.*\s)?(\S+) of }} {#format _c {%l} {&2}};
+        #if {"$_c" == ""} {#regex {%3} {{(\S+)$}} {#format _c {%l} {&2}}};
+    };
+    #if {"$_c" != ""} {
+        #list uniquePutting add {{{name} {%1} {from} {$_c}}};
+        #send {put $uniqueAll[%1][key] in $_c};
+        #list uniqueTiers create {$uniqueAll[%1][tiers]};
+        #list uniqueTiers find {%2} _new;
+        #list uniqueTiers find {$uniqueOwned[%1]} _old;
+        #var uniqueTag {};
+        #if {"%2" != ""} {#var uniqueTag { (%2)}};
+        #if {$_new && $_old && $_new > $_old} {
+            .notify {<fcb>UNIQUE UPGRADE<ddd> %1 (%2) beats your ($uniqueOwned[%1]), put it back in the $_c. To swap, put yours away first};
+            #echo {<cfb>===========> <ccd>UPGRADE: %1 (%2) beats your ($uniqueOwned[%1]). Put it back in the $_c so it can't explode<088>};
+        } {
+            #echo {<cfb>===========> <ccd>Put the second %1$uniqueTag back in the $_c so it can't explode<088>};
+        };
+        #return;
+    };
     #list uniqueSmuggling add {%1};
     #send {smuggle $uniqueAll[%1][key]};
     #list uniqueTiers create {$uniqueAll[%1][tiers]};
@@ -126,6 +177,10 @@
     #replace uniqueNew {%s(%*)} {};
     #replace uniqueNew {%s[%*]} {};
     #if {&uniqueAll[$uniqueNew]} {
+        #if {&uniqueDropping[$uniqueNew]} {
+            #unvar uniqueDropping[$uniqueNew];
+            #var uniqueBlown[$uniqueNew] 1;
+        };
         #echo {<faa>UNIQUE: a second $uniqueNew exploded before it could be dropped<088>};
         #return;
     };
@@ -143,6 +198,52 @@
     #if {&uniqueOwned[$uniqueNew]} {#NOP} {#var uniqueOwned[$uniqueNew] {}};
     .notify {<fcb>UNIQUE<ddd> a second $uniqueNew exploded. Learned it: from now on a second one is dropped (drop $uniqueNewKey)};
     #echo {<faa>UNIQUE: learned $uniqueNew (drop $uniqueNewKey). A second one is dropped from now on<088>};
+};
+
+#var uniqueAvoid {Black stone};
+
+#alias {.uniqueGetAll} {
+    #local _i {};
+    #local _new 0;
+    #local _old 0;
+    #var uniqueFloor {};
+    #var uniqueFloorTier {};
+    #var uniqueFloorAvoid {};
+    #foreach {$room[items][%*]} {_i} {
+        #regex {$_i} {{^-\w-($uniqueAlt)(\W.*)?$}} {
+            #if {"$uniqueFloor" == "" && &uniqueOwned[&2]} {
+                #var uniqueFloor {&2};
+                #var uniqueFloorTier {@uniqueTier{&3}};
+            };
+        };
+        #regex {$_i} {{^-\w-(?i)($uniqueAvoid)\b}} {#var uniqueFloorAvoid {&2}};
+    };
+    #if {"$uniqueFloor" == "" && "$uniqueFloorAvoid" == ""} {
+        get all;
+        #return;
+    };
+    #if $room_coins {get coins};
+    #if $room_tome {get tome};
+    #if {"$uniqueFloor" == ""} {
+        #if {"$uniqueLeft" != "$roomvnum $uniqueFloorAvoid"} {
+            #var uniqueLeft {$roomvnum $uniqueFloorAvoid};
+            #echo {<cfb>===========> <ccd>$uniqueFloorAvoid on the floor, get all skipped<088>};
+        };
+        #return;
+    };
+    #if {"$uniqueLeft" == "$roomvnum $uniqueFloor $uniqueFloorTier"} {#return};
+    #var uniqueLeft {$roomvnum $uniqueFloor $uniqueFloorTier};
+    #var uniqueTag {};
+    #if {"$uniqueFloorTier" != ""} {#var uniqueTag { ($uniqueFloorTier)}};
+    .notify {<fcb>UNIQUE<ddd> left a second $uniqueFloor$uniqueTag on the floor at $roomvnum, you have ($uniqueOwned[$uniqueFloor])};
+    #echo {<cfb>===========> <ccd>Left a second $uniqueFloor$uniqueTag on the floor (you have $uniqueOwned[$uniqueFloor]), get all skipped<088>};
+    #list uniqueTiers create {$uniqueAll[$uniqueFloor][tiers]};
+    #list uniqueTiers find {$uniqueFloorTier} _new;
+    #list uniqueTiers find {$uniqueOwned[$uniqueFloor]} _old;
+    #if {$_new && $_old && $_new > $_old && $toggles[unique_pause] && $bot[active] && !$bot[paused]} {
+        #echo {<cfb>===========> <ccd>BOT PAUSED: higher tier on the floor, 'toggle unique_pause' turns this off<088>};
+        .pause;
+    };
 };
 
 #class {unique_items} {close};

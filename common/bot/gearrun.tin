@@ -39,9 +39,8 @@
 #NOP -- does not lose it. After a mud reboot every dungeon resets, so run;
 #NOP -- gearrun reset to clear both;
 #NOP --;
-#NOP -- Hook. generic.tin calls .post_bot_check when a bot finishes. If your;
-#NOP -- character config defines its own .post_bot_check, call .gr_post_bot from;
-#NOP -- it or the gear run will not advance;
+#NOP -- Hook. A step ends on generic.tin's BOT COMPLETE line, when the bot;
+#NOP -- that line belongs to is the step's bot;
 #NOP ---------------------------------------------------------------------------;
 
 #var gearrun[state] idle;
@@ -339,12 +338,10 @@
     };
 };
 
-#NOP -- Called from generic.tin once a bot finishes its path;
-#alias .post_bot_check {.gr_post_bot};
+#action {^------- BOT COMPLETE -----} {.gr_post_bot} {6};
 
 #alias .gr_post_bot {
-    #NOP -- Only react to the bot this step started, not some other bot run by hand;
-    #if {"$gearrun[state]" == "running" && "$lastBot[alias]" == "$gearrun[cur][bot]"} {
+    #if {"$gearrun[state]" == "running" && "$bot[alias]" == "$gearrun[cur][bot]" && !$bot[paused]} {
         .gr_finish;
     };
 };

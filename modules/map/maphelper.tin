@@ -347,7 +347,7 @@
 #action {^You touch the beacon, and a friendly ship belonging to The Vigilant swings by.} {#map goto 10278} {2};
 
 #NOP Chaos Sewers;
-#action {You lose your footing and wind up flat on your butt!} {mapUndo} {2};
+#action {You lose your footing and wind up flat on your butt!} {#if {"$mapstep[on]" == "1"} {.mapStepSlip} {mapUndo}} {2};
 
 #NOP Catacombs;
 #action {The ancient statue comes to life and bars your path.} {mapUndo} {2};
@@ -484,7 +484,18 @@
 #NOP -- Wimpy moves you without a command, so move the map the same way. Only one action fires per line, so;
 #NOP -- this one has the lowest priority and other wimpy actions (abyss bot, knights-zorb, char files) call;
 #NOP -- .followMapMove themselves;
-#action {^Your legs run away with you %w.} {.followMapMove %1} {9};
+#action {^Your legs run away with you %w.} {
+	.wimpyBotPause;
+	.followMapMove %1;
+} {9};
+#action {^Your legs run away with you!$} {.wimpyBotPause} {9};
+
+#alias {.wimpyBotPause} {
+	#if {"$bot[active]" == "1" && "$bot[paused]" != "1"} {
+		.pause;
+		#echo {<cfb>===========> <ccd>BOT PAUSED: wimpy ran you out of the room. .resume walks back and carries on<088>};
+	};
+};
 
 #NOP -- function to also take a step back on the mapper if we undo a map;
 #alias mapUndo {
@@ -494,6 +505,84 @@
 		#var bot[walk] 0;
 		#line substitute variables {#if !$incombat {.bot}};
 	};
+};
+
+#var mapSlipAreas {Chaotic Sewers};
+#var mapstep[on] 0;
+
+#function {mapSlipArea} {
+	#var result 0;
+	#var mapslip_area {};
+	#map at {%0} {#map get roomarea mapslip_area};
+	#foreach {$mapSlipAreas} {mapslip_a} {#if {"$mapslip_area" == "$mapslip_a"} {#var result 1}};
+};
+
+#alias {.mapStepTo} {
+	#var mapstep[to] {%1};
+	#var mapstep[then] {%2};
+	#var mapstep[fails] 0;
+	#var mapstep[on] 1;
+	.mapStepNext;
+};
+
+#alias {.mapStepNext} {
+	#if {"$mapstep[on]" != "1"} {#return};
+	#map get roomvnum mapstep[from];
+	#if {"$mapstep[from]" == "$mapstep[to]"} {
+		#var mapstep[on] 0;
+		$mapstep[then];
+		#return;
+	};
+	#path destroy;
+	#map find {$mapstep[to]};
+	#path save forward mapstep_path;
+	#list mapstep_path explode {;};
+	#map get roomexits mapstep_exits;
+	#var mapstep[next] {};
+	#if {&mapstep_path[] > 0} {#var mapstep[next] {$mapstep_exits[$mapstep_path[1]]}};
+	#if {"$mapstep[next]" == ""} {
+		#var mapstep[on] 0;
+		#echo {<faa>Walk stopped: no path from $mapstep[from] to $mapstep[to]<088>};
+		#return;
+	};
+	#var mapstep[tries] 0;
+	#var room[updated] 0;
+	#map run {$mapstep[next]};
+	#delay {mapstep_wait} {.mapStepWait} {0.25};
+};
+
+#alias {.mapStepWait} {
+	#if {"$mapstep[on]" != "1"} {#return};
+	#if {$room[updated]} {
+		#var mapstep[fails] 0;
+		#delay {mapstep_next} {.mapStepNext} {0.1};
+		#return;
+	};
+	#math mapstep[tries] {$mapstep[tries] + 1};
+	#if {$mapstep[tries] < 20} {
+		#delay {mapstep_wait} {.mapStepWait} {0.25};
+		#return;
+	};
+	#map goto $mapstep[from];
+	#math mapstep[fails] {$mapstep[fails] + 1};
+	#if {$mapstep[fails] >= 5} {
+		#var mapstep[on] 0;
+		#echo {<faa>Walk stopped: no new room after 5 tries from $mapstep[from]<088>};
+		#return;
+	};
+	#delay {mapstep_next} {.mapStepNext} {1};
+};
+
+#alias {.mapStepSlip} {
+	#undelay {mapstep_wait};
+	#map goto $mapstep[from];
+	#delay {mapstep_next} {.mapStepNext} {0.3};
+};
+
+#alias {.mapStepStop} {
+	#var mapstep[on] 0;
+	#undelay {mapstep_wait};
+	#undelay {mapstep_next};
 };
 
 

@@ -12,6 +12,16 @@
 #var dogcare[vetcmds] 0;
 #var dogcare[gone] 0;
 #var dogcare[dug] {};
+#var dogcare[parking] 0;
+#var dogcare[tries] 0;
+#var dogcare[then] {};
+#var dogcare[calling] 0;
+#var dogcare[refollow] 0;
+#var dogcare[waitmsg] 0;
+#var dogcare[guardpark] 0;
+#var dogcare[sentroom] {};
+#var dogcare[sentname] {};
+#var dogUnsafe {{Death Taco}{1}{Tree of Life}{1}{Tree of Life 2.0}{1}{Terra's Terrific Treehouse}{1}};
 
 #action {^%* :: HP:%s%d\/%d%sHappy:%s%d\%%sHungry:%s%d\%%sLevel:%s%d\/%d\%} {
     #var my[dog][name] {%1};
@@ -23,15 +33,25 @@
     #var my[dog][level][tonext] %14;
     #undelay {dogcare_gone};
     #var dogcare[gone] 0;
+    #if {"$my[dog][stay]" == "dead"} {#var my[dog][stay] 0};
     #if {"$toggles[dog_care]" == "1" && "$idle_flag" != "1"} {.dogcare_check};
 } {4};
 
 #action {^-M-_$my[dog][name], $user_cap's %*.} {
     #list room[familiars] add {$my[dog][name], $user_cap's %1};
     .dogcare_dig;
+    .dogcare_here;
 } {1};
 
-#action {^$my[dog][name], $user_cap's %* bounds into the room.$} {.dogcare_dig} {4};
+#action {^$my[dog][name], $user_cap's %* bounds into the room.$} {
+    #var my[dog][stay] 0;
+    .dogcare_dig;
+    .dogcare_guard;
+} {4};
+
+#action {^Your dog lays down and places %* head on %* paws, looking sad.$} {.dogcare_stayed 1} {4};
+#action {^Your dog is so happy %* can hardly stand it and runs around in circles.$} {.dogcare_stayed 0} {4};
+#action {^$my[dog][name]{ (screeches in agony and falls to the ground, dead|gasps for breath, then slumps into death|gurgles in his own blood as he dies|gurgles in her own blood as she dies|gurgles in its own blood as it dies|gurgles in their own blood as they dies){1}\.$}} {.dogcare_died} {1};
 
 #action {^Vet Commands: %d/%d} {
     #var dogcare[vetcmds] %1;
@@ -74,6 +94,198 @@
         #var dogcare[dug] {$roomvnum $room_short};
         #send {!dog dig};
     };
+};
+
+#alias {.dogcare_big} {
+    #echo {<fff><FAA>                                                                              <088>};
+    #echo {<fff><FAA>  %1<088>};
+    #echo {<fff><FAA>                                                                              <088>};
+};
+
+#alias {.dogcare_stayed} {
+    #var my[dog][stay] %1;
+    #if {%1} {
+        #if {"$dogcare[sentroom]" != ""} {
+            #var my[dog][room] $dogcare[sentroom];
+            #var my[dog][roomname] {$dogcare[sentname]};
+        } {
+            #map get roomvnum my[dog][room];
+            #map get roomname my[dog][roomname];
+        };
+        #if {$dogcare[guardpark]} {
+            #var dogcare[guardpark] 0;
+            #var dogcare[refollow] 1;
+            #var dogcare[waitmsg] 0;
+            #ticker {dogcare_refollow} {.dogcare_refollow_try} {2};
+        };
+        #echo {<ffa>$my[dog][name] stays at $my[dog][roomname] ($my[dog][room]).<088>};
+    } {
+        #var dogcare[refollow] 0;
+        #unticker {dogcare_refollow};
+        #echo {<afa>$my[dog][name] follows you again.<088>};
+    };
+    #var dogcare[sentroom] {};
+    #if {$dogcare[parking]} {.dogcare_park_reply %1};
+    #if {$dogcare[calling]} {.dogcare_call_reply %1};
+};
+
+#alias {.dogcare_died} {
+    #var my[dog][stay] dead;
+    #var my[dog][botpark] 0;
+    #var dogcare[refollow] 0;
+    #var dogcare[parking] 0;
+    #var dogcare[calling] 0;
+    #unticker {dogcare_refollow};
+    #undelay {dogcare_park};
+    #undelay {dogcare_call};
+    #var dogcare[guardpark] 0;
+    .dogcare_big {$my[dog][name] DIED in $area at $room_short ($roomvnum).};
+};
+
+#alias {.dogcare_botstart} {
+    #var dogcare[then] {%1};
+    #if {$dogcare[parking]} {#return};
+    #map get roomarea dogcare[area] $bot[start_vnum];
+    #if {"$toggles[dog_care]" == "1" && "$dogcare[area]" != "" && &dogUnsafe[$dogcare[area]] && "$my[dog][stay]" != "1" && "$my[dog][stay]" != "dead"} {
+        #var dogcare[parking] 1;
+        #var dogcare[tries] 1;
+        #echo {<ffa>$dogcare[area] isn't safe for $my[dog][name]: leaving it here.<088>};
+        #send {!dog stay};
+        #delay {dogcare_park} {.dogcare_park_fail {no answer to dog stay}} {3};
+    } {
+        #if {"$dogcare[area]" != "" && &dogUnsafe[$dogcare[area]] && "$my[dog][stay]" == "1"} {
+            #var dogcare[refollow] 0;
+            #unticker {dogcare_refollow};
+            #var my[dog][botpark] 1;
+        };
+        $dogcare[then];
+    };
+};
+
+#alias {.dogcare_park_reply} {
+    #undelay {dogcare_park};
+    #if {%1} {
+        #var dogcare[parking] 0;
+        #var my[dog][botpark] 1;
+        $dogcare[then];
+    } {
+        #if {$dogcare[tries] < 2} {
+            #math dogcare[tries] {$dogcare[tries] + 1};
+            #send {!dog stay};
+            #delay {dogcare_park} {.dogcare_park_fail {no answer to dog stay}} {3};
+        } {
+            .dogcare_park_fail {it kept following};
+        };
+    };
+};
+
+#alias {.dogcare_park_fail} {
+    #undelay {dogcare_park};
+    #var dogcare[parking] 0;
+    .dogcare_big {$my[dog][name] WAS NOT LEFT BEHIND (%1). It may follow you into $dogcare[area]!};
+    $dogcare[then];
+};
+
+#alias {.dogcare_guard} {
+    #if {"$toggles[dog_care]" == "1" && "$area" != "" && &dogUnsafe[$area] && !$dogcare[parking] && !$dogcare[calling]} {
+        #var dogcare[sentroom] $roomvnum;
+        #var dogcare[sentname] {$room_short};
+        #var dogcare[guardpark] 1;
+        #send {!dog stay};
+        .dogcare_big {$my[dog][name] followed you into $area: leaving it at $room_short ($roomvnum).};
+    };
+};
+
+#alias {.dogcare_botdone} {
+    #if {$my[dog][botpark] && "$my[dog][stay]" == "1"} {
+        #var my[dog][botpark] 0;
+        #var dogcare[refollow] 1;
+        #var dogcare[waitmsg] 0;
+        #ticker {dogcare_refollow} {.dogcare_refollow_try} {2};
+        .dogcare_refollow_try;
+    };
+};
+
+#alias {.dogcare_refollow_try} {
+    #if {!$dogcare[refollow] || "$my[dog][stay]" != "1"} {
+        #unticker {dogcare_refollow};
+    } {
+        #if {"$area" != "" && &dogUnsafe[$area]} {
+            #if {!$dogcare[waitmsg]} {
+                #var dogcare[waitmsg] 1;
+                #echo {<ffa>$my[dog][name] waits at $my[dog][roomname] ($my[dog][room]) until you leave $area.<088>};
+            };
+        } {
+            #unticker {dogcare_refollow};
+            .dogcare_call;
+        };
+    };
+};
+
+#alias {.dogcare_call} {
+    #var dogcare[calling] 1;
+    #var dogcare[tries] 1;
+    #send {!dog stay};
+    #delay {dogcare_call} {.dogcare_call_fail} {3};
+};
+
+#alias {.dogcare_call_reply} {
+    #undelay {dogcare_call};
+    #if {%1} {
+        #if {$dogcare[tries] < 2} {
+            #math dogcare[tries] {$dogcare[tries] + 1};
+            #send {!dog stay};
+            #delay {dogcare_call} {.dogcare_call_fail} {3};
+        } {
+            .dogcare_call_fail;
+        };
+    } {
+        #var dogcare[calling] 0;
+    };
+};
+
+#alias {.dogcare_call_fail} {
+    #undelay {dogcare_call};
+    #var dogcare[calling] 0;
+    .dogcare_big {$my[dog][name] did not come back. It is at $my[dog][roomname] ($my[dog][room]): dogfetch walks there.};
+};
+
+#alias {.dogcare_here} {
+    #if {$dogcare[refollow] && "$my[dog][stay]" == "1" && "$roomvnum" == "$my[dog][room]" && ("$area" == "" || !&dogUnsafe[$area]) && !$dogcare[calling]} {
+        #unticker {dogcare_refollow};
+        .dogcare_call;
+    };
+};
+
+#alias {dstay} {
+    #if {"$my[dog][stay]" == "1"} {
+        #echo {<ffa>$my[dog][name] already stays at $my[dog][roomname] ($my[dog][room]). dfollow brings it back.<088>};
+    } {
+        #send {!dog stay};
+    };
+};
+
+#alias {dfollow} {
+    #if {"$my[dog][stay]" == "1"} {
+        #var dogcare[refollow] 1;
+        .dogcare_call;
+    } {
+        #echo {<afa>$my[dog][name] is already following you.<088>};
+    };
+};
+
+#alias {dogfetch} {
+    #if {"$my[dog][stay]" == "1" && "$my[dog][room]" != ""} {
+        #var dogcare[refollow] 1;
+        #map run $my[dog][room];
+    } {
+        #echo {<afa>$my[dog][name] isn't staying anywhere.<088>};
+    };
+};
+
+#alias {dogunsafe} {
+    #echo {<ffa>Areas $my[dog][name] is left out of (bots that start there park it first):<088>};
+    #foreach {*dogUnsafe[]} {_du} {#echo {  $_du}};
 };
 
 #ticker {dogcare_hp} {

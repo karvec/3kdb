@@ -4,7 +4,7 @@
 #echo {---- ANCHORMAN ----};
 #echo {---- SKIP RON  ----};
 
-#var {bot[path]} {ne;sw;n;n;w;e;n;e;w;n;enter;e;u;d;se;nw;w;n;w;e;n;s;s;s;s;s;s;s};
+#var {bot[path]} {.movie_ticket Anchorman;theatre;w;w;watch;ne;sw;n;n;w;e;n;e;w;n;enter;e;u;d;se;nw;w;n;w;e;n;s;s;s;s;s;s;s;exit;e;e;s};
 
 
 #list botmobs clear;

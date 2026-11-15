@@ -36,6 +36,8 @@
 
 #var fight_bblast 0;
 
+#var rtorment_cd 0;
+
 #var fshroud_left 0;
 #var fshroud_round 0;
 #var fshroud_int 0;
@@ -242,7 +244,7 @@
 			#if {$mob[recall_pain] == 0} {
 				checkStrategy {rpain} {_use_power recall pain};
 				checkStrategy {ragony} {_use_power recall agony};
-				checkStrategy {rtorment} {_use_power recall torment};
+				checkStrategy {rtorment} {_rtorment};
 			};
 		};
 	};
@@ -255,6 +257,18 @@
 		};
 	};
   gp_round_maintenance;
+};
+
+#alias {_rtorment} {
+	#if {!$rtorment_cd && "$enemy[hp]" != ""} {
+		#if {$enemy[hp] * $mip[round] >= 2 * (100 - $enemy[hp])} {
+			_use_power recall torment;
+			#if {$hbp} {
+				#var rtorment_cd 1;
+				#delay {rtorment_cd} {#var rtorment_cd 0} {20};
+			};
+		};
+	};
 };
 
 #alias {_bblast_ok} {

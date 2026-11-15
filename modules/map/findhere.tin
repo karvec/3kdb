@@ -12,6 +12,7 @@
 	#var findauto off;
 	#var findstep {};
 	#var findblocked {};
+	#list findpath clear;
 
 	rating;
 	#send !brief off yes;

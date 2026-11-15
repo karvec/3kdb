@@ -13,6 +13,7 @@
 #list strategyList add {{{guild} {psicorps} {name} {eagle} {active} {0} {description} {Psicorps: AA - Eagle (+Int)}}};
 #list strategyList add {{{guild} {psicorps} {name} {rpain} {active} {0} {description} {Psicorps: Recall Pain}}};
 #list strategyList add {{{guild} {psicorps} {name} {ragony} {active} {0} {description} {Psicorps: Recall Agony}}};
+#list strategyList add {{{guild} {psicorps} {name} {rtorment} {active} {0} {description} {Psicorps: Recall Torment, every 10 rounds, not in the last 2 rounds}}};
 #list strategyList add {{{guild} {psicorps} {name} {demoralize} {active} {0} {description} {Psicorps: Demoralize}}};
 #list strategyList add {{{guild} {psicorps} {name} {bblast} {active} {0} {description} {Psicorps: Brilliant Blast once per fight}}};
 #list strategyList add {{{guild} {psicorps} {name} {fshroud} {active} {0} {description} {Psicorps: Flaming Shroud, lasts Int/2 rounds}}};

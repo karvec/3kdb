@@ -205,8 +205,16 @@
 	#if $gags[combat_guild] {#line gag};
 	checkStrategy {rpain} {#delay 3 {#var mob[recall_pain] 0}};
 	checkStrategy {ragony} {#delay 11 {#var mob[recall_pain] 0}};
-	checkStrategy {rtorment} {#delay 11 {#var mob[recall_pain] 0}};
+	checkStrategy {rtorment} {#var mob[recall_pain] 0};
 } {2};
+#action {^You must wait %d round%* before you can use this power again.} {
+	#if {"$tmp_last_power_used" == "recall torment"} {
+		#var rtorment_cd 1;
+		#math rtorment_wait {%1 * 2};
+		#delay {rtorment_cd} {#var rtorment_cd 0} {$rtorment_wait};
+	};
+	#echo {<069>==> Failed to use $tmp_last_power_used<900>};
+} {1};
 
 #delay {psi_gs_powers} {gs_powers} {5};
 
